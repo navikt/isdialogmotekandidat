@@ -2,12 +2,14 @@ package no.nav.syfo.application
 
 import io.ktor.application.*
 
+const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB"
+
 data class Environment(
-    val isdialogmotekandidatDbHost: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB_HOST"),
-    val isdialogmotekandidatDbPort: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB_PORT"),
-    val isdialogmotekandidatDbName: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB_DATABASE"),
-    val isdialogmotekandidatDbUsername: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB_USERNAME"),
-    val isdialogmotekandidatDbPassword: String = getEnvVar("NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB_PASSWORD"),
+    val isdialogmotekandidatDbHost: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_HOST"),
+    val isdialogmotekandidatDbPort: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PORT"),
+    val isdialogmotekandidatDbName: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_DATABASE"),
+    val isdialogmotekandidatDbUsername: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_USERNAME"),
+    val isdialogmotekandidatDbPassword: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PASSWORD"),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmotekandidatDbHost:$isdialogmotekandidatDbPort/$isdialogmotekandidatDbName"

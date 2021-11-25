@@ -48,7 +48,6 @@ spec:
   azure:
     application:
       enabled: true
-      tenant: trygdeetaten.no
   env:
     - name: KTOR_ENV
       value: production
