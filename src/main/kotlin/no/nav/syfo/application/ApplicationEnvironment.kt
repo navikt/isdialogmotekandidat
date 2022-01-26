@@ -10,6 +10,14 @@ data class Environment(
     val isdialogmotekandidatDbName: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_DATABASE"),
     val isdialogmotekandidatDbUsername: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_USERNAME"),
     val isdialogmotekandidatDbPassword: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PASSWORD"),
+
+    val kafka: ApplicationEnvironmentKafka = ApplicationEnvironmentKafka(
+        aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
+        aivenCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
+        aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
+    ),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmotekandidatDbHost:$isdialogmotekandidatDbPort/$isdialogmotekandidatDbName"
