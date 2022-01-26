@@ -6,16 +6,15 @@ version = "0.0.1"
 
 object Versions {
     const val ktor = "1.6.7"
-    const val kotlin = "1.6.10"
     const val logback = "1.2.10"
     const val logstashEncoder = "7.0.1"
     const val hikari = "5.0.1"
     const val postgres = "42.3.1"
-    const val flyway = "8.4.0"
+    const val flyway = "8.4.2"
     const val kluent = "1.68"
     const val spek = "2.0.17"
     const val pgEmbedded = "0.13.4"
-    const val micrometerRegistry = "1.8.1"
+    const val micrometerRegistry = "1.8.2"
 }
 plugins {
     kotlin("jvm") version "1.6.10"
@@ -31,29 +30,30 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(kotlin("reflect"))
 
-    implementation("io.ktor:ktor-server-core:${Versions.ktor}")
     implementation("io.ktor:ktor-jackson:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-core:${Versions.ktor}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
-    implementation("io.ktor:ktor-metrics-micrometer:${Versions.ktor}")
 
-    implementation("io.micrometer:micrometer-registry-prometheus:${Versions.micrometerRegistry}")
-
-    implementation("ch.qos.logback:logback-classic:${Versions.logback}")
-    implementation("org.postgresql:postgresql:${Versions.postgres}")
-    implementation("com.zaxxer:HikariCP:${Versions.hikari}")
-    implementation("org.flywaydb:flyway-core:${Versions.flyway}")
+    // Logging
     implementation("ch.qos.logback:logback-classic:${Versions.logback}")
     implementation("net.logstash.logback:logstash-logback-encoder:${Versions.logstashEncoder}")
 
-    testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${Versions.kotlin}")
-    testImplementation("org.amshove.kluent:kluent:${Versions.kluent}")
+    // Metrics and Prometheus
+    implementation("io.ktor:ktor-metrics-micrometer:${Versions.ktor}")
+    implementation("io.micrometer:micrometer-registry-prometheus:${Versions.micrometerRegistry}")
+
+    // Database
+    implementation("org.postgresql:postgresql:${Versions.postgres}")
+    implementation("com.zaxxer:HikariCP:${Versions.hikari}")
+    implementation("org.flywaydb:flyway-core:${Versions.flyway}")
     testImplementation("com.opentable.components:otj-pg-embedded:${Versions.pgEmbedded}")
 
+    testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")
+    testImplementation("org.amshove.kluent:kluent:${Versions.kluent}")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.spek}")
     testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:${Versions.spek}")
-    testRuntimeOnly(kotlin("reflect"))
 }
 
 tasks {
