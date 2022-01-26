@@ -7,6 +7,9 @@ version = "0.0.1"
 object Versions {
     const val flyway = "8.4.2"
     const val hikari = "5.0.1"
+    const val jackson = "2.13.1"
+    const val kafka = "2.8.1"
+    const val kafkaEmbedded = "2.8.1"
     const val kluent = "1.68"
     const val ktor = "1.6.7"
     const val logback = "1.2.10"
@@ -44,11 +47,18 @@ dependencies {
     implementation("io.ktor:ktor-metrics-micrometer:${Versions.ktor}")
     implementation("io.micrometer:micrometer-registry-prometheus:${Versions.micrometerRegistry}")
 
+    // (De-)serialization
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jackson}")
+
     // Database
     implementation("org.postgresql:postgresql:${Versions.postgres}")
     implementation("com.zaxxer:HikariCP:${Versions.hikari}")
     implementation("org.flywaydb:flyway-core:${Versions.flyway}")
     testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbedded}")
+
+    // Kafka
+    implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}")
+    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}")
 
     testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")
     testImplementation("org.amshove.kluent:kluent:${Versions.kluent}")

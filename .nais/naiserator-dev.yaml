@@ -52,5 +52,6 @@ spec:
     pool: nav-dev
   env:
     - name: KTOR_ENV
-      value: production
-
+      value: "production"
+    - name: TOGGLE_KAFKA_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_PROCESSING_ENABLED
+      value: "false"
