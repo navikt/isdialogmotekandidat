@@ -5,16 +5,16 @@ group = "no.nav.syfo"
 version = "0.0.1"
 
 object Versions {
+    const val flyway = "8.4.2"
+    const val hikari = "5.0.1"
+    const val kluent = "1.68"
     const val ktor = "1.6.7"
     const val logback = "1.2.10"
     const val logstashEncoder = "7.0.1"
-    const val hikari = "5.0.1"
-    const val postgres = "42.3.1"
-    const val flyway = "8.4.2"
-    const val kluent = "1.68"
-    const val spek = "2.0.17"
-    const val pgEmbedded = "0.13.4"
     const val micrometerRegistry = "1.8.2"
+    const val postgres = "42.3.1"
+    const val postgresEmbedded = "0.13.4"
+    const val spek = "2.0.17"
 }
 plugins {
     kotlin("jvm") version "1.6.10"
@@ -48,7 +48,7 @@ dependencies {
     implementation("org.postgresql:postgresql:${Versions.postgres}")
     implementation("com.zaxxer:HikariCP:${Versions.hikari}")
     implementation("org.flywaydb:flyway-core:${Versions.flyway}")
-    testImplementation("com.opentable.components:otj-pg-embedded:${Versions.pgEmbedded}")
+    testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbedded}")
 
     testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")
     testImplementation("org.amshove.kluent:kluent:${Versions.kluent}")
