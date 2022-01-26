@@ -33,3 +33,9 @@ Run formatting: `./gradlew ktlintFormat`
 Apply checking: `./gradlew addKtlintCheckGitPreCommitHook`
 
 Apply formatting: `./gradlew addKtlintFormatGitPreCommitHook`
+
+## Contact
+
+### For NAV employees
+
+We are available at the Slack channel `#isyfo`.
