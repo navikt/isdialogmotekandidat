@@ -18,6 +18,10 @@ data class POppfolgingstilfelleArbeidstaker(
     val referanseTilfelleBitInntruffet: OffsetDateTime,
 )
 
+fun List<POppfolgingstilfelleArbeidstaker>.toOppfolgingstilfelleArbeidstakerList() = this.map {
+    it.toOppfolgingstilfelleArbeidstaker()
+}
+
 fun POppfolgingstilfelleArbeidstaker.toOppfolgingstilfelleArbeidstaker() = OppfolgingstilfelleArbeidstaker(
     uuid = this.uuid,
     createdAt = this.createdAt,
