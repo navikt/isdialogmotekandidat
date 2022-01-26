@@ -15,6 +15,7 @@ object Versions {
     const val logback = "1.2.10"
     const val logstashEncoder = "7.0.1"
     const val micrometerRegistry = "1.8.2"
+    const val mockk = "1.12.2"
     const val postgres = "42.3.1"
     const val postgresEmbedded = "0.13.4"
     const val spek = "2.0.17"
@@ -61,6 +62,7 @@ dependencies {
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}")
 
     testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")
+    testImplementation("io.mockk:mockk:${Versions.mockk}")
     testImplementation("org.amshove.kluent:kluent:${Versions.kluent}")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.spek}")
     testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:${Versions.spek}")
