@@ -1,7 +1,6 @@
 package no.nav.syfo.oppfolgingstilfelle.database
 
-import no.nav.syfo.application.database.NoElementInsertedException
-import no.nav.syfo.application.database.toList
+import no.nav.syfo.application.database.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.util.toOffsetDateTimeUTC
@@ -59,16 +58,17 @@ const val queryGetOppfolgingstilfelleArbeidstaker =
         ORDER BY referanse_tilfelle_bit_inntruffet DESC;
     """
 
-fun Connection.getOppfolgingstilfelleArbeidstakerList(
+fun DatabaseInterface.getOppfolgingstilfelleArbeidstakerList(
     arbeidstakerPersonIdent: PersonIdentNumber,
-): List<POppfolgingstilfelleArbeidstaker> {
-    return this.use { connection ->
+): List<POppfolgingstilfelleArbeidstaker> =
+    this.connection.use { connection ->
         connection.prepareStatement(queryGetOppfolgingstilfelleArbeidstaker).use {
             it.setString(1, arbeidstakerPersonIdent.value)
-            it.executeQuery().toList { toPOppfolgingstilfelleArbeidstaker() }
+            it.executeQuery().toList {
+                toPOppfolgingstilfelleArbeidstaker()
+            }
         }
     }
-}
 
 fun ResultSet.toPOppfolgingstilfelleArbeidstaker(): POppfolgingstilfelleArbeidstaker =
     POppfolgingstilfelleArbeidstaker(

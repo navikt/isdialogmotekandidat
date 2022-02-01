@@ -108,13 +108,11 @@ class KafkaOppfolgingstilfelleArbeidstakerServiceSpek : Spek({
                     }
 
                     val oppfolgingstilfelleArbeidstakerList: List<OppfolgingstilfelleArbeidstaker?> =
-                        database.connection.use { connection ->
-                            connection.getOppfolgingstilfelleArbeidstakerList(
-                                arbeidstakerPersonIdent = PersonIdentNumber(
-                                    kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst.personIdentNumber
-                                )
-                            ).toOppfolgingstilfelleArbeidstakerList()
-                        }
+                        database.getOppfolgingstilfelleArbeidstakerList(
+                            arbeidstakerPersonIdent = PersonIdentNumber(
+                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst.personIdentNumber
+                            )
+                        ).toOppfolgingstilfelleArbeidstakerList()
 
                     oppfolgingstilfelleArbeidstakerList.size shouldBeEqualTo 1
 
@@ -144,13 +142,11 @@ class KafkaOppfolgingstilfelleArbeidstakerServiceSpek : Spek({
                     }
 
                     val oppfolgingstilfelleArbeidstakerList: List<OppfolgingstilfelleArbeidstaker?> =
-                        database.connection.use { connection ->
-                            connection.getOppfolgingstilfelleArbeidstakerList(
-                                arbeidstakerPersonIdent = PersonIdentNumber(
-                                    kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst.personIdentNumber
-                                )
-                            ).toOppfolgingstilfelleArbeidstakerList()
-                        }
+                        database.getOppfolgingstilfelleArbeidstakerList(
+                            arbeidstakerPersonIdent = PersonIdentNumber(
+                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst.personIdentNumber
+                            )
+                        ).toOppfolgingstilfelleArbeidstakerList()
 
                     oppfolgingstilfelleArbeidstakerList.size shouldBeEqualTo 2
 
