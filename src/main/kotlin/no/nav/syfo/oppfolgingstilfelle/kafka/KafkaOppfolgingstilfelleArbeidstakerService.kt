@@ -1,7 +1,9 @@
 package no.nav.syfo.oppfolgingstilfelle.kafka
 
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.database.NoElementInsertedException
 import no.nav.syfo.oppfolgingstilfelle.database.createOppfolgingstilfelleArbeidstaker
+import no.nav.syfo.oppfolgingstilfelle.isDialogmotekandidat
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
@@ -50,20 +52,26 @@ class KafkaOppfolgingstilfelleArbeidstakerService(
         connection: Connection,
         kafkaOppfolgingstilfelleArbeidstaker: KafkaOppfolgingstilfelleArbeidstaker,
     ) {
-        val oppfolgingstilfelleArbeidstaker = kafkaOppfolgingstilfelleArbeidstaker.toOppfolgingstilfelleArbeidstaker()
+        val oppfolgingstilfelleArbeidstaker =
+            kafkaOppfolgingstilfelleArbeidstaker.toOppfolgingstilfelleArbeidstaker()
 
-        val oppfolgingstilfelleArbeidstakerInserted = false
-        if (oppfolgingstilfelleArbeidstakerInserted) {
-            log.warn(
-                "No ${KafkaOppfolgingstilfelleArbeidstaker::class.java.simpleName} was inserted into database, attempted to insert a duplicate"
-            )
-            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_DUPLICATE.increment()
+        if (oppfolgingstilfelleArbeidstaker.isDialogmotekandidat()) {
+            try {
+                connection.createOppfolgingstilfelleArbeidstaker(
+                    commit = false,
+                    oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstaker,
+                )
+                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_CREATED.increment()
+            } catch (noElementInsertedException: NoElementInsertedException) {
+                log.warn(
+                    "No ${KafkaOppfolgingstilfelleArbeidstaker::class.java.simpleName} was inserted into database, attempted to insert a duplicate"
+                )
+                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_DUPLICATE.increment()
+            }
         } else {
-            connection.createOppfolgingstilfelleArbeidstaker(
-                commit = false,
-                oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstaker,
+            log.info(
+                "No ${KafkaOppfolgingstilfelleArbeidstaker::class.java.simpleName} was inserted into database, not DialogmoteKandidat"
             )
-            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_CREATED.increment()
         }
     }
 

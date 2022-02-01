@@ -13,20 +13,24 @@ import java.util.*
 
 fun generateKafkaOppfolgingstilfelleArbeidstaker(
     arbeidstakerPersonIdentNumber: PersonIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+    oppfolgingstilfelleDurationInDays: Long,
     virksomhetsnummer: Virksomhetsnummer = VIRKSOMHETSNUMMER_DEFAULT,
-) = KafkaOppfolgingstilfelleArbeidstaker(
-    uuid = UUID.randomUUID().toString(),
-    createdAt = OffsetDateTime.now(defaultZoneOffset),
-    personIdentNumber = arbeidstakerPersonIdentNumber.value,
-    oppfolgingstilfelleList = listOf(
-        KafkaOppfolgingstilfelle(
-            start = LocalDate.now().minusDays(1),
-            end = LocalDate.now().plusDays(1),
-            virksomhetsnummerList = listOf(
-                virksomhetsnummer.value,
-            )
+): KafkaOppfolgingstilfelleArbeidstaker {
+    val start = LocalDate.now().minusDays(1)
+    return KafkaOppfolgingstilfelleArbeidstaker(
+        uuid = UUID.randomUUID().toString(),
+        createdAt = OffsetDateTime.now(defaultZoneOffset),
+        personIdentNumber = arbeidstakerPersonIdentNumber.value,
+        oppfolgingstilfelleList = listOf(
+            KafkaOppfolgingstilfelle(
+                start = start,
+                end = start.plusDays(oppfolgingstilfelleDurationInDays),
+                virksomhetsnummerList = listOf(
+                    virksomhetsnummer.value,
+                )
+            ),
         ),
-    ),
-    referanseTilfelleBitUuid = UUID.randomUUID().toString(),
-    referanseTilfelleBitInntruffet = OffsetDateTime.now(defaultZoneOffset).minusDays(1),
-)
+        referanseTilfelleBitUuid = UUID.randomUUID().toString(),
+        referanseTilfelleBitInntruffet = OffsetDateTime.now(defaultZoneOffset).minusDays(1),
+    )
+}
