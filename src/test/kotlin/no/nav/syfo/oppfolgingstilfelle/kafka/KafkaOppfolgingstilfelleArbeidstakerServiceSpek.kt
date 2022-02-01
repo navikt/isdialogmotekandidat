@@ -2,6 +2,10 @@ package no.nav.syfo.oppfolgingstilfelle.kafka
 
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunkt
+import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunktStatus
+import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatStoppunktList
+import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatStoppunktList
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
@@ -11,8 +15,7 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.generator.generateKafkaOppfolgingstilfelleArbeidstaker
 import no.nav.syfo.testhelper.shouldBeEqualToOffsetDateTime
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.*
 import org.apache.kafka.clients.consumer.*
 import org.apache.kafka.common.TopicPartition
 import org.spekframework.spek2.Spek
@@ -159,6 +162,23 @@ class KafkaOppfolgingstilfelleArbeidstakerServiceSpek : Spek({
                         oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.last(),
                         kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat = kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst,
                     )
+
+                    val dialogmotekandidatStoppunktList: List<DialogmotekandidatStoppunkt> =
+                        database.getDialogmotekandidatStoppunktList(
+                            arbeidstakerPersonIdent = PersonIdentNumber(
+                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst.personIdentNumber
+                            )
+                        ).toDialogmotekandidatStoppunktList()
+
+                    assertDialogmotekandidatStoppunktPlanlagt(
+                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first(),
+                        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat = kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatLast,
+                    )
+
+                    assertDialogmotekandidatStoppunktPlanlagt(
+                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.last(),
+                        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat = kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst,
+                    )
                 }
             }
         }
@@ -185,4 +205,22 @@ fun assertOppfolgingstilfelleArbeidstaker(
     oppfolgingstilfelleArbeidstaker.referanseTilfelleBitInntruffet.shouldBeEqualToOffsetDateTime(
         kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.referanseTilfelleBitInntruffet
     )
+}
+
+fun assertDialogmotekandidatStoppunktPlanlagt(
+    dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt?,
+    kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat: KafkaOppfolgingstilfelleArbeidstaker,
+) {
+    dialogmotekandidatStoppunkt.shouldNotBeNull()
+
+    val latestTilfelleStart =
+        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull {
+            it.start
+        }!!.start
+    val stoppunktPlanlagtExpected = latestTilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
+
+    dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.personIdentNumber
+    dialogmotekandidatStoppunkt.processedAt.shouldBeNull()
+    dialogmotekandidatStoppunkt.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT
+    dialogmotekandidatStoppunkt.stoppunktPlanlagt shouldBeEqualTo stoppunktPlanlagtExpected
 }

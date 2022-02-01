@@ -2,8 +2,10 @@ package no.nav.syfo.oppfolgingstilfelle.kafka
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.NoElementInsertedException
+import no.nav.syfo.dialogmotekandidat.database.createDialogmotekandidatStoppunkt
 import no.nav.syfo.oppfolgingstilfelle.database.createOppfolgingstilfelleArbeidstaker
 import no.nav.syfo.oppfolgingstilfelle.isDialogmotekandidat
+import no.nav.syfo.oppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
@@ -60,6 +62,11 @@ class KafkaOppfolgingstilfelleArbeidstakerService(
                 connection.createOppfolgingstilfelleArbeidstaker(
                     commit = false,
                     oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstaker,
+                )
+                val dialogmotekandidatStoppunkt = oppfolgingstilfelleArbeidstaker.toDialogmotekandidatStoppunktPlanlagt()
+                connection.createDialogmotekandidatStoppunkt(
+                    commit = false,
+                    dialogmotekandidatStoppunkt = dialogmotekandidatStoppunkt,
                 )
                 COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_CREATED.increment()
             } catch (noElementInsertedException: NoElementInsertedException) {
