@@ -2,10 +2,12 @@ package no.nav.syfo.dialogmotekandidat.database
 
 import no.nav.syfo.application.database.*
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunkt
+import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.toOffsetDateTimeUTC
 import java.sql.*
 import java.sql.Date
+import java.time.Instant
 import java.util.*
 
 const val queryCreateDialogmotekandidatStoppunkt =
@@ -57,6 +59,37 @@ fun DatabaseInterface.getDialogmotekandidatStoppunktList(
     this.connection.use { connection ->
         connection.prepareStatement(queryGetDialogmotekandidatStoppunkt).use {
             it.setString(1, arbeidstakerPersonIdent.value)
+            it.executeQuery().toList { toPDialogmotekandidatStoppunktList() }
+        }
+    }
+
+const val queryUpdateDialogmotekandidatStoppunktStatus =
+    """
+        UPDATE DIALOGMOTEKANDIDAT_STOPPPUNKT SET status=?, processed_at=? WHERE uuid = ?
+    """
+
+fun DatabaseInterface.updateDialogmotekandidatStoppunktStatus(uuid: UUID, status: DialogmotekandidatStoppunktStatus) {
+    this.connection.use { connection ->
+        connection.prepareStatement(queryUpdateDialogmotekandidatStoppunktStatus).use { preparedStatement ->
+            preparedStatement.setString(1, status.name)
+            preparedStatement.setTimestamp(2, Timestamp.from(Instant.now()))
+            preparedStatement.setString(3, uuid.toString())
+            preparedStatement.execute()
+        }
+        connection.commit()
+    }
+}
+
+const val queryGetDialogmotekandidatStoppunktIdag =
+    """
+        SELECT *
+        FROM DIALOGMOTEKANDIDAT_STOPPPUNKT
+        WHERE stoppunkt_planlagt = CURRENT_DATE AND processed_at IS NULL
+    """
+
+fun DatabaseInterface.getDialogmotekandidatStoppunktIdagList(): List<PDialogmotekandidatStoppunkt> =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryGetDialogmotekandidatStoppunktIdag).use {
             it.executeQuery().toList { toPDialogmotekandidatStoppunktList() }
         }
     }

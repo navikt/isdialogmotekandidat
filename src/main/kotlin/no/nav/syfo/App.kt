@@ -10,6 +10,7 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
+import no.nav.syfo.cronjob.launchCronjobModule
 import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfelleArbeidstakerService
 import no.nav.syfo.oppfolgingstilfelle.kafka.launchKafkaTaskOppfolgingstilfelleArbeidstaker
 import org.slf4j.LoggerFactory
@@ -53,6 +54,13 @@ fun main() {
                 applicationState = applicationState,
                 applicationEnvironmentKafka = environment.kafka,
                 kafkaOppfolgingstilfelleArbeidstakerService = kafkaOppfolgingstilfelleArbeidstakerService,
+            )
+        }
+        if (environment.dialogmotekandidatStoppunktCronjobEnabled) {
+            launchCronjobModule(
+                applicationState = applicationState,
+                database = applicationDatabase,
+                environment = environment,
             )
         }
     }

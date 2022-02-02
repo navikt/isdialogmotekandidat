@@ -37,6 +37,7 @@ dependencies {
     implementation(kotlin("reflect"))
 
     implementation("io.ktor:ktor-jackson:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-cio:${Versions.ktor}")
     implementation("io.ktor:ktor-server-core:${Versions.ktor}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
 

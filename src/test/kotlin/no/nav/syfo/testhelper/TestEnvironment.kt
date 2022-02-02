@@ -10,6 +10,7 @@ fun testEnvironment(
     isdialogmotekandidatDbName = "isoppfolgingstilfelle_dev",
     isdialogmotekandidatDbUsername = "username",
     isdialogmotekandidatDbPassword = "password",
+    electorPath = "/tmp",
     kafka = ApplicationEnvironmentKafka(
         aivenBootstrapServers = kafkaBootstrapServers,
         aivenCredstorePassword = "credstorepassord",
@@ -18,6 +19,7 @@ fun testEnvironment(
         aivenTruststoreLocation = "truststore",
     ),
     kafkaOppfolgingstilfelleArbeidstakerProcessingEnabled = true,
+    dialogmotekandidatStoppunktCronjobEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

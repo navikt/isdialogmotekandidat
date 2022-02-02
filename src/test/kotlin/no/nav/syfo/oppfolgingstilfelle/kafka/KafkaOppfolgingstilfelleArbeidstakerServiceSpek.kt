@@ -11,10 +11,9 @@ import no.nav.syfo.oppfolgingstilfelle.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAY
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.oppfolgingstilfelle.database.getOppfolgingstilfelleArbeidstakerList
 import no.nav.syfo.oppfolgingstilfelle.database.toOppfolgingstilfelleArbeidstakerList
-import no.nav.syfo.testhelper.ExternalMockEnvironment
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.generator.generateKafkaOppfolgingstilfelleArbeidstaker
-import no.nav.syfo.testhelper.shouldBeEqualToOffsetDateTime
 import org.amshove.kluent.*
 import org.apache.kafka.clients.consumer.*
 import org.apache.kafka.common.TopicPartition
@@ -29,6 +28,10 @@ class KafkaOppfolgingstilfelleArbeidstakerServiceSpek : Spek({
 
         val externalMockEnvironment = ExternalMockEnvironment.instance
         val database = externalMockEnvironment.database
+
+        beforeEachTest {
+            database.dropData()
+        }
 
         val kafkaSyketilfellebitService = KafkaOppfolgingstilfelleArbeidstakerService(
             database = database,
