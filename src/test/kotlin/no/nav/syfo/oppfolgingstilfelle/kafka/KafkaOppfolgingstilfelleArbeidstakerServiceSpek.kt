@@ -2,12 +2,10 @@ package no.nav.syfo.oppfolgingstilfelle.kafka
 
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunkt
-import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunktStatus
+import no.nav.syfo.dialogmotekandidat.*
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatStoppunktList
 import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatStoppunktList
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.oppfolgingstilfelle.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.oppfolgingstilfelle.database.getOppfolgingstilfelleArbeidstakerList
 import no.nav.syfo.oppfolgingstilfelle.database.toOppfolgingstilfelleArbeidstakerList

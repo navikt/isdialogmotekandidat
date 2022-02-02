@@ -1,7 +1,6 @@
 package no.nav.syfo.dialogmotekandidat.database
 
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunkt
-import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -18,14 +17,5 @@ data class PDialogmotekandidatStoppunkt(
 )
 
 fun List<PDialogmotekandidatStoppunkt>.toDialogmotekandidatStoppunktList() = this.map {
-    it.toDialogmotekandidatStoppunkt()
+    DialogmotekandidatStoppunkt.create(it)
 }
-
-fun PDialogmotekandidatStoppunkt.toDialogmotekandidatStoppunkt() = DialogmotekandidatStoppunkt(
-    uuid = this.uuid,
-    createdAt = this.createdAt,
-    personIdent = this.personIdent,
-    processedAt = this.processedAt,
-    status = DialogmotekandidatStoppunktStatus.valueOf(this.status),
-    stoppunktPlanlagt = this.stoppunktPlanlagt,
-)

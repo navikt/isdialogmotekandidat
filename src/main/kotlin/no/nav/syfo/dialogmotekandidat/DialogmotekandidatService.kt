@@ -10,7 +10,7 @@ class DialogmotekandidatService(
     private val database: DatabaseInterface,
 ) {
     fun getDialogmotekandidatMedStoppunktPlanlagtIdagListe(): List<DialogmotekandidatStoppunkt> =
-        database.getDialogmotekandidatStoppunktIdagList().map { it.toDialogmotekandidatStoppunkt() }
+        database.getDialogmotekandidatStoppunktIdagList().toDialogmotekandidatStoppunktList()
 
     fun oppdaterDialogmotekandidatStoppunktStatus(dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt) {
         val oppfolgingstilfelle = oppfolgingstilfelleService.getSisteOppfolgingstilfelle(
