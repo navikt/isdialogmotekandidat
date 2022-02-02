@@ -27,6 +27,23 @@ class TestDatabase : DatabaseInterface {
     }
 }
 
+fun DatabaseInterface.dropData() {
+    val queryList = listOf(
+        """
+        DELETE FROM OPPFOLGINGSTILFELLE_ARBEIDSTAKER
+        """.trimIndent(),
+        """
+        DELETE FROM DIALOGMOTEKANDIDAT_STOPPPUNKT
+        """.trimIndent(),
+    )
+    this.connection.use { connection ->
+        queryList.forEach { query ->
+            connection.prepareStatement(query).execute()
+        }
+        connection.commit()
+    }
+}
+
 class TestDatabaseNotResponding : DatabaseInterface {
 
     override val connection: Connection

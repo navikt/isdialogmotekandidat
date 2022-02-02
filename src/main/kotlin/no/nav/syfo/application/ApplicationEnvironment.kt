@@ -10,6 +10,7 @@ data class Environment(
     val isdialogmotekandidatDbName: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_DATABASE"),
     val isdialogmotekandidatDbUsername: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_USERNAME"),
     val isdialogmotekandidatDbPassword: String = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PASSWORD"),
+    val electorPath: String = getEnvVar("ELECTOR_PATH"),
 
     val kafka: ApplicationEnvironmentKafka = ApplicationEnvironmentKafka(
         aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
@@ -19,6 +20,7 @@ data class Environment(
         aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
     ),
     val kafkaOppfolgingstilfelleArbeidstakerProcessingEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_PROCESSING_ENABLED").toBoolean(),
+    val dialogmotekandidatStoppunktCronjobEnabled: Boolean = getEnvVar("TOGGLE_DIALOGMOTEKANDIDAT_STOPPUNKT_CRONJOB_ENABLED").toBoolean(),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$isdialogmotekandidatDbHost:$isdialogmotekandidatDbPort/$isdialogmotekandidatDbName"

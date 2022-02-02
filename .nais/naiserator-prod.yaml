@@ -27,6 +27,7 @@ spec:
     periodSeconds: 5
     timeout: 5
     failureThreshold: 3
+  leaderElection: true
   prometheus:
     enabled: true
     path: /internal/metrics
@@ -54,4 +55,6 @@ spec:
     - name: KTOR_ENV
       value: "production"
     - name: TOGGLE_KAFKA_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_PROCESSING_ENABLED
+      value: "false"
+    - name: TOGGLE_DIALOGMOTEKANDIDAT_STOPPUNKT_CRONJOB_ENABLED
       value: "false"
