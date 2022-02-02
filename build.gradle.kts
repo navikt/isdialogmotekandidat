@@ -16,8 +16,8 @@ object Versions {
     const val logstashEncoder = "7.0.1"
     const val micrometerRegistry = "1.8.2"
     const val mockk = "1.12.2"
-    const val postgres = "42.3.1"
-    const val postgresEmbedded = "0.13.4"
+    const val postgres = "42.3.2"
+    const val postgresEmbedded = "1.0.0"
     const val spek = "2.0.17"
 }
 plugins {
