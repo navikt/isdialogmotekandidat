@@ -27,6 +27,10 @@ fun Connection.createDialogmotekandidatStoppunkt(
     commit: Boolean,
     dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
 ) {
+    if (dialogmotekandidatStoppunkt.processedAt != null || dialogmotekandidatStoppunkt.status != DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT) {
+        throw IllegalArgumentException("Cannot create DialogmotekandidatStoppunkt with status ${dialogmotekandidatStoppunkt.status} processedAt ${dialogmotekandidatStoppunkt.processedAt}")
+    }
+
     val idList = this.prepareStatement(queryCreateDialogmotekandidatStoppunkt).use {
         it.setString(1, dialogmotekandidatStoppunkt.uuid.toString())
         it.setTimestamp(2, Timestamp.from(dialogmotekandidatStoppunkt.createdAt.toInstant()))
@@ -69,6 +73,10 @@ const val queryUpdateDialogmotekandidatStoppunktStatus =
     """
 
 fun DatabaseInterface.updateDialogmotekandidatStoppunktStatus(uuid: UUID, status: DialogmotekandidatStoppunktStatus) {
+    if (status == DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT) {
+        throw IllegalArgumentException("Cannot update to status $status")
+    }
+
     this.connection.use { connection ->
         connection.prepareStatement(queryUpdateDialogmotekandidatStoppunktStatus).use { preparedStatement ->
             preparedStatement.setString(1, status.name)
