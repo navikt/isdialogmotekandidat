@@ -12,7 +12,7 @@ import java.util.*
 
 const val queryCreateDialogmotekandidatStoppunkt =
     """
-    INSERT INTO DIALOGMOTEKANDIDAT_STOPPPUNKT (
+    INSERT INTO DIALOGMOTEKANDIDAT_STOPPUNKT (
         id,
         uuid,
         created_at,
@@ -41,7 +41,7 @@ fun Connection.createDialogmotekandidatStoppunkt(
     }
 
     if (idList.size != 1) {
-        throw NoElementInsertedException("Creating DIALOGMOTEKANDIDAT_STOPPPUNKT failed, no rows affected.")
+        throw NoElementInsertedException("Creating DIALOGMOTEKANDIDAT_STOPPUNKT failed, no rows affected.")
     }
 
     if (commit) {
@@ -52,7 +52,7 @@ fun Connection.createDialogmotekandidatStoppunkt(
 const val queryGetDialogmotekandidatStoppunkt =
     """
         SELECT *
-        FROM DIALOGMOTEKANDIDAT_STOPPPUNKT
+        FROM DIALOGMOTEKANDIDAT_STOPPUNKT
         WHERE personident = ?
         ORDER BY stoppunkt_planlagt DESC;
     """
@@ -69,7 +69,7 @@ fun DatabaseInterface.getDialogmotekandidatStoppunktList(
 
 const val queryUpdateDialogmotekandidatStoppunktStatus =
     """
-        UPDATE DIALOGMOTEKANDIDAT_STOPPPUNKT SET status=?, processed_at=? WHERE uuid = ?
+        UPDATE DIALOGMOTEKANDIDAT_STOPPUNKT SET status=?, processed_at=? WHERE uuid = ?
     """
 
 fun DatabaseInterface.updateDialogmotekandidatStoppunktStatus(uuid: UUID, status: DialogmotekandidatStoppunktStatus) {
@@ -91,7 +91,7 @@ fun DatabaseInterface.updateDialogmotekandidatStoppunktStatus(uuid: UUID, status
 const val queryGetDialogmotekandidatStoppunktIdag =
     """
         SELECT *
-        FROM DIALOGMOTEKANDIDAT_STOPPPUNKT
+        FROM DIALOGMOTEKANDIDAT_STOPPUNKT
         WHERE stoppunkt_planlagt = CURRENT_DATE AND processed_at IS NULL
     """
 
