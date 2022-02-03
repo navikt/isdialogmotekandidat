@@ -33,7 +33,7 @@ fun DatabaseInterface.dropData() {
         DELETE FROM OPPFOLGINGSTILFELLE_ARBEIDSTAKER
         """.trimIndent(),
         """
-        DELETE FROM DIALOGMOTEKANDIDAT_STOPPPUNKT
+        DELETE FROM DIALOGMOTEKANDIDAT_STOPPUNKT
         """.trimIndent(),
     )
     this.connection.use { connection ->
