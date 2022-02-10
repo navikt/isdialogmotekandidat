@@ -22,18 +22,15 @@ data class KafkaOppfolgingstilfelle(
     val virksomhetsnummerList: List<String>,
 )
 
-fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(): OppfolgingstilfelleArbeidstaker {
-    // TODO: Evt sende inn latestTilfelle hit og håndtere tom liste i service (log warn)
-    val latestTilfelle =
-        this.oppfolgingstilfelleList.maxByOrNull { it.start } ?: throw RuntimeException("No Oppfolgingstilfelle found")
-    return OppfolgingstilfelleArbeidstaker(
-        uuid = UUID.fromString(this.uuid),
-        createdAt = OffsetDateTime.now(),
-        personIdent = PersonIdentNumber(this.personIdentNumber),
-        tilfelleGenerert = this.createdAt,
-        tilfelleStart = latestTilfelle.start,
-        tilfelleEnd = latestTilfelle.end,
-        referanseTilfelleBitUuid = UUID.fromString(this.referanseTilfelleBitUuid),
-        referanseTilfelleBitInntruffet = this.referanseTilfelleBitInntruffet
-    )
-}
+fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(
+    latestTilfelle: KafkaOppfolgingstilfelle,
+) = OppfolgingstilfelleArbeidstaker(
+    uuid = UUID.fromString(this.uuid),
+    createdAt = OffsetDateTime.now(),
+    personIdent = PersonIdentNumber(this.personIdentNumber),
+    tilfelleGenerert = this.createdAt,
+    tilfelleStart = latestTilfelle.start,
+    tilfelleEnd = latestTilfelle.end,
+    referanseTilfelleBitUuid = UUID.fromString(this.referanseTilfelleBitUuid),
+    referanseTilfelleBitInntruffet = this.referanseTilfelleBitInntruffet
+)
