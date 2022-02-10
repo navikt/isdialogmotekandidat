@@ -11,8 +11,8 @@ import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.cronjob.launchCronjobModule
-import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfelleArbeidstakerService
-import no.nav.syfo.oppfolgingstilfelle.kafka.launchKafkaTaskOppfolgingstilfelleArbeidstaker
+import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfellePersonService
+import no.nav.syfo.oppfolgingstilfelle.kafka.launchKafkaTaskOppfolgingstilfellePerson
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -45,15 +45,15 @@ fun main() {
         applicationState.ready = true
         logger.info("Application is ready")
 
-        val kafkaOppfolgingstilfelleArbeidstakerService = KafkaOppfolgingstilfelleArbeidstakerService(
+        val kafkaOppfolgingstilfellePersonService = KafkaOppfolgingstilfellePersonService(
             database = applicationDatabase,
         )
 
-        if (environment.kafkaOppfolgingstilfelleArbeidstakerProcessingEnabled) {
-            launchKafkaTaskOppfolgingstilfelleArbeidstaker(
+        if (environment.kafkaOppfolgingstilfellePersonProcessingEnabled) {
+            launchKafkaTaskOppfolgingstilfellePerson(
                 applicationState = applicationState,
                 applicationEnvironmentKafka = environment.kafka,
-                kafkaOppfolgingstilfelleArbeidstakerService = kafkaOppfolgingstilfelleArbeidstakerService,
+                kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
             )
         }
         if (environment.dialogmotekandidatStoppunktCronjobEnabled) {

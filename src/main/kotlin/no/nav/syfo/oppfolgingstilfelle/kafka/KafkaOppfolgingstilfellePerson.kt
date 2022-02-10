@@ -6,7 +6,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-data class KafkaOppfolgingstilfelleArbeidstaker(
+data class KafkaOppfolgingstilfellePerson(
     val uuid: String,
     val createdAt: OffsetDateTime,
     val personIdentNumber: String,
@@ -16,12 +16,13 @@ data class KafkaOppfolgingstilfelleArbeidstaker(
 )
 
 data class KafkaOppfolgingstilfelle(
+    val arbeidstakerAtTilfelleEnd: Boolean,
     val start: LocalDate,
     val end: LocalDate,
     val virksomhetsnummerList: List<String>,
 )
 
-fun KafkaOppfolgingstilfelleArbeidstaker.toOppfolgingstilfelleArbeidstaker(): OppfolgingstilfelleArbeidstaker {
+fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(): OppfolgingstilfelleArbeidstaker {
     // TODO: Evt sende inn latestTilfelle hit og håndtere tom liste i service (log warn)
     val latestTilfelle =
         this.oppfolgingstilfelleList.maxByOrNull { it.start } ?: throw RuntimeException("No Oppfolgingstilfelle found")

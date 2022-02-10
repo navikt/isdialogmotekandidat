@@ -11,7 +11,7 @@ import no.nav.syfo.oppfolgingstilfelle.database.getOppfolgingstilfelleArbeidstak
 import no.nav.syfo.oppfolgingstilfelle.database.toOppfolgingstilfelleArbeidstakerList
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
-import no.nav.syfo.testhelper.generator.generateKafkaOppfolgingstilfelleArbeidstaker
+import no.nav.syfo.testhelper.generator.generateKafkaOppfolgingstilfellePerson
 import org.amshove.kluent.*
 import org.apache.kafka.clients.consumer.*
 import org.apache.kafka.common.TopicPartition
@@ -19,7 +19,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.Duration
 
-class KafkaOppfolgingstilfelleArbeidstakerServiceSpek : Spek({
+class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
     with(TestApplicationEngine()) {
         start()
@@ -31,90 +31,90 @@ class KafkaOppfolgingstilfelleArbeidstakerServiceSpek : Spek({
             database.dropData()
         }
 
-        val kafkaSyketilfellebitService = KafkaOppfolgingstilfelleArbeidstakerService(
+        val kafkaSyketilfellebitService = KafkaOppfolgingstilfellePersonService(
             database = database,
         )
 
         val partition = 0
         val oppfolgingstilfelleArbeidstakerTopicPartition = TopicPartition(
-            OPPFOLGINGSTILFELLE_ARBEIDSTAKER_TOPIC,
+            OPPFOLGINGSTILFELLE_PERSON_TOPIC,
             partition,
         )
 
-        val kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst = generateKafkaOppfolgingstilfelleArbeidstaker(
-            arbeidstakerPersonIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+        val kafkaOppfolgingstilfellePersonDialogmotekandidatFirst = generateKafkaOppfolgingstilfellePerson(
+            personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
         )
-        val kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirstRecord = ConsumerRecord(
-            OPPFOLGINGSTILFELLE_ARBEIDSTAKER_TOPIC,
+        val kafkaOppfolgingstilfellePersonDialogmotekandidatFirstRecord = ConsumerRecord(
+            OPPFOLGINGSTILFELLE_PERSON_TOPIC,
             partition,
             1,
             "key1",
-            kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst,
+            kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
         )
-        val kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirstRecordDuplicate = ConsumerRecord(
-            OPPFOLGINGSTILFELLE_ARBEIDSTAKER_TOPIC,
+        val kafkaOppfolgingstilfellePersonDialogmotekandidatFirstRecordDuplicate = ConsumerRecord(
+            OPPFOLGINGSTILFELLE_PERSON_TOPIC,
             partition,
             1,
             "key1",
-            kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst,
+            kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
         )
-        val kafkaOppfolgingstilfelleArbeidstakerNotDialogmotekandidat = generateKafkaOppfolgingstilfelleArbeidstaker(
-            arbeidstakerPersonIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+        val kafkaOppfolgingstilfellePersonNotDialogmotekandidat = generateKafkaOppfolgingstilfellePerson(
+            personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 1
         )
-        val kafkaOppfolgingstilfelleArbeidstakerNotDialogmotekandidatRecord = ConsumerRecord(
-            OPPFOLGINGSTILFELLE_ARBEIDSTAKER_TOPIC,
+        val kafkaOppfolgingstilfellePersonNotDialogmotekandidatRecord = ConsumerRecord(
+            OPPFOLGINGSTILFELLE_PERSON_TOPIC,
             partition,
             2,
             "key2",
-            kafkaOppfolgingstilfelleArbeidstakerNotDialogmotekandidat,
+            kafkaOppfolgingstilfellePersonNotDialogmotekandidat,
         )
-        val kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatLast = generateKafkaOppfolgingstilfelleArbeidstaker(
-            arbeidstakerPersonIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+        val kafkaOppfolgingstilfellePersonDialogmotekandidatLast = generateKafkaOppfolgingstilfellePerson(
+            personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1
         )
-        val kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatLastRecord = ConsumerRecord(
-            OPPFOLGINGSTILFELLE_ARBEIDSTAKER_TOPIC,
+        val kafkaOppfolgingstilfellePersonDialogmotekandidatLastRecord = ConsumerRecord(
+            OPPFOLGINGSTILFELLE_PERSON_TOPIC,
             partition,
             3,
             "key3",
-            kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatLast,
+            kafkaOppfolgingstilfellePersonDialogmotekandidatLast,
         )
 
-        val mockKafkaConsumerOppfolgingstilfelleArbeidstaker =
-            mockk<KafkaConsumer<String, KafkaOppfolgingstilfelleArbeidstaker>>()
+        val mockKafkaConsumerOppfolgingstilfellePerson =
+            mockk<KafkaConsumer<String, KafkaOppfolgingstilfellePerson>>()
 
-        describe("${KafkaOppfolgingstilfelleArbeidstakerService::class.java.simpleName}: Poll and proceess reccords") {
+        describe("${KafkaOppfolgingstilfellePersonService::class.java.simpleName}: Poll and proceess reccords") {
             describe("Receive records, store and retrieve oppfolgingstilfelleArbeidstaker for PersonIdent") {
 
                 beforeEachTest {
-                    clearMocks(mockKafkaConsumerOppfolgingstilfelleArbeidstaker)
-                    every { mockKafkaConsumerOppfolgingstilfelleArbeidstaker.commitSync() } returns Unit
+                    clearMocks(mockKafkaConsumerOppfolgingstilfellePerson)
+                    every { mockKafkaConsumerOppfolgingstilfellePerson.commitSync() } returns Unit
                 }
 
                 it("should create OppfolgingstilfelleArbeidstaker exactly once if Dialogmotekandidat and not already created(skip duplicates)") {
-                    every { mockKafkaConsumerOppfolgingstilfelleArbeidstaker.poll(any<Duration>()) } returns ConsumerRecords(
+                    every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
                         mapOf(
                             oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
-                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirstRecord,
-                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirstRecordDuplicate,
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirstRecord,
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirstRecordDuplicate,
                             )
                         )
                     )
 
                     kafkaSyketilfellebitService.pollAndProcessRecords(
-                        kafkaConsumerOppfolgingstilfelleArbeidstaker = mockKafkaConsumerOppfolgingstilfelleArbeidstaker,
+                        kafkaConsumerOppfolgingstilfellePerson = mockKafkaConsumerOppfolgingstilfellePerson,
                     )
 
                     verify(exactly = 1) {
-                        mockKafkaConsumerOppfolgingstilfelleArbeidstaker.commitSync()
+                        mockKafkaConsumerOppfolgingstilfellePerson.commitSync()
                     }
 
                     val oppfolgingstilfelleArbeidstakerList: List<OppfolgingstilfelleArbeidstaker?> =
                         database.getOppfolgingstilfelleArbeidstakerList(
                             arbeidstakerPersonIdent = PersonIdentNumber(
-                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst.personIdentNumber
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
                             )
                         ).toOppfolgingstilfelleArbeidstakerList()
 
@@ -122,33 +122,33 @@ class KafkaOppfolgingstilfelleArbeidstakerServiceSpek : Spek({
 
                     assertOppfolgingstilfelleArbeidstaker(
                         oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.first(),
-                        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat = kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst,
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
                     )
                 }
 
                 it("should create 2 OppfolgingstilfelleArbeidstaker, if polled 1 that is not Dialogmotekandidat and 2 that are Dialogmotekandidat") {
-                    every { mockKafkaConsumerOppfolgingstilfelleArbeidstaker.poll(any<Duration>()) } returns ConsumerRecords(
+                    every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
                         mapOf(
                             oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
-                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirstRecord,
-                                kafkaOppfolgingstilfelleArbeidstakerNotDialogmotekandidatRecord,
-                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatLastRecord,
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirstRecord,
+                                kafkaOppfolgingstilfellePersonNotDialogmotekandidatRecord,
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatLastRecord,
                             )
                         )
                     )
 
                     kafkaSyketilfellebitService.pollAndProcessRecords(
-                        kafkaConsumerOppfolgingstilfelleArbeidstaker = mockKafkaConsumerOppfolgingstilfelleArbeidstaker,
+                        kafkaConsumerOppfolgingstilfellePerson = mockKafkaConsumerOppfolgingstilfellePerson,
                     )
 
                     verify(exactly = 1) {
-                        mockKafkaConsumerOppfolgingstilfelleArbeidstaker.commitSync()
+                        mockKafkaConsumerOppfolgingstilfellePerson.commitSync()
                     }
 
                     val oppfolgingstilfelleArbeidstakerList: List<OppfolgingstilfelleArbeidstaker?> =
                         database.getOppfolgingstilfelleArbeidstakerList(
                             arbeidstakerPersonIdent = PersonIdentNumber(
-                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst.personIdentNumber
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
                             )
                         ).toOppfolgingstilfelleArbeidstakerList()
 
@@ -156,29 +156,29 @@ class KafkaOppfolgingstilfelleArbeidstakerServiceSpek : Spek({
 
                     assertOppfolgingstilfelleArbeidstaker(
                         oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.first(),
-                        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat = kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatLast,
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatLast,
                     )
 
                     assertOppfolgingstilfelleArbeidstaker(
                         oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.last(),
-                        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat = kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst,
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
                     )
 
                     val dialogmotekandidatStoppunktList: List<DialogmotekandidatStoppunkt> =
                         database.getDialogmotekandidatStoppunktList(
                             arbeidstakerPersonIdent = PersonIdentNumber(
-                                kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst.personIdentNumber
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
                             )
                         ).toDialogmotekandidatStoppunktList()
 
                     assertDialogmotekandidatStoppunktPlanlagt(
                         dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first(),
-                        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat = kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatLast,
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatLast,
                     )
 
                     assertDialogmotekandidatStoppunktPlanlagt(
                         dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.last(),
-                        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat = kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidatFirst,
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
                     )
                 }
             }
@@ -188,39 +188,39 @@ class KafkaOppfolgingstilfelleArbeidstakerServiceSpek : Spek({
 
 fun assertOppfolgingstilfelleArbeidstaker(
     oppfolgingstilfelleArbeidstaker: OppfolgingstilfelleArbeidstaker?,
-    kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat: KafkaOppfolgingstilfelleArbeidstaker,
+    kafkaOppfolgingstilfellePersonDialogmotekandidat: KafkaOppfolgingstilfellePerson,
 ) {
     oppfolgingstilfelleArbeidstaker.shouldNotBeNull()
 
     val latestTilfelle =
-        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull { it.start }
+        kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull { it.start }
             ?: throw RuntimeException("No Oppfolgingstilfelle found")
 
-    oppfolgingstilfelleArbeidstaker.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.personIdentNumber
+    oppfolgingstilfelleArbeidstaker.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidat.personIdentNumber
     oppfolgingstilfelleArbeidstaker.tilfelleGenerert.shouldBeEqualToOffsetDateTime(
-        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.createdAt
+        kafkaOppfolgingstilfellePersonDialogmotekandidat.createdAt
     )
     oppfolgingstilfelleArbeidstaker.tilfelleStart shouldBeEqualTo latestTilfelle.start
     oppfolgingstilfelleArbeidstaker.tilfelleEnd shouldBeEqualTo latestTilfelle.end
-    oppfolgingstilfelleArbeidstaker.referanseTilfelleBitUuid.toString() shouldBeEqualTo kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.referanseTilfelleBitUuid
+    oppfolgingstilfelleArbeidstaker.referanseTilfelleBitUuid.toString() shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidat.referanseTilfelleBitUuid
     oppfolgingstilfelleArbeidstaker.referanseTilfelleBitInntruffet.shouldBeEqualToOffsetDateTime(
-        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.referanseTilfelleBitInntruffet
+        kafkaOppfolgingstilfellePersonDialogmotekandidat.referanseTilfelleBitInntruffet
     )
 }
 
 fun assertDialogmotekandidatStoppunktPlanlagt(
     dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt?,
-    kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat: KafkaOppfolgingstilfelleArbeidstaker,
+    kafkaOppfolgingstilfellePersonDialogmotekandidat: KafkaOppfolgingstilfellePerson,
 ) {
     dialogmotekandidatStoppunkt.shouldNotBeNull()
 
     val latestTilfelleStart =
-        kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull {
+        kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull {
             it.start
         }!!.start
     val stoppunktPlanlagtExpected = latestTilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
 
-    dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfelleArbeidstakerDialogmotekandidat.personIdentNumber
+    dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidat.personIdentNumber
     dialogmotekandidatStoppunkt.processedAt.shouldBeNull()
     dialogmotekandidatStoppunkt.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT
     dialogmotekandidatStoppunkt.stoppunktPlanlagt shouldBeEqualTo stoppunktPlanlagtExpected

@@ -18,7 +18,7 @@ fun testEnvironment(
         aivenSecurityProtocol = "SSL",
         aivenTruststoreLocation = "truststore",
     ),
-    kafkaOppfolgingstilfelleArbeidstakerProcessingEnabled = true,
+    kafkaOppfolgingstilfellePersonProcessingEnabled = true,
     dialogmotekandidatStoppunktCronjobEnabled = true,
 )
 

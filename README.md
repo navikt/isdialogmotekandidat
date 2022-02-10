@@ -34,6 +34,10 @@ Apply checking: `./gradlew addKtlintCheckGitPreCommitHook`
 
 Apply formatting: `./gradlew addKtlintFormatGitPreCommitHook`
 
+This application consumes the following topic(s):
+
+* teamsykefravr.isoppfolgingstilfelle-oppfolgingstilfelle-person
+
 ## Contact
 
 ### For NAV employees

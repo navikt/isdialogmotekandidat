@@ -12,23 +12,23 @@ import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.Duration
 
-class KafkaOppfolgingstilfelleArbeidstakerService(
+class KafkaOppfolgingstilfellePersonService(
     val database: DatabaseInterface,
 ) {
     fun pollAndProcessRecords(
-        kafkaConsumerOppfolgingstilfelleArbeidstaker: KafkaConsumer<String, KafkaOppfolgingstilfelleArbeidstaker>,
+        kafkaConsumerOppfolgingstilfellePerson: KafkaConsumer<String, KafkaOppfolgingstilfellePerson>,
     ) {
-        val records = kafkaConsumerOppfolgingstilfelleArbeidstaker.poll(Duration.ofMillis(1000))
+        val records = kafkaConsumerOppfolgingstilfellePerson.poll(Duration.ofMillis(1000))
         if (records.count() > 0) {
             processRecords(
                 consumerRecords = records,
             )
-            kafkaConsumerOppfolgingstilfelleArbeidstaker.commitSync()
+            kafkaConsumerOppfolgingstilfellePerson.commitSync()
         }
     }
 
     private fun processRecords(
-        consumerRecords: ConsumerRecords<String, KafkaOppfolgingstilfelleArbeidstaker>,
+        consumerRecords: ConsumerRecords<String, KafkaOppfolgingstilfellePerson>,
     ) {
         database.connection.use { connection ->
             consumerRecords.forEach { consumerRecord ->
@@ -39,23 +39,23 @@ class KafkaOppfolgingstilfelleArbeidstakerService(
                 }
 
                 COUNT_KAFKA_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_READ.increment()
-                log.info("Received ${KafkaOppfolgingstilfelleArbeidstaker::class.java.simpleName}, ready to process. id=${consumerRecord.key()}, timestamp=${consumerRecord.timestamp()}")
+                log.info("Received ${KafkaOppfolgingstilfellePerson::class.java.simpleName}, ready to process. id=${consumerRecord.key()}, timestamp=${consumerRecord.timestamp()}")
 
-                receiveKafkaOppfolgingstilfelleArbeidstaker(
+                receiveKafkaOppfolgingstilfellePerson(
                     connection = connection,
-                    kafkaOppfolgingstilfelleArbeidstaker = consumerRecord.value(),
+                    kafkaOppfolgingstilfellePerson = consumerRecord.value(),
                 )
             }
             connection.commit()
         }
     }
 
-    private fun receiveKafkaOppfolgingstilfelleArbeidstaker(
+    private fun receiveKafkaOppfolgingstilfellePerson(
         connection: Connection,
-        kafkaOppfolgingstilfelleArbeidstaker: KafkaOppfolgingstilfelleArbeidstaker,
+        kafkaOppfolgingstilfellePerson: KafkaOppfolgingstilfellePerson,
     ) {
         val oppfolgingstilfelleArbeidstaker =
-            kafkaOppfolgingstilfelleArbeidstaker.toOppfolgingstilfelleArbeidstaker()
+            kafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker()
 
         if (oppfolgingstilfelleArbeidstaker.isDialogmotekandidat()) {
             try {
@@ -71,18 +71,18 @@ class KafkaOppfolgingstilfelleArbeidstakerService(
                 COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_CREATED.increment()
             } catch (noElementInsertedException: NoElementInsertedException) {
                 log.warn(
-                    "No ${KafkaOppfolgingstilfelleArbeidstaker::class.java.simpleName} was inserted into database, attempted to insert a duplicate"
+                    "No ${KafkaOppfolgingstilfellePerson::class.java.simpleName} was inserted into database, attempted to insert a duplicate"
                 )
                 COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_DUPLICATE.increment()
             }
         } else {
             log.info(
-                "No ${KafkaOppfolgingstilfelleArbeidstaker::class.java.simpleName} was inserted into database, not DialogmoteKandidat"
+                "No ${KafkaOppfolgingstilfellePerson::class.java.simpleName} was inserted into database, not DialogmoteKandidat"
             )
         }
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(KafkaOppfolgingstilfelleArbeidstakerService::class.java)
+        private val log = LoggerFactory.getLogger(KafkaOppfolgingstilfellePersonService::class.java)
     }
 }

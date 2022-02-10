@@ -3,7 +3,7 @@ package no.nav.syfo.testhelper.generator
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfelle
-import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfelleArbeidstaker
+import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfellePerson
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_DEFAULT
 import no.nav.syfo.util.defaultZoneOffset
@@ -11,18 +11,20 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-fun generateKafkaOppfolgingstilfelleArbeidstaker(
-    arbeidstakerPersonIdentNumber: PersonIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+fun generateKafkaOppfolgingstilfellePerson(
+    arbeidstakerAtTilfelleEnd: Boolean = true,
+    personIdentNumber: PersonIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
     oppfolgingstilfelleDurationInDays: Long,
     virksomhetsnummer: Virksomhetsnummer = VIRKSOMHETSNUMMER_DEFAULT,
-): KafkaOppfolgingstilfelleArbeidstaker {
+): KafkaOppfolgingstilfellePerson {
     val start = LocalDate.now().minusDays(1)
-    return KafkaOppfolgingstilfelleArbeidstaker(
+    return KafkaOppfolgingstilfellePerson(
         uuid = UUID.randomUUID().toString(),
         createdAt = OffsetDateTime.now(defaultZoneOffset),
-        personIdentNumber = arbeidstakerPersonIdentNumber.value,
+        personIdentNumber = personIdentNumber.value,
         oppfolgingstilfelleList = listOf(
             KafkaOppfolgingstilfelle(
+                arbeidstakerAtTilfelleEnd = arbeidstakerAtTilfelleEnd,
                 start = start,
                 end = start.plusDays(oppfolgingstilfelleDurationInDays),
                 virksomhetsnummerList = listOf(

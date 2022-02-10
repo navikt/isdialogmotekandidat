@@ -19,7 +19,7 @@ data class Environment(
         aivenSecurityProtocol = "SSL",
         aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
     ),
-    val kafkaOppfolgingstilfelleArbeidstakerProcessingEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_PROCESSING_ENABLED").toBoolean(),
+    val kafkaOppfolgingstilfellePersonProcessingEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_OPPFOLGINGSTILFELLE_PERSON_PROCESSING_ENABLED").toBoolean(),
     val dialogmotekandidatStoppunktCronjobEnabled: Boolean = getEnvVar("TOGGLE_DIALOGMOTEKANDIDAT_STOPPUNKT_CRONJOB_ENABLED").toBoolean(),
 ) {
     fun jdbcUrl(): String {
