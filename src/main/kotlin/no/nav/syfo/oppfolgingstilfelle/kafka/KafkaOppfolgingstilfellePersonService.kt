@@ -34,11 +34,11 @@ class KafkaOppfolgingstilfellePersonService(
             consumerRecords.forEach { consumerRecord ->
                 if (consumerRecord.value() == null) {
                     log.error("Value of ConsumerRecord is null, most probably due to a tombstone. Contact the owner of the topic if an error is suspected. key=${consumerRecord.key()} from topic: ${consumerRecord.topic()}, partiion=${consumerRecord.partition()}, offset=${consumerRecord.offset()}")
-                    COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_TOMBSTONE.increment()
+                    COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_TOMBSTONE.increment()
                     return
                 }
 
-                COUNT_KAFKA_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_READ.increment()
+                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_READ.increment()
                 log.info("Received ${KafkaOppfolgingstilfellePerson::class.java.simpleName}, ready to process. id=${consumerRecord.key()}, timestamp=${consumerRecord.timestamp()}")
 
                 receiveKafkaOppfolgingstilfellePerson(
@@ -54,8 +54,22 @@ class KafkaOppfolgingstilfellePersonService(
         connection: Connection,
         kafkaOppfolgingstilfellePerson: KafkaOppfolgingstilfellePerson,
     ) {
-        val oppfolgingstilfelleArbeidstaker =
-            kafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker()
+        val latestTilfelle = kafkaOppfolgingstilfellePerson.oppfolgingstilfelleList.maxByOrNull {
+            it.start
+        }
+        if (latestTilfelle == null) {
+            log.warn("SKipped processing of record: No latest Oppfolgingstilfelle found in record.")
+            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NO_TILFELLE.increment()
+            return
+        }
+        if (!latestTilfelle.arbeidstakerAtTilfelleEnd) {
+            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_ARBEIDSTAKER.increment()
+            return
+        }
+
+        val oppfolgingstilfelleArbeidstaker = kafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(
+            latestTilfelle = latestTilfelle,
+        )
 
         if (oppfolgingstilfelleArbeidstaker.isDialogmotekandidat()) {
             try {
@@ -63,22 +77,24 @@ class KafkaOppfolgingstilfellePersonService(
                     commit = false,
                     oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstaker,
                 )
-                val dialogmotekandidatStoppunkt = oppfolgingstilfelleArbeidstaker.toDialogmotekandidatStoppunktPlanlagt()
+                val dialogmotekandidatStoppunkt =
+                    oppfolgingstilfelleArbeidstaker.toDialogmotekandidatStoppunktPlanlagt()
                 connection.createDialogmotekandidatStoppunkt(
                     commit = false,
                     dialogmotekandidatStoppunkt = dialogmotekandidatStoppunkt,
                 )
-                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_CREATED.increment()
+                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_ARBEIDSTAKER_CREATED.increment()
             } catch (noElementInsertedException: NoElementInsertedException) {
                 log.warn(
                     "No ${KafkaOppfolgingstilfellePerson::class.java.simpleName} was inserted into database, attempted to insert a duplicate"
                 )
-                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_ARBEIDSTAKER_DUPLICATE.increment()
+                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_ARBEIDSTAKER_DUPLICATE.increment()
             }
         } else {
             log.info(
                 "No ${KafkaOppfolgingstilfellePerson::class.java.simpleName} was inserted into database, not DialogmoteKandidat"
             )
+            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_KANDIDAT.increment()
         }
     }
 
