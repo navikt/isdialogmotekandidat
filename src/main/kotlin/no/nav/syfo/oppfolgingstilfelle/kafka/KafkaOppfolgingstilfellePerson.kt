@@ -2,6 +2,7 @@ package no.nav.syfo.oppfolgingstilfelle.kafka
 
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
+import no.nav.syfo.util.defaultZoneOffset
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -26,7 +27,7 @@ fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(
     latestTilfelle: KafkaOppfolgingstilfelle,
 ) = OppfolgingstilfelleArbeidstaker(
     uuid = UUID.fromString(this.uuid),
-    createdAt = OffsetDateTime.now(),
+    createdAt = OffsetDateTime.now(defaultZoneOffset),
     personIdent = PersonIdentNumber(this.personIdentNumber),
     tilfelleGenerert = this.createdAt,
     tilfelleStart = latestTilfelle.start,

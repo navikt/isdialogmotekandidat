@@ -2,6 +2,7 @@ package no.nav.syfo.dialogmotekandidat
 
 import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatStoppunkt
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.util.defaultZoneOffset
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -31,7 +32,7 @@ data class DialogmotekandidatStoppunkt private constructor(
             tilfelleStart: LocalDate,
         ) = DialogmotekandidatStoppunkt(
             uuid = UUID.randomUUID(),
-            createdAt = OffsetDateTime.now(),
+            createdAt = OffsetDateTime.now(defaultZoneOffset),
             personIdent = arbeidstakerPersonIdent,
             processedAt = null,
             status = DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT,
