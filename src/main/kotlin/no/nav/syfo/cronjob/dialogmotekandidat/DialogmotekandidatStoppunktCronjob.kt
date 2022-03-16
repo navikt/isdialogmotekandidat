@@ -11,7 +11,7 @@ class DialogmotekandidatStoppunktCronjob(
 ) : Cronjob {
 
     override val initialDelayMinutes: Long = 2
-    override val intervalDelayMinutes: Long = 60 * 4
+    override val intervalDelayMinutes: Long = 60L * 4
 
     override suspend fun run() {
         runJob()
