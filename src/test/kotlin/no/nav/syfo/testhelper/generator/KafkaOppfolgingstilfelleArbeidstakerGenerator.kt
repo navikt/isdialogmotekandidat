@@ -6,9 +6,8 @@ import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfelle
 import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfellePerson
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_DEFAULT
-import no.nav.syfo.util.defaultZoneOffset
+import no.nav.syfo.util.nowUTC
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.*
 
 fun generateKafkaOppfolgingstilfellePerson(
@@ -20,7 +19,7 @@ fun generateKafkaOppfolgingstilfellePerson(
     val start = LocalDate.now().minusDays(1)
     return KafkaOppfolgingstilfellePerson(
         uuid = UUID.randomUUID().toString(),
-        createdAt = OffsetDateTime.now(defaultZoneOffset),
+        createdAt = nowUTC(),
         personIdentNumber = personIdentNumber.value,
         oppfolgingstilfelleList = listOf(
             KafkaOppfolgingstilfelle(
@@ -33,6 +32,6 @@ fun generateKafkaOppfolgingstilfellePerson(
             ),
         ),
         referanseTilfelleBitUuid = UUID.randomUUID().toString(),
-        referanseTilfelleBitInntruffet = OffsetDateTime.now(defaultZoneOffset).minusDays(1),
+        referanseTilfelleBitInntruffet = nowUTC().minusDays(1),
     )
 }
