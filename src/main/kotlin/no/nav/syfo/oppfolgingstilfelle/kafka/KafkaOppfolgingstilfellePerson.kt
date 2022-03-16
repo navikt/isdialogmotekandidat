@@ -33,5 +33,5 @@ fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(
     tilfelleStart = latestTilfelle.start,
     tilfelleEnd = latestTilfelle.end,
     referanseTilfelleBitUuid = UUID.fromString(this.referanseTilfelleBitUuid),
-    referanseTilfelleBitInntruffet = this.referanseTilfelleBitInntruffet
+    referanseTilfelleBitInntruffet = this.referanseTilfelleBitInntruffet,
 )
