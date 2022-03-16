@@ -21,6 +21,46 @@ import java.time.Duration
 
 class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
+    fun assertOppfolgingstilfelleArbeidstaker(
+        oppfolgingstilfelleArbeidstaker: OppfolgingstilfelleArbeidstaker?,
+        kafkaOppfolgingstilfellePersonDialogmotekandidat: KafkaOppfolgingstilfellePerson,
+    ) {
+        oppfolgingstilfelleArbeidstaker.shouldNotBeNull()
+
+        val latestTilfelle =
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull { it.start }
+                ?: throw RuntimeException("No Oppfolgingstilfelle found")
+
+        oppfolgingstilfelleArbeidstaker.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidat.personIdentNumber
+        oppfolgingstilfelleArbeidstaker.tilfelleGenerert.shouldBeEqualToOffsetDateTime(
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.createdAt
+        )
+        oppfolgingstilfelleArbeidstaker.tilfelleStart shouldBeEqualTo latestTilfelle.start
+        oppfolgingstilfelleArbeidstaker.tilfelleEnd shouldBeEqualTo latestTilfelle.end
+        oppfolgingstilfelleArbeidstaker.referanseTilfelleBitUuid.toString() shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidat.referanseTilfelleBitUuid
+        oppfolgingstilfelleArbeidstaker.referanseTilfelleBitInntruffet.shouldBeEqualToOffsetDateTime(
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.referanseTilfelleBitInntruffet
+        )
+    }
+
+    fun assertDialogmotekandidatStoppunktPlanlagt(
+        dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt?,
+        kafkaOppfolgingstilfellePersonDialogmotekandidat: KafkaOppfolgingstilfellePerson,
+    ) {
+        dialogmotekandidatStoppunkt.shouldNotBeNull()
+
+        val latestTilfelleStart =
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull {
+                it.start
+            }!!.start
+        val stoppunktPlanlagtExpected = latestTilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
+
+        dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidat.personIdentNumber
+        dialogmotekandidatStoppunkt.processedAt.shouldBeNull()
+        dialogmotekandidatStoppunkt.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT
+        dialogmotekandidatStoppunkt.stoppunktPlanlagt shouldBeEqualTo stoppunktPlanlagtExpected
+    }
+
     with(TestApplicationEngine()) {
         start()
 
@@ -227,43 +267,3 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
         }
     }
 })
-
-fun assertOppfolgingstilfelleArbeidstaker(
-    oppfolgingstilfelleArbeidstaker: OppfolgingstilfelleArbeidstaker?,
-    kafkaOppfolgingstilfellePersonDialogmotekandidat: KafkaOppfolgingstilfellePerson,
-) {
-    oppfolgingstilfelleArbeidstaker.shouldNotBeNull()
-
-    val latestTilfelle =
-        kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull { it.start }
-            ?: throw RuntimeException("No Oppfolgingstilfelle found")
-
-    oppfolgingstilfelleArbeidstaker.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidat.personIdentNumber
-    oppfolgingstilfelleArbeidstaker.tilfelleGenerert.shouldBeEqualToOffsetDateTime(
-        kafkaOppfolgingstilfellePersonDialogmotekandidat.createdAt
-    )
-    oppfolgingstilfelleArbeidstaker.tilfelleStart shouldBeEqualTo latestTilfelle.start
-    oppfolgingstilfelleArbeidstaker.tilfelleEnd shouldBeEqualTo latestTilfelle.end
-    oppfolgingstilfelleArbeidstaker.referanseTilfelleBitUuid.toString() shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidat.referanseTilfelleBitUuid
-    oppfolgingstilfelleArbeidstaker.referanseTilfelleBitInntruffet.shouldBeEqualToOffsetDateTime(
-        kafkaOppfolgingstilfellePersonDialogmotekandidat.referanseTilfelleBitInntruffet
-    )
-}
-
-fun assertDialogmotekandidatStoppunktPlanlagt(
-    dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt?,
-    kafkaOppfolgingstilfellePersonDialogmotekandidat: KafkaOppfolgingstilfellePerson,
-) {
-    dialogmotekandidatStoppunkt.shouldNotBeNull()
-
-    val latestTilfelleStart =
-        kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull {
-            it.start
-        }!!.start
-    val stoppunktPlanlagtExpected = latestTilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
-
-    dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidat.personIdentNumber
-    dialogmotekandidatStoppunkt.processedAt.shouldBeNull()
-    dialogmotekandidatStoppunkt.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT
-    dialogmotekandidatStoppunkt.stoppunktPlanlagt shouldBeEqualTo stoppunktPlanlagtExpected
-}
