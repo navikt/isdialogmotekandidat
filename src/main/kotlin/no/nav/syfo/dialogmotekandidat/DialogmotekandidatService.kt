@@ -9,10 +9,12 @@ class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
     private val database: DatabaseInterface,
 ) {
-    fun getDialogmotekandidatMedStoppunktPlanlagtIdagListe(): List<DialogmotekandidatStoppunkt> =
-        database.getDialogmotekandidatStoppunktIdagList().toDialogmotekandidatStoppunktList()
+    fun getDialogmotekandidatMedStoppunktPlanlagtTodayList(): List<DialogmotekandidatStoppunkt> =
+        database.getDialogmotekandidatStoppunktTodayList().toDialogmotekandidatStoppunktList()
 
-    fun oppdaterDialogmotekandidatStoppunktStatus(dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt) {
+    fun updateDialogmotekandidatStoppunktStatus(
+        dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
+    ) {
         val oppfolgingstilfelle = oppfolgingstilfelleService.getSisteOppfolgingstilfelle(
             arbeidstakerPersonIdent = dialogmotekandidatStoppunkt.personIdent
         )

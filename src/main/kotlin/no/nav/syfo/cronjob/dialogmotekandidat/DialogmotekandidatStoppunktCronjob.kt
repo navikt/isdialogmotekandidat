@@ -20,11 +20,11 @@ class DialogmotekandidatStoppunktCronjob(
     fun runJob(): CronjobResult {
         val result = CronjobResult()
 
-        val dialogmotekandidatStoppunktListe =
-            dialogmotekandidatService.getDialogmotekandidatMedStoppunktPlanlagtIdagListe()
-        dialogmotekandidatStoppunktListe.forEach { dialogmotekandidatStoppunkt ->
+        val dialogmotekandidatStoppunktList =
+            dialogmotekandidatService.getDialogmotekandidatMedStoppunktPlanlagtTodayList()
+        dialogmotekandidatStoppunktList.forEach { dialogmotekandidatStoppunkt ->
             try {
-                dialogmotekandidatService.oppdaterDialogmotekandidatStoppunktStatus(dialogmotekandidatStoppunkt)
+                dialogmotekandidatService.updateDialogmotekandidatStoppunktStatus(dialogmotekandidatStoppunkt)
                 result.updated++
                 COUNT_CRONJOB_DIALOGMOTEKANDIDAT_STOPPUNKT_UPDATE.increment()
             } catch (e: Exception) {

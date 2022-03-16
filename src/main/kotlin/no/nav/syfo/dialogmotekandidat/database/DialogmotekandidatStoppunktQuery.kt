@@ -95,7 +95,7 @@ const val queryGetDialogmotekandidatStoppunktIdag =
         WHERE stoppunkt_planlagt = CURRENT_DATE AND processed_at IS NULL
     """
 
-fun DatabaseInterface.getDialogmotekandidatStoppunktIdagList(): List<PDialogmotekandidatStoppunkt> =
+fun DatabaseInterface.getDialogmotekandidatStoppunktTodayList(): List<PDialogmotekandidatStoppunkt> =
     this.connection.use { connection ->
         connection.prepareStatement(queryGetDialogmotekandidatStoppunktIdag).use {
             it.executeQuery().toList { toPDialogmotekandidatStoppunktList() }
