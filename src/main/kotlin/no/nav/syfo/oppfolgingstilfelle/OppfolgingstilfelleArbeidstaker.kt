@@ -1,6 +1,6 @@
 package no.nav.syfo.oppfolgingstilfelle
 
-import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunkt
+import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDate
 import java.time.OffsetDateTime

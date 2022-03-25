@@ -1,4 +1,4 @@
-package no.nav.syfo.dialogmotekandidat
+package no.nav.syfo.dialogmotekandidat.domain
 
 import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatStoppunkt
 import no.nav.syfo.domain.PersonIdentNumber
@@ -50,3 +50,7 @@ data class DialogmotekandidatStoppunkt private constructor(
             )
     }
 }
+
+fun DialogmotekandidatStoppunkt.toDialogmotekandidatEndring() = DialogmotekandidatEndring.stoppunktKandidat(
+    personIdentNumber = this.personIdent
+)

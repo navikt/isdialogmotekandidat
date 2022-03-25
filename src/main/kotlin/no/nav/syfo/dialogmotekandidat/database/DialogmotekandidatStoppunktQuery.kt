@@ -1,8 +1,8 @@
 package no.nav.syfo.dialogmotekandidat.database
 
 import no.nav.syfo.application.database.*
-import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunkt
-import no.nav.syfo.dialogmotekandidat.DialogmotekandidatStoppunktStatus
+import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatStoppunkt
+import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.toOffsetDateTimeUTC
 import java.sql.*
