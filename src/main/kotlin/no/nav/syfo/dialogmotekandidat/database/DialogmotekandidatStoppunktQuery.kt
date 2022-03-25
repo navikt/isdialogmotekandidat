@@ -4,10 +4,10 @@ import no.nav.syfo.application.database.*
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.util.toOffsetDateTimeUTC
+import no.nav.syfo.util.nowUTC
 import java.sql.*
 import java.sql.Date
-import java.time.Instant
+import java.time.OffsetDateTime
 import java.util.*
 
 const val queryCreateDialogmotekandidatStoppunkt =
@@ -33,7 +33,7 @@ fun Connection.createDialogmotekandidatStoppunkt(
 
     val idList = this.prepareStatement(queryCreateDialogmotekandidatStoppunkt).use {
         it.setString(1, dialogmotekandidatStoppunkt.uuid.toString())
-        it.setTimestamp(2, Timestamp.from(dialogmotekandidatStoppunkt.createdAt.toInstant()))
+        it.setObject(2, dialogmotekandidatStoppunkt.createdAt)
         it.setString(3, dialogmotekandidatStoppunkt.personIdent.value)
         it.setDate(4, Date.valueOf(dialogmotekandidatStoppunkt.stoppunktPlanlagt))
         it.setString(5, dialogmotekandidatStoppunkt.status.name)
@@ -77,10 +77,12 @@ fun DatabaseInterface.updateDialogmotekandidatStoppunktStatus(uuid: UUID, status
         throw IllegalArgumentException("Cannot update to status $status")
     }
 
+    val now = nowUTC()
+
     this.connection.use { connection ->
         connection.prepareStatement(queryUpdateDialogmotekandidatStoppunktStatus).use { preparedStatement ->
             preparedStatement.setString(1, status.name)
-            preparedStatement.setTimestamp(2, Timestamp.from(Instant.now()))
+            preparedStatement.setObject(2, now)
             preparedStatement.setString(3, uuid.toString())
             preparedStatement.execute()
         }
@@ -106,9 +108,9 @@ fun ResultSet.toPDialogmotekandidatStoppunktList(): PDialogmotekandidatStoppunkt
     PDialogmotekandidatStoppunkt(
         id = getInt("id"),
         uuid = UUID.fromString(getString("uuid")),
-        createdAt = getTimestamp("created_at").toOffsetDateTimeUTC(),
+        createdAt = getObject("created_at", OffsetDateTime::class.java),
         personIdent = PersonIdentNumber(getString("personident")),
-        processedAt = getTimestamp("processed_at")?.toOffsetDateTimeUTC(),
+        processedAt = getObject("processed_at", OffsetDateTime::class.java),
         status = getString("status"),
         stoppunktPlanlagt = getDate("stoppunkt_planlagt").toLocalDate(),
     )
