@@ -26,22 +26,28 @@ class DialogmotekandidatService(
         val status =
             if (oppfolgingstilfelle.isDialogmotekandidat()) DialogmotekandidatStoppunktStatus.KANDIDAT
             else DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
-        database.updateDialogmotekandidatStoppunktStatus(
-            uuid = dialogmotekandidatStoppunkt.uuid,
-            status = status,
-        )
 
-        if (status == DialogmotekandidatStoppunktStatus.KANDIDAT) {
-            createDialogmotekandidatEndring(
-                dialogmotekandidatEndring = dialogmotekandidatStoppunkt.toDialogmotekandidatEndring()
+        database.connection.use { connection ->
+            connection.updateDialogmotekandidatStoppunktStatus(
+                uuid = dialogmotekandidatStoppunkt.uuid,
+                status = status,
             )
-        }
-    }
 
-    private fun createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
-        // TODO: Persist dialogmotekandidatEndring
-        dialogmotekandidatEndringProducer.sendDialogmotekandidat(
-            dialogmotekandidatEndring = dialogmotekandidatEndring
-        )
+            val latestEndring = connection.getLatestDialogmotekandidatEndringForPerson(
+                personIdent = dialogmotekandidatStoppunkt.personIdent
+            )?.toDialogmotekandidatEndring()
+
+            if (status == DialogmotekandidatStoppunktStatus.KANDIDAT && latestEndring.ikkeKandidat()) {
+                val newDialogmotekandidatEndring = dialogmotekandidatStoppunkt.toDialogmotekandidatEndring()
+                connection.createDialogmotekandidatEndring(
+                    dialogmotekandidatEndring = newDialogmotekandidatEndring
+                )
+                dialogmotekandidatEndringProducer.sendDialogmotekandidat(
+                    dialogmotekandidatEndring = newDialogmotekandidatEndring
+                )
+            }
+
+            connection.commit()
+        }
     }
 }

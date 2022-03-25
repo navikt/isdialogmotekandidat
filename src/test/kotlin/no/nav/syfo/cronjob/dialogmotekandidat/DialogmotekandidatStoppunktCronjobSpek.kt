@@ -2,9 +2,8 @@ package no.nav.syfo.cronjob.dialogmotekandidat
 
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.dialogmotekandidat.*
-import no.nav.syfo.dialogmotekandidat.database.createDialogmotekandidatStoppunkt
-import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatStoppunktList
+import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
+import no.nav.syfo.dialogmotekandidat.database.*
 import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.domain.PersonIdentNumber
@@ -12,8 +11,7 @@ import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.oppfolgingstilfelle.database.createOppfolgingstilfelleArbeidstaker
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.generator.generateDialogmotekandidatStoppunktPlanlagt
-import no.nav.syfo.testhelper.generator.generateOppfolgingstilfelleArbeidstaker
+import no.nav.syfo.testhelper.generator.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -50,6 +48,13 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
         fun createDialogmotekandidatStoppunkt(dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt) {
             database.connection.createDialogmotekandidatStoppunkt(true, dialogmotekandidatStoppunkt)
+        }
+
+        fun createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
+            database.connection.use { connection ->
+                connection.createDialogmotekandidatEndring(dialogmotekandidatEndring)
+                connection.commit()
+            }
         }
 
         val kandidatFirstPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
@@ -134,7 +139,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT.name
                 stoppunktKandidatEn.processedAt.shouldBeNull()
             }
-            it("Creates DialogmotekandidatEndring for DialogmotekandidatStoppunkt, if planlagt is today and OppfolgingstilfelleArbeidstaker exists for person ") {
+            it("Creates DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not kandidat  ") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     planlagt = LocalDate.now(),
@@ -153,7 +158,47 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 verify(exactly = 1) {
                     dialogmotekandidatEndringProducer.sendDialogmotekandidat(any())
                 }
-                // TODO: Verify persisted dialogmotekandidatEndring
+
+                val latestDialogmotekandidatEndring = database.connection.getLatestDialogmotekandidatEndringForPerson(
+                    personIdent = kandidatFirstPersonIdent
+                )
+
+                latestDialogmotekandidatEndring shouldNotBeEqualTo null
+                latestDialogmotekandidatEndring!!.kandidat shouldBeEqualTo true
+                latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
+            }
+
+            it("Creates no new DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is kandidat ") {
+                val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    planlagt = LocalDate.now(),
+                )
+                createDialogmotekandidatStoppunkt(dialogmotekandidatStoppunkt = stoppunktPlanlagtIDag)
+
+                val oppfolgingstilfelleKandidatEn = generateOppfolgingstilfelleArbeidstaker(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                )
+                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
+
+                val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
+                    personIdentNumber = kandidatFirstPersonIdent,
+                )
+                createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
+
+                val result = dialogmotekandidatStoppunktCronjob.runJob()
+
+                result.updated shouldBeEqualTo 1
+                verify(exactly = 0) {
+                    dialogmotekandidatEndringProducer.sendDialogmotekandidat(any())
+                }
+
+                val latestDialogmotekandidatEndring =
+                    database.connection.getLatestDialogmotekandidatEndringForPerson(
+                        personIdent = kandidatFirstPersonIdent
+                    )
+
+                latestDialogmotekandidatEndring?.uuid shouldBeEqualTo dialogmotekandidatEndring.uuid
             }
         }
     }

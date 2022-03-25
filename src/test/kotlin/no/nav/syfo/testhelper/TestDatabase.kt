@@ -35,6 +35,9 @@ fun DatabaseInterface.dropData() {
         """
         DELETE FROM DIALOGMOTEKANDIDAT_STOPPUNKT
         """.trimIndent(),
+        """
+        DELETE FROM DIALOGMOTEKANDIDAT_ENDRING
+        """.trimIndent(),
     )
     this.connection.use { connection ->
         queryList.forEach { query ->
