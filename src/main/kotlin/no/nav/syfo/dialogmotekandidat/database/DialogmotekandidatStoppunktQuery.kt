@@ -72,21 +72,21 @@ const val queryUpdateDialogmotekandidatStoppunktStatus =
         UPDATE DIALOGMOTEKANDIDAT_STOPPUNKT SET status=?, processed_at=? WHERE uuid = ?
     """
 
-fun DatabaseInterface.updateDialogmotekandidatStoppunktStatus(uuid: UUID, status: DialogmotekandidatStoppunktStatus) {
+fun Connection.updateDialogmotekandidatStoppunktStatus(
+    uuid: UUID,
+    status: DialogmotekandidatStoppunktStatus,
+) {
     if (status == DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT) {
         throw IllegalArgumentException("Cannot update to status $status")
     }
 
     val now = nowUTC()
 
-    this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateDialogmotekandidatStoppunktStatus).use { preparedStatement ->
-            preparedStatement.setString(1, status.name)
-            preparedStatement.setObject(2, now)
-            preparedStatement.setString(3, uuid.toString())
-            preparedStatement.execute()
-        }
-        connection.commit()
+    this.prepareStatement(queryUpdateDialogmotekandidatStoppunktStatus).use { preparedStatement ->
+        preparedStatement.setString(1, status.name)
+        preparedStatement.setObject(2, now)
+        preparedStatement.setString(3, uuid.toString())
+        preparedStatement.execute()
     }
 }
 
