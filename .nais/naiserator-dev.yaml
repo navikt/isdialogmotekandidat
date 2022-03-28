@@ -46,6 +46,10 @@ spec:
         databases:
           - name: isdialogmotekandidat-db
         diskAutoresize: true
+  accessPolicy:
+    outbound:
+      external:
+        - host: kafka-schema-registry.nais-q.adeo.no
   azure:
     application:
       enabled: true
@@ -58,3 +62,5 @@ spec:
       value: "false"
     - name: TOGGLE_DIALOGMOTEKANDIDAT_STOPPUNKT_CRONJOB_ENABLED
       value: "false"
+    - name: TOGGLE_KAFKA_DIALOGMOTE_STATUS_ENDRING_PROCESSING_ENABLED
+      value: "true"

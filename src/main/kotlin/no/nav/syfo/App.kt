@@ -11,6 +11,8 @@ import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.cronjob.launchCronjobModule
+import no.nav.syfo.dialogmotestatusendring.kafka.KafkaDialogmoteStatusEndringService
+import no.nav.syfo.dialogmotestatusendring.kafka.launchKafkaTaskDialogmoteStatusEndring
 import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfellePersonService
 import no.nav.syfo.oppfolgingstilfelle.kafka.launchKafkaTaskOppfolgingstilfellePerson
 import org.slf4j.LoggerFactory
@@ -48,12 +50,22 @@ fun main() {
         val kafkaOppfolgingstilfellePersonService = KafkaOppfolgingstilfellePersonService(
             database = applicationDatabase,
         )
+        val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(
+            database = applicationDatabase,
+        )
 
         if (environment.kafkaOppfolgingstilfellePersonProcessingEnabled) {
             launchKafkaTaskOppfolgingstilfellePerson(
                 applicationState = applicationState,
                 applicationEnvironmentKafka = environment.kafka,
                 kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
+            )
+        }
+        if (environment.kafkaDialogmoteStatusEndringProcessingEnabled) {
+            launchKafkaTaskDialogmoteStatusEndring(
+                applicationState = applicationState,
+                applicationEnvironmentKafka = environment.kafka,
+                kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
             )
         }
         if (environment.dialogmotekandidatStoppunktCronjobEnabled) {
