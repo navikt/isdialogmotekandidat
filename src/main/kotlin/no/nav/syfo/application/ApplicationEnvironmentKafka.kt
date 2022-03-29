@@ -6,4 +6,7 @@ data class ApplicationEnvironmentKafka(
     val aivenKeystoreLocation: String,
     val aivenSecurityProtocol: String,
     val aivenTruststoreLocation: String,
+    val aivenSchemaRegistryUrl: String,
+    val aivenRegistryUser: String,
+    val aivenRegistryPassword: String,
 )

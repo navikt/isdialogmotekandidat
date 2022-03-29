@@ -17,9 +17,13 @@ fun testEnvironment(
         aivenKeystoreLocation = "keystore",
         aivenSecurityProtocol = "SSL",
         aivenTruststoreLocation = "truststore",
+        aivenSchemaRegistryUrl = "http://kafka-schema-registry.tpa.svc.nais.local:8081",
+        aivenRegistryUser = "registryuser",
+        aivenRegistryPassword = "registrypassword",
     ),
     kafkaOppfolgingstilfellePersonProcessingEnabled = true,
     dialogmotekandidatStoppunktCronjobEnabled = true,
+    kafkaDialogmoteStatusEndringProcessingEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

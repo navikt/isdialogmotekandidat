@@ -5,8 +5,10 @@ group = "no.nav.syfo"
 version = "0.0.1"
 
 object Versions {
+    const val confluent = "7.0.1"
     const val flyway = "8.5.4"
     const val hikari = "5.0.1"
+    const val isdialogmoteSchema = "1.0.5"
     const val jackson = "2.13.1"
     const val kafka = "2.8.1"
     const val kafkaEmbedded = "2.8.1"
@@ -26,10 +28,19 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
 }
 
+val githubUser: String by project
+val githubPassword: String by project
 repositories {
     mavenCentral()
     maven(url = "https://packages.confluent.io/maven/")
     maven(url = "https://jitpack.io")
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/isdialogmote-schema")
+        credentials {
+            username = githubUser
+            password = githubPassword
+        }
+    }
 }
 
 dependencies {
@@ -59,8 +70,14 @@ dependencies {
     testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbedded}")
 
     // Kafka
-    implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}")
-    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}")
+    val excludeLog4j = fun ExternalModuleDependency.() {
+        exclude(group = "log4j")
+    }
+    implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}", excludeLog4j)
+    implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}", excludeLog4j)
+    implementation("io.confluent:kafka-schema-registry:${Versions.confluent}", excludeLog4j)
+    implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
+    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}", excludeLog4j)
 
     testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")
     testImplementation("io.mockk:mockk:${Versions.mockk}")
