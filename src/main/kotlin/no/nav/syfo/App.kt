@@ -11,10 +11,15 @@ import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.cronjob.launchCronjobModule
+import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
+import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.kafka.kafkaDialogmotekandidatEndringProducerConfig
 import no.nav.syfo.dialogmotestatusendring.kafka.KafkaDialogmoteStatusEndringService
 import no.nav.syfo.dialogmotestatusendring.kafka.launchKafkaTaskDialogmoteStatusEndring
+import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfellePersonService
 import no.nav.syfo.oppfolgingstilfelle.kafka.launchKafkaTaskOppfolgingstilfellePerson
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -24,6 +29,14 @@ fun main() {
     val applicationState = ApplicationState()
     val logger = LoggerFactory.getLogger("ktor.application")
     val environment = Environment()
+
+    val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
+        kafkaProducerDialogmotekandidatEndring = KafkaProducer(
+            kafkaDialogmotekandidatEndringProducerConfig(
+                kafkaEnvironment = environment.kafka
+            )
+        )
+    )
 
     val applicationEngineEnvironment = applicationEngineEnvironment {
         log = logger
@@ -47,11 +60,20 @@ fun main() {
         applicationState.ready = true
         logger.info("Application is ready")
 
+        val oppfolgingstilfelleService = OppfolgingstilfelleService(
+            database = applicationDatabase
+        )
+        val dialogmotekandidatService = DialogmotekandidatService(
+            database = applicationDatabase,
+            oppfolgingstilfelleService = oppfolgingstilfelleService,
+            dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
+        )
         val kafkaOppfolgingstilfellePersonService = KafkaOppfolgingstilfellePersonService(
             database = applicationDatabase,
         )
         val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(
             database = applicationDatabase,
+            dialogmotekandidatService = dialogmotekandidatService,
         )
 
         if (environment.kafkaOppfolgingstilfellePersonProcessingEnabled) {
@@ -71,8 +93,8 @@ fun main() {
         if (environment.dialogmotekandidatStoppunktCronjobEnabled) {
             launchCronjobModule(
                 applicationState = applicationState,
-                database = applicationDatabase,
                 environment = environment,
+                dialogmotekandidatService = dialogmotekandidatService,
             )
         }
     }

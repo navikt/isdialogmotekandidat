@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 class DialogmotekandidatEndringProducer(
     private val kafkaProducerDialogmotekandidatEndring: KafkaProducer<String, KafkaDialogmotekandidatEndring>,
 ) {
-    fun sendDialogmotekandidat(
+    fun sendDialogmotekandidatEndring(
         dialogmotekandidatEndring: DialogmotekandidatEndring,
     ) {
         val key = dialogmotekandidatEndring.uuid.toString()
@@ -24,7 +24,7 @@ class DialogmotekandidatEndringProducer(
             ).get()
         } catch (e: Exception) {
             log.error(
-                "Exception was thrown when attempting to send KafkaDialogmotekandidat with id {}: ${e.message}",
+                "Exception was thrown when attempting to send KafkaDialogmotekandidatEndring with id {}: ${e.message}",
                 key
             )
             throw e

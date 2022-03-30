@@ -8,7 +8,8 @@ import java.time.OffsetDateTime
 import java.util.*
 
 enum class DialogmotekandidatEndringArsak {
-    STOPPUNKT
+    STOPPUNKT,
+    DIALOGMOTE_FERDIGSTILT,
 }
 
 data class DialogmotekandidatEndring private constructor(
@@ -37,6 +38,16 @@ data class DialogmotekandidatEndring private constructor(
                 kandidat = pDialogmotekandidatEndring.kandidat,
                 arsak = DialogmotekandidatEndringArsak.valueOf(pDialogmotekandidatEndring.arsak),
             )
+
+        fun ferdigstiltDialogmote(
+            personIdentNumber: PersonIdentNumber,
+        ) = DialogmotekandidatEndring(
+            uuid = UUID.randomUUID(),
+            createdAt = nowUTC(),
+            personIdentNumber = personIdentNumber,
+            kandidat = false,
+            arsak = DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT,
+        )
     }
 }
 

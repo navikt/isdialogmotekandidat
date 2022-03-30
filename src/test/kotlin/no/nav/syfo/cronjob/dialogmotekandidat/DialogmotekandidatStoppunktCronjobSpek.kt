@@ -39,7 +39,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
             database.dropData()
 
             clearMocks(dialogmotekandidatEndringProducer)
-            justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidat(any()) }
+            justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any()) }
         }
 
         fun createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker: OppfolgingstilfelleArbeidstaker) {
@@ -48,13 +48,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
         fun createDialogmotekandidatStoppunkt(dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt) {
             database.connection.createDialogmotekandidatStoppunkt(true, dialogmotekandidatStoppunkt)
-        }
-
-        fun createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
-            database.connection.use { connection ->
-                connection.createDialogmotekandidatEndring(dialogmotekandidatEndring)
-                connection.commit()
-            }
         }
 
         val kandidatFirstPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
@@ -103,7 +96,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 result.failed shouldBeEqualTo 0
                 result.updated shouldBeEqualTo 2
                 verify(exactly = 1) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidat(any())
+                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
                 val stoppunktKandidatFirst =
@@ -131,7 +124,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 result.failed shouldBeEqualTo 1
                 result.updated shouldBeEqualTo 0
                 verify(exactly = 0) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidat(any())
+                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
@@ -156,7 +149,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
                 result.updated shouldBeEqualTo 1
                 verify(exactly = 1) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidat(any())
+                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
                 val latestDialogmotekandidatEndring = database.connection.getLatestDialogmotekandidatEndringForPerson(
@@ -184,13 +177,13 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
                     personIdentNumber = kandidatFirstPersonIdent,
                 )
-                createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
+                database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
 
                 val result = dialogmotekandidatStoppunktCronjob.runJob()
 
                 result.updated shouldBeEqualTo 1
                 verify(exactly = 0) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidat(any())
+                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
                 val latestDialogmotekandidatEndring =
