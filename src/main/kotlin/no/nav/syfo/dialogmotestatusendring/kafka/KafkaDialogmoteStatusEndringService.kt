@@ -35,11 +35,13 @@ class KafkaDialogmoteStatusEndringService(
 
         if (tombstoneRecords.isNotEmpty()) {
             log.error("Value of ${tombstoneRecords.size} ConsumerRecord are null, most probably due to a tombstone. Contact the owner of the topic if an error is suspected")
+            COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_TOMBSTONE.increment()
         }
 
         database.connection.use { connection ->
             validRecords.forEach { record ->
-                log.info("Received KDialogmoteStatusEndring record with key: ${record.key()}")
+                COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_READ.increment()
+                log.info("Received ${KDialogmoteStatusEndring::class.java.simpleName} with key=${record.key()}, ready to process.")
                 receiveKafkaDialogmoteStatusEndring(
                     connection = connection,
                     kafkaDialogmoteStatusEndring = record.value(),
@@ -55,6 +57,7 @@ class KafkaDialogmoteStatusEndringService(
     ) {
         val dialogmoteStatusEndring = DialogmoteStatusEndring.create(kafkaDialogmoteStatusEndring)
         if (!dialogmoteStatusEndring.isFerdigstilt()) {
+            COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_SKIPPED_NOT_FERDIGSTILT.increment()
             log.info("Skipped processing of ${KDialogmoteStatusEndring::class.java.simpleName} record, not Ferdigstilt status-endring")
             return
         }
@@ -74,7 +77,9 @@ class KafkaDialogmoteStatusEndringService(
                 connection = connection,
                 dialogmotekandidatEndring = newDialogmotekandidatEndring
             )
+            COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_CREATED_KANDIDATENDRING.increment()
         } else {
+            COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_SKIPPED_NOT_KANDIDATENDRING.increment()
             log.info("Processed ${KDialogmoteStatusEndring::class.java.simpleName} record, no DialogmotekandidatEndring created")
         }
     }

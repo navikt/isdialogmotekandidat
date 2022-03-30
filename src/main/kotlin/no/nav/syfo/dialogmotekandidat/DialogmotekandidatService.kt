@@ -4,8 +4,11 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmotekandidat.database.*
 import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING
+import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.oppfolgingstilfelle.isDialogmotekandidat
+import org.slf4j.LoggerFactory
 import java.sql.Connection
 
 class DialogmotekandidatService(
@@ -44,6 +47,10 @@ class DialogmotekandidatService(
                     connection = connection,
                     dialogmotekandidatEndring = newDialogmotekandidatEndring,
                 )
+                COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING.increment()
+            } else {
+                COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING.increment()
+                log.info("Processed ${DialogmotekandidatStoppunkt::class.java.simpleName}, not kandidat - no DialogmotekandidatEndring created")
             }
 
             connection.commit()
@@ -60,5 +67,9 @@ class DialogmotekandidatService(
         dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
             dialogmotekandidatEndring = dialogmotekandidatEndring
         )
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(DialogmotekandidatService::class.java)
     }
 }
