@@ -2,6 +2,8 @@ package no.nav.syfo.testhelper
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.dialogmotekandidat.database.createDialogmotekandidatEndring
+import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 
@@ -43,6 +45,13 @@ fun DatabaseInterface.dropData() {
         queryList.forEach { query ->
             connection.prepareStatement(query).execute()
         }
+        connection.commit()
+    }
+}
+
+fun DatabaseInterface.createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
+    this.connection.use { connection ->
+        connection.createDialogmotekandidatEndring(dialogmotekandidatEndring)
         connection.commit()
     }
 }

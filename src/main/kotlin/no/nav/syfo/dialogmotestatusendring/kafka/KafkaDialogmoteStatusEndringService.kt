@@ -2,13 +2,21 @@ package no.nav.syfo.dialogmotestatusendring.kafka
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
+import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
+import no.nav.syfo.dialogmotekandidat.database.getLatestDialogmotekandidatEndringForPerson
+import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatEndring
+import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
+import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
+import no.nav.syfo.dialogmotestatusendring.domain.isFerdigstilt
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
+import java.sql.Connection
 import java.time.Duration
 
 class KafkaDialogmoteStatusEndringService(
-    val database: DatabaseInterface,
+    private val database: DatabaseInterface,
+    private val dialogmotekandidatService: DialogmotekandidatService,
 ) {
     fun pollAndProcessRecords(
         kafkaConsumerDialogmoteStatusEndring: KafkaConsumer<String, KDialogmoteStatusEndring>,
@@ -23,9 +31,61 @@ class KafkaDialogmoteStatusEndringService(
     }
 
     private fun processRecords(consumerRecords: ConsumerRecords<String, KDialogmoteStatusEndring>) {
-        consumerRecords.forEach { consumerRecord ->
-            log.info("Received KDialogmoteStatusEndring record with key: ${consumerRecord.key()}")
+        val (tombstoneRecords, validRecords) = consumerRecords.partition { it.value() == null }
+
+        if (tombstoneRecords.isNotEmpty()) {
+            log.error("Value of ${tombstoneRecords.size} ConsumerRecord are null, most probably due to a tombstone. Contact the owner of the topic if an error is suspected")
         }
+
+        database.connection.use { connection ->
+            validRecords.forEach { record ->
+                log.info("Received KDialogmoteStatusEndring record with key: ${record.key()}")
+                receiveKafkaDialogmoteStatusEndring(
+                    connection = connection,
+                    kafkaDialogmoteStatusEndring = record.value(),
+                )
+            }
+            connection.commit()
+        }
+    }
+
+    private fun receiveKafkaDialogmoteStatusEndring(
+        connection: Connection,
+        kafkaDialogmoteStatusEndring: KDialogmoteStatusEndring,
+    ) {
+        val dialogmoteStatusEndring = DialogmoteStatusEndring.create(kafkaDialogmoteStatusEndring)
+        if (!dialogmoteStatusEndring.isFerdigstilt()) {
+            log.info("Skipped processing of ${KDialogmoteStatusEndring::class.java.simpleName} record, not Ferdigstilt status-endring")
+            return
+        }
+
+        val latestDialogmotekandidatEndring =
+            connection.getLatestDialogmotekandidatEndringForPerson(personIdent = dialogmoteStatusEndring.personIdentNumber)
+                ?.toDialogmotekandidatEndring()
+
+        if (shouldCreateDialogmotekandidatEndring(
+                latestDialogmotekandidatEndring = latestDialogmotekandidatEndring,
+                ferdigstiltStatusEndring = dialogmoteStatusEndring
+            )
+        ) {
+            val newDialogmotekandidatEndring =
+                DialogmotekandidatEndring.ferdigstiltDialogmote(personIdentNumber = dialogmoteStatusEndring.personIdentNumber)
+            dialogmotekandidatService.createDialogmotekandidatEndring(
+                connection = connection,
+                dialogmotekandidatEndring = newDialogmotekandidatEndring
+            )
+        } else {
+            log.info("Processed ${KDialogmoteStatusEndring::class.java.simpleName} record, no DialogmotekandidatEndring created")
+        }
+    }
+
+    private fun shouldCreateDialogmotekandidatEndring(
+        latestDialogmotekandidatEndring: DialogmotekandidatEndring?,
+        ferdigstiltStatusEndring: DialogmoteStatusEndring,
+    ): Boolean {
+        return latestDialogmotekandidatEndring?.kandidat == true && ferdigstiltStatusEndring.createdAt.isAfter(
+            latestDialogmotekandidatEndring.createdAt
+        )
     }
 
     companion object {

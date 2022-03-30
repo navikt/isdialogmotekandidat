@@ -6,6 +6,7 @@ import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.oppfolgingstilfelle.isDialogmotekandidat
+import java.sql.Connection
 
 class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
@@ -39,15 +40,25 @@ class DialogmotekandidatService(
 
             if (status == DialogmotekandidatStoppunktStatus.KANDIDAT && latestEndring.ikkeKandidat()) {
                 val newDialogmotekandidatEndring = dialogmotekandidatStoppunkt.toDialogmotekandidatEndring()
-                connection.createDialogmotekandidatEndring(
-                    dialogmotekandidatEndring = newDialogmotekandidatEndring
-                )
-                dialogmotekandidatEndringProducer.sendDialogmotekandidat(
-                    dialogmotekandidatEndring = newDialogmotekandidatEndring
+                createDialogmotekandidatEndring(
+                    connection = connection,
+                    dialogmotekandidatEndring = newDialogmotekandidatEndring,
                 )
             }
 
             connection.commit()
         }
+    }
+
+    fun createDialogmotekandidatEndring(
+        connection: Connection,
+        dialogmotekandidatEndring: DialogmotekandidatEndring,
+    ) {
+        connection.createDialogmotekandidatEndring(
+            dialogmotekandidatEndring = dialogmotekandidatEndring
+        )
+        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
+            dialogmotekandidatEndring = dialogmotekandidatEndring
+        )
     }
 }
