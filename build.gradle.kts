@@ -6,7 +6,7 @@ version = "0.0.1"
 
 object Versions {
     const val confluent = "7.0.1"
-    const val flyway = "8.5.4"
+    const val flyway = "8.5.5"
     const val hikari = "5.0.1"
     const val isdialogmoteSchema = "1.0.5"
     const val jackson = "2.13.1"
