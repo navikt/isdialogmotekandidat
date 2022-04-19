@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 
 const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB"
 
