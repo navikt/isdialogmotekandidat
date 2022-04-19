@@ -3,7 +3,6 @@ package no.nav.syfo.cronjob.leaderelection
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -29,7 +28,7 @@ class LeaderPodClient(
                     accept(ContentType.Text.Plain)
                 }
                 val leaderPodDTO: LeaderPodDTO = objectMapper.readValue(
-                    response.receive<String>()
+                    response.bodyAsText()
                 )
                 val hostname: String = InetAddress.getLocalHost().hostName
 
