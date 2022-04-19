@@ -6,7 +6,7 @@ version = "0.0.1"
 
 object Versions {
     const val confluent = "7.0.1"
-    const val flyway = "8.5.7"
+    const val flyway = "8.5.8"
     const val hikari = "5.0.1"
     const val isdialogmoteSchema = "1.0.5"
     const val jackson = "2.13.1"
@@ -15,10 +15,10 @@ object Versions {
     const val kluent = "1.68"
     const val ktor = "1.6.8"
     const val logback = "1.2.11"
-    const val logstashEncoder = "7.1"
-    const val micrometerRegistry = "1.8.4"
+    const val logstashEncoder = "7.1.1"
+    const val micrometerRegistry = "1.8.5"
     const val mockk = "1.12.3"
-    const val postgres = "42.3.3"
+    const val postgres = "42.3.4"
     const val postgresEmbedded = "0.13.4"
     const val spek = "2.0.18"
 }
