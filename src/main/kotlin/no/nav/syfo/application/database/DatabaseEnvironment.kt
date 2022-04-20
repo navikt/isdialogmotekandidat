@@ -1,6 +1,6 @@
 package no.nav.syfo.application.database
 
-data class ApplicationDatabaseEnvironment(
+data class DatabaseEnvironment(
     val host: String,
     val port: String,
     val name: String,

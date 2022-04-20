@@ -5,7 +5,7 @@ import no.nav.syfo.application.*
 
 lateinit var applicationDatabase: DatabaseInterface
 fun Application.databaseModule(
-    databaseEnvironment: ApplicationDatabaseEnvironment
+    databaseEnvironment: DatabaseEnvironment
 ) {
     isDev {
         applicationDatabase = Database(

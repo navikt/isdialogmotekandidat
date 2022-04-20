@@ -1,13 +1,13 @@
 package no.nav.syfo.application
 
 import io.ktor.server.application.*
-import no.nav.syfo.application.database.ApplicationDatabaseEnvironment
-import no.nav.syfo.application.kafka.ApplicationKafkaEnvironment
+import no.nav.syfo.application.database.DatabaseEnvironment
+import no.nav.syfo.application.kafka.KafkaEnvironment
 
 const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB"
 
 data class Environment(
-    val database: ApplicationDatabaseEnvironment = ApplicationDatabaseEnvironment(
+    val database: DatabaseEnvironment = DatabaseEnvironment(
         host = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_HOST"),
         port = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PORT"),
         name = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_DATABASE"),
@@ -17,7 +17,7 @@ data class Environment(
 
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
 
-    val kafka: ApplicationKafkaEnvironment = ApplicationKafkaEnvironment(
+    val kafka: KafkaEnvironment = KafkaEnvironment(
         aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
         aivenCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
         aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),

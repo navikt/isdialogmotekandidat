@@ -1,6 +1,6 @@
 package no.nav.syfo.application.kafka
 
-data class ApplicationKafkaEnvironment(
+data class KafkaEnvironment(
     val aivenBootstrapServers: String,
     val aivenCredstorePassword: String,
     val aivenKeystoreLocation: String,

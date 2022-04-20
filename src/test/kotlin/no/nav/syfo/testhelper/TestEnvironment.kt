@@ -1,13 +1,13 @@
 package no.nav.syfo.testhelper
 
 import no.nav.syfo.application.*
-import no.nav.syfo.application.database.ApplicationDatabaseEnvironment
-import no.nav.syfo.application.kafka.ApplicationKafkaEnvironment
+import no.nav.syfo.application.database.DatabaseEnvironment
+import no.nav.syfo.application.kafka.KafkaEnvironment
 
 fun testEnvironment(
     kafkaBootstrapServers: String,
 ) = Environment(
-    database = ApplicationDatabaseEnvironment(
+    database = DatabaseEnvironment(
         host = "localhost",
         port = "5432",
         name = "isoppfolgingstilfelle_dev",
@@ -15,7 +15,7 @@ fun testEnvironment(
         password = "password",
     ),
     electorPath = "/tmp",
-    kafka = ApplicationKafkaEnvironment(
+    kafka = KafkaEnvironment(
         aivenBootstrapServers = kafkaBootstrapServers,
         aivenCredstorePassword = "credstorepassord",
         aivenKeystoreLocation = "keystore",

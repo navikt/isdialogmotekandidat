@@ -1,6 +1,6 @@
 package no.nav.syfo.oppfolgingstilfelle.kafka
 
-import no.nav.syfo.application.kafka.ApplicationKafkaEnvironment
+import no.nav.syfo.application.kafka.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.backgroundtask.launchBackgroundTask
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -14,7 +14,7 @@ const val OPPFOLGINGSTILFELLE_PERSON_TOPIC =
 
 fun launchKafkaTaskOppfolgingstilfellePerson(
     applicationState: ApplicationState,
-    applicationKafkaEnvironment: ApplicationKafkaEnvironment,
+    kafkaEnvironment: KafkaEnvironment,
     kafkaOppfolgingstilfellePersonService: KafkaOppfolgingstilfellePersonService,
 ) {
     launchBackgroundTask(
@@ -22,7 +22,7 @@ fun launchKafkaTaskOppfolgingstilfellePerson(
     ) {
         blockingApplicationLogicOppfolgingstilfellePerson(
             applicationState = applicationState,
-            applicationKafkaEnvironment = applicationKafkaEnvironment,
+            kafkaEnvironment = kafkaEnvironment,
             kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
         )
     }
@@ -30,13 +30,13 @@ fun launchKafkaTaskOppfolgingstilfellePerson(
 
 fun blockingApplicationLogicOppfolgingstilfellePerson(
     applicationState: ApplicationState,
-    applicationKafkaEnvironment: ApplicationKafkaEnvironment,
+    kafkaEnvironment: KafkaEnvironment,
     kafkaOppfolgingstilfellePersonService: KafkaOppfolgingstilfellePersonService,
 ) {
     log.info("Setting up kafka consumer for ${KafkaOppfolgingstilfellePerson::class.java.simpleName}")
 
     val consumerProperties = kafkaOppfolgingstilfellePersonConsumerConfig(
-        applicationKafkaEnvironment = applicationKafkaEnvironment,
+        kafkaEnvironment = kafkaEnvironment,
     )
     val kafkaConsumerOppfolgingstilfellePerson =
         KafkaConsumer<String, KafkaOppfolgingstilfellePerson>(consumerProperties)

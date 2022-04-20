@@ -7,7 +7,7 @@ import org.apache.kafka.common.config.SslConfigs
 import java.util.*
 
 fun commonKafkaAivenConfig(
-    kafkaEnvironment: ApplicationKafkaEnvironment,
+    kafkaEnvironment: KafkaEnvironment,
 ) = Properties().apply {
     this[SaslConfigs.SASL_MECHANISM] = "PLAIN"
     this[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaEnvironment.aivenBootstrapServers
@@ -23,7 +23,7 @@ fun commonKafkaAivenConfig(
 }
 
 fun commonKafkaAivenConsumerConfig(
-    kafkaEnvironment: ApplicationKafkaEnvironment
+    kafkaEnvironment: KafkaEnvironment
 ) = Properties().apply {
     putAll(commonKafkaAivenConfig(kafkaEnvironment))
     this[ConsumerConfig.GROUP_ID_CONFIG] = "isdialogmotekandidat-v1"
