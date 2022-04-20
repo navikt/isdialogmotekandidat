@@ -5,14 +5,14 @@ import no.nav.syfo.application.*
 
 lateinit var applicationDatabase: DatabaseInterface
 fun Application.databaseModule(
-    environment: Environment
+    databaseEnvironment: ApplicationEnvironmentDatabase
 ) {
     isDev {
         applicationDatabase = Database(
             DatabaseConfig(
                 jdbcUrl = "jdbc:postgresql://localhost:5432/isdialogmotekandidat_dev",
                 password = "password",
-                username = "username"
+                username = "username",
             )
         )
     }
@@ -20,9 +20,9 @@ fun Application.databaseModule(
     isProd {
         applicationDatabase = Database(
             DatabaseConfig(
-                jdbcUrl = environment.jdbcUrl(),
-                username = environment.isdialogmotekandidatDbUsername,
-                password = environment.isdialogmotekandidatDbPassword
+                jdbcUrl = databaseEnvironment.jdbcUrl(),
+                username = databaseEnvironment.username,
+                password = databaseEnvironment.password,
             )
         )
     }
