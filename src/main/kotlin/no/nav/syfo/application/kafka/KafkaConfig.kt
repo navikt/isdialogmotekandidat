@@ -1,6 +1,5 @@
 package no.nav.syfo.application.kafka
 
-import no.nav.syfo.application.ApplicationEnvironmentKafka
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.config.SaslConfigs
@@ -8,7 +7,7 @@ import org.apache.kafka.common.config.SslConfigs
 import java.util.*
 
 fun commonKafkaAivenConfig(
-    kafkaEnvironment: ApplicationEnvironmentKafka,
+    kafkaEnvironment: ApplicationKafkaEnvironment,
 ) = Properties().apply {
     this[SaslConfigs.SASL_MECHANISM] = "PLAIN"
     this[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaEnvironment.aivenBootstrapServers
@@ -24,7 +23,7 @@ fun commonKafkaAivenConfig(
 }
 
 fun commonKafkaAivenConsumerConfig(
-    kafkaEnvironment: ApplicationEnvironmentKafka
+    kafkaEnvironment: ApplicationKafkaEnvironment
 ) = Properties().apply {
     putAll(commonKafkaAivenConfig(kafkaEnvironment))
     this[ConsumerConfig.GROUP_ID_CONFIG] = "isdialogmotekandidat-v1"

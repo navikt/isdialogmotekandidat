@@ -1,6 +1,6 @@
-package no.nav.syfo.application
+package no.nav.syfo.application.database
 
-data class ApplicationEnvironmentDatabase(
+data class ApplicationDatabaseEnvironment(
     val host: String,
     val port: String,
     val name: String,

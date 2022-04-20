@@ -1,6 +1,6 @@
 package no.nav.syfo.dialogmotestatusendring.kafka
 
-import no.nav.syfo.application.ApplicationEnvironmentKafka
+import no.nav.syfo.application.kafka.ApplicationKafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.backgroundtask.launchBackgroundTask
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
@@ -14,7 +14,7 @@ const val DIALOGMOTE_STATUS_ENDRING_TOPIC = "teamsykefravr.isdialogmote-dialogmo
 
 fun launchKafkaTaskDialogmoteStatusEndring(
     applicationState: ApplicationState,
-    applicationEnvironmentKafka: ApplicationEnvironmentKafka,
+    applicationKafkaEnvironment: ApplicationKafkaEnvironment,
     kafkaDialogmoteStatusEndringService: KafkaDialogmoteStatusEndringService,
 ) {
     launchBackgroundTask(
@@ -22,7 +22,7 @@ fun launchKafkaTaskDialogmoteStatusEndring(
     ) {
         blockingApplicationLogicDialogmoteStatusEndring(
             applicationState = applicationState,
-            applicationEnvironmentKafka = applicationEnvironmentKafka,
+            applicationKafkaEnvironment = applicationKafkaEnvironment,
             kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService
         )
     }
@@ -30,14 +30,14 @@ fun launchKafkaTaskDialogmoteStatusEndring(
 
 fun blockingApplicationLogicDialogmoteStatusEndring(
     applicationState: ApplicationState,
-    applicationEnvironmentKafka: ApplicationEnvironmentKafka,
+    applicationKafkaEnvironment: ApplicationKafkaEnvironment,
     kafkaDialogmoteStatusEndringService: KafkaDialogmoteStatusEndringService,
 ) {
     log.info("Setting up kafka consumer for ${KDialogmoteStatusEndring::class.java.simpleName}")
 
     val kafkaConsumerDialogmoteStatusEndring = KafkaConsumer<String, KDialogmoteStatusEndring>(
         kafkaDialogmoteStatusEndringConsumerConfig(
-            applicationEnvironmentKafka = applicationEnvironmentKafka
+            applicationKafkaEnvironment = applicationKafkaEnvironment
         )
     )
 

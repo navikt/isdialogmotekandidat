@@ -79,14 +79,14 @@ fun main() {
         if (environment.kafkaOppfolgingstilfellePersonProcessingEnabled) {
             launchKafkaTaskOppfolgingstilfellePerson(
                 applicationState = applicationState,
-                applicationEnvironmentKafka = environment.kafka,
+                applicationKafkaEnvironment = environment.kafka,
                 kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
             )
         }
         if (environment.kafkaDialogmoteStatusEndringProcessingEnabled) {
             launchKafkaTaskDialogmoteStatusEndring(
                 applicationState = applicationState,
-                applicationEnvironmentKafka = environment.kafka,
+                applicationKafkaEnvironment = environment.kafka,
                 kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
             )
         }
