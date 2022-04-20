@@ -5,11 +5,13 @@ import no.nav.syfo.application.*
 fun testEnvironment(
     kafkaBootstrapServers: String,
 ) = Environment(
-    isdialogmotekandidatDbHost = "localhost",
-    isdialogmotekandidatDbPort = "5432",
-    isdialogmotekandidatDbName = "isoppfolgingstilfelle_dev",
-    isdialogmotekandidatDbUsername = "username",
-    isdialogmotekandidatDbPassword = "password",
+    database = ApplicationEnvironmentDatabase(
+        host = "localhost",
+        port = "5432",
+        name = "isoppfolgingstilfelle_dev",
+        username = "username",
+        password = "password",
+    ),
     electorPath = "/tmp",
     kafka = ApplicationEnvironmentKafka(
         aivenBootstrapServers = kafkaBootstrapServers,
