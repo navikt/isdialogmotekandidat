@@ -15,7 +15,9 @@ import java.net.InetAddress
 class LeaderPodClient(
     private val electorPath: String,
 ) {
-    private val httpClient = HttpClient(CIO) {}
+    private val httpClient = HttpClient(CIO) {
+        expectSuccess = true
+    }
 
     private val objectMapper: ObjectMapper = configuredJacksonMapper()
 
