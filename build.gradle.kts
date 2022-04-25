@@ -17,6 +17,7 @@ object Versions {
     const val logback = "1.2.11"
     const val logstashEncoder = "7.1.1"
     const val micrometerRegistry = "1.8.5"
+    const val nimbusJoseJwt = "9.22"
     const val mockk = "1.12.3"
     const val postgres = "42.3.4"
     const val postgresEmbedded = "0.13.4"
@@ -49,7 +50,11 @@ dependencies {
 
     implementation("io.ktor:ktor-serialization-jackson:${Versions.ktor}")
     implementation("io.ktor:ktor-client-cio:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-apache:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-content-negotiation:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-content-negotiation:${Versions.ktor}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-auth-jwt:${Versions.ktor}")
 
     // Logging
     implementation("ch.qos.logback:logback-classic:${Versions.logback}")
@@ -78,6 +83,7 @@ dependencies {
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}", excludeLog4j)
 
+    testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusJoseJwt}")
     testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")
     testImplementation("io.mockk:mockk:${Versions.mockk}")
     testImplementation("org.amshove.kluent:kluent:${Versions.kluent}")
