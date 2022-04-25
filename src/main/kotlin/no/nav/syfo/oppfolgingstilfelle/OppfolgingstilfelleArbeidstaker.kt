@@ -1,6 +1,6 @@
 package no.nav.syfo.oppfolgingstilfelle
 
-import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatStoppunkt
+import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -16,6 +16,12 @@ data class OppfolgingstilfelleArbeidstaker(
     val referanseTilfelleBitUuid: UUID,
     val referanseTilfelleBitInntruffet: OffsetDateTime,
 )
+
+fun OppfolgingstilfelleArbeidstaker.isDialogmotekandidat(
+    latestEndring: DialogmotekandidatEndring?,
+): Boolean {
+    return this.isDialogmotekandidat() && latestEndring.ikkeKandidat()
+}
 
 fun OppfolgingstilfelleArbeidstaker.isDialogmotekandidat(): Boolean {
     val dialogmotekandidatStoppunktPlanlagt = DialogmotekandidatStoppunkt.stoppunktPlanlagtDato(tilfelleStart)

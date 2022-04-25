@@ -27,21 +27,21 @@ class DialogmotekandidatService(
         )
             ?: throw RuntimeException("No Oppfolgingstilfelle found for dialogmote-kandidat-stoppunkt with uuid: ${dialogmotekandidatStoppunkt.uuid}")
 
-        val status =
-            if (oppfolgingstilfelle.isDialogmotekandidat()) DialogmotekandidatStoppunktStatus.KANDIDAT
-            else DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
-
         database.connection.use { connection ->
+            val latestEndring = connection.getLatestDialogmotekandidatEndringForPerson(
+                personIdent = dialogmotekandidatStoppunkt.personIdent
+            )?.toDialogmotekandidatEndring()
+
+            val status =
+                if (oppfolgingstilfelle.isDialogmotekandidat(latestEndring = latestEndring)) DialogmotekandidatStoppunktStatus.KANDIDAT
+                else DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
+
             connection.updateDialogmotekandidatStoppunktStatus(
                 uuid = dialogmotekandidatStoppunkt.uuid,
                 status = status,
             )
 
-            val latestEndring = connection.getLatestDialogmotekandidatEndringForPerson(
-                personIdent = dialogmotekandidatStoppunkt.personIdent
-            )?.toDialogmotekandidatEndring()
-
-            if (status == DialogmotekandidatStoppunktStatus.KANDIDAT && latestEndring.ikkeKandidat()) {
+            if (status == DialogmotekandidatStoppunktStatus.KANDIDAT) {
                 val newDialogmotekandidatEndring = dialogmotekandidatStoppunkt.toDialogmotekandidatEndring()
                 createDialogmotekandidatEndring(
                     connection = connection,
