@@ -132,7 +132,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT.name
                 stoppunktKandidatEn.processedAt.shouldBeNull()
             }
-            it("Creates DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not kandidat  ") {
+            it("Updates status of DialogmotekandidatStoppunkt to KANDIDAT and creates DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not kandidat  ") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     planlagt = LocalDate.now(),
@@ -152,6 +152,11 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
+                val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+
+                stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.KANDIDAT.name
+                stoppunktKandidatEn.processedAt.shouldNotBeNull()
+
                 val latestDialogmotekandidatEndring = database.connection.getLatestDialogmotekandidatEndringForPerson(
                     personIdent = kandidatFirstPersonIdent
                 )
@@ -161,7 +166,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
             }
 
-            it("Creates no new DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is kandidat ") {
+            it("Updates status of DialogmotekandidatStoppunkt to IKKE_KANDIDAT and creates no new DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is kandidat ") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     planlagt = LocalDate.now(),
@@ -185,6 +190,11 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 verify(exactly = 0) {
                     dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
+
+                val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+
+                stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name
+                stoppunktKandidatEn.processedAt.shouldNotBeNull()
 
                 val latestDialogmotekandidatEndring =
                     database.connection.getLatestDialogmotekandidatEndringForPerson(
