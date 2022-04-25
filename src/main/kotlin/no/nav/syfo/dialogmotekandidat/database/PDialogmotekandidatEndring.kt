@@ -14,4 +14,6 @@ data class PDialogmotekandidatEndring(
     val arsak: String,
 )
 
+fun List<PDialogmotekandidatEndring>.toDialogmotekandidatEndringList() = map { it.toDialogmotekandidatEndring() }
+
 fun PDialogmotekandidatEndring.toDialogmotekandidatEndring() = DialogmotekandidatEndring.create(this)

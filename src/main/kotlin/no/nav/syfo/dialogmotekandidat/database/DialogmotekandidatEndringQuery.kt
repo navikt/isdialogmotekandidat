@@ -47,12 +47,12 @@ const val queryGetDialogmotekandidatEndringForPerson =
         ORDER BY created_at DESC;
     """
 
-fun Connection.getLatestDialogmotekandidatEndringForPerson(
+fun Connection.getDialogmotekandidatEndringListForPerson(
     personIdent: PersonIdentNumber,
-): PDialogmotekandidatEndring? = prepareStatement(queryGetDialogmotekandidatEndringForPerson).use {
+): List<PDialogmotekandidatEndring> = prepareStatement(queryGetDialogmotekandidatEndringForPerson).use {
     it.setString(1, personIdent.value)
     it.executeQuery().toList { toPDialogmotekandidatEndringList() }
-}.firstOrNull()
+}
 
 fun ResultSet.toPDialogmotekandidatEndringList() =
     PDialogmotekandidatEndring(
