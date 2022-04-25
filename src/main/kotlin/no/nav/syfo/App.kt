@@ -10,6 +10,7 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
+import no.nav.syfo.client.wellknown.getWellKnown
 import no.nav.syfo.cronjob.launchCronjobModule
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
@@ -29,6 +30,9 @@ fun main() {
     val applicationState = ApplicationState()
     val logger = LoggerFactory.getLogger("ktor.application")
     val environment = Environment()
+    val wellKnownInternalAzureAD = getWellKnown(
+        wellKnownUrl = environment.azure.appWellKnownUrl,
+    )
 
     val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
         kafkaProducerDialogmotekandidatEndring = KafkaProducer(
@@ -52,6 +56,7 @@ fun main() {
                 applicationState = applicationState,
                 database = applicationDatabase,
                 environment = environment,
+                wellKnownInternalAzureAD = wellKnownInternalAzureAD,
             )
         }
     }

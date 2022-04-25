@@ -34,7 +34,6 @@ object PodApiSpek : Spek({
             }
             it("Returns ok on is_alive") {
                 with(handleRequest(HttpMethod.Get, "/internal/is_ready")) {
-                    println(response.status())
                     response.status()?.isSuccess() shouldBeEqualTo true
                     response.content shouldNotBeEqualTo null
                 }
