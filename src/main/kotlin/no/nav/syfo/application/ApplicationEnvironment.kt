@@ -3,6 +3,8 @@ package no.nav.syfo.application
 import io.ktor.server.application.*
 import no.nav.syfo.application.database.DatabaseEnvironment
 import no.nav.syfo.application.kafka.KafkaEnvironment
+import no.nav.syfo.client.ClientEnvironment
+import no.nav.syfo.client.ClientsEnvironment
 import no.nav.syfo.client.azuread.AzureEnvironment
 
 const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB"
@@ -36,7 +38,13 @@ data class Environment(
     ),
     val kafkaOppfolgingstilfellePersonProcessingEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_OPPFOLGINGSTILFELLE_PERSON_PROCESSING_ENABLED").toBoolean(),
     val dialogmotekandidatStoppunktCronjobEnabled: Boolean = getEnvVar("TOGGLE_DIALOGMOTEKANDIDAT_STOPPUNKT_CRONJOB_ENABLED").toBoolean(),
-    val kafkaDialogmoteStatusEndringProcessingEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_DIALOGMOTE_STATUS_ENDRING_PROCESSING_ENABLED").toBoolean()
+    val kafkaDialogmoteStatusEndringProcessingEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_DIALOGMOTE_STATUS_ENDRING_PROCESSING_ENABLED").toBoolean(),
+    val clients: ClientsEnvironment = ClientsEnvironment(
+        syfotilgangskontroll = ClientEnvironment(
+            baseUrl = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
+            clientId = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
+        ),
+    ),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
