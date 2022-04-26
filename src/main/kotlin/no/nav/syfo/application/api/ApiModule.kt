@@ -11,6 +11,8 @@ import no.nav.syfo.application.metric.registerMetricApi
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.client.wellknown.WellKnown
+import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
+import no.nav.syfo.unntak.UnntakService
 import no.nav.syfo.unntak.api.registerUnntakApi
 
 fun Application.apiModule(
@@ -18,6 +20,7 @@ fun Application.apiModule(
     database: DatabaseInterface,
     environment: Environment,
     wellKnownInternalAzureAD: WellKnown,
+    dialogmotekandidatService: DialogmotekandidatService,
 ) {
     installMetrics()
     installCallId()
@@ -40,6 +43,10 @@ fun Application.apiModule(
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.syfotilgangskontroll
     )
+    val unntakService = UnntakService(
+        database = database,
+        dialogmotekandidatService = dialogmotekandidatService
+    )
 
     routing {
         registerPodApi(
@@ -48,7 +55,10 @@ fun Application.apiModule(
         )
         registerMetricApi()
         authenticate(JwtIssuerType.INTERNAL_AZUREAD.name) {
-            registerUnntakApi(veilederTilgangskontrollClient = veilederTilgangskontrollClient)
+            registerUnntakApi(
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                unntakService = unntakService
+            )
         }
     }
 }

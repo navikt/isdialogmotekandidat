@@ -41,6 +41,7 @@ fun main() {
             )
         )
     )
+    lateinit var dialogmotekandidatService: DialogmotekandidatService
 
     val applicationEngineEnvironment = applicationEngineEnvironment {
         log = logger
@@ -52,11 +53,21 @@ fun main() {
             databaseModule(
                 databaseEnvironment = environment.database,
             )
+
+            val oppfolgingstilfelleService = OppfolgingstilfelleService(
+                database = applicationDatabase
+            )
+            dialogmotekandidatService = DialogmotekandidatService(
+                oppfolgingstilfelleService = oppfolgingstilfelleService,
+                dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
+                database = applicationDatabase,
+            )
             apiModule(
                 applicationState = applicationState,
                 database = applicationDatabase,
                 environment = environment,
                 wellKnownInternalAzureAD = wellKnownInternalAzureAD,
+                dialogmotekandidatService = dialogmotekandidatService,
             )
         }
     }
@@ -65,14 +76,6 @@ fun main() {
         applicationState.ready = true
         logger.info("Application is ready")
 
-        val oppfolgingstilfelleService = OppfolgingstilfelleService(
-            database = applicationDatabase
-        )
-        val dialogmotekandidatService = DialogmotekandidatService(
-            database = applicationDatabase,
-            oppfolgingstilfelleService = oppfolgingstilfelleService,
-            dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
-        )
         val kafkaOppfolgingstilfellePersonService = KafkaOppfolgingstilfellePersonService(
             database = applicationDatabase,
         )
