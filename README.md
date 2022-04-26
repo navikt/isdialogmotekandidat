@@ -9,6 +9,7 @@
 * Kotlin
 * Ktor
 * Postgres
+* Kafka
 
 ##### Test Libraries:
 
