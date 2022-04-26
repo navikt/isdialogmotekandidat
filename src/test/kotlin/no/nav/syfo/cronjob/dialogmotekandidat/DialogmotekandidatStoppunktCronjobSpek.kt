@@ -12,6 +12,7 @@ import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.oppfolgingstilfelle.database.createOppfolgingstilfelleArbeidstaker
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
+import no.nav.syfo.util.defaultZoneOffset
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -132,7 +133,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT.name
                 stoppunktKandidatEn.processedAt.shouldBeNull()
             }
-            it("Updates status of DialogmotekandidatStoppunkt to KANDIDAT and creates DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not kandidat  ") {
+            it("Updates status of DialogmotekandidatStoppunkt to KANDIDAT and creates DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not Kandidat") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     planlagt = LocalDate.now(),
@@ -157,16 +158,118 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.KANDIDAT.name
                 stoppunktKandidatEn.processedAt.shouldNotBeNull()
 
-                val latestDialogmotekandidatEndring = database.connection.getLatestDialogmotekandidatEndringForPerson(
+                val latestDialogmotekandidatEndring = database.connection.getDialogmotekandidatEndringListForPerson(
                     personIdent = kandidatFirstPersonIdent
-                )
+                ).firstOrNull()
 
-                latestDialogmotekandidatEndring shouldNotBeEqualTo null
-                latestDialogmotekandidatEndring!!.kandidat shouldBeEqualTo true
+                latestDialogmotekandidatEndring.shouldNotBeNull()
+                latestDialogmotekandidatEndring.kandidat shouldBeEqualTo true
                 latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
             }
 
-            it("Updates status of DialogmotekandidatStoppunkt to IKKE_KANDIDAT and creates no new DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is kandidat ") {
+            it("Updates status of DialogmotekandidatStoppunkt to KANDIDAT and creates new DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not Kandidat, and has been Kandidat with DialogmotekandidatEndringArsak Stoppunkt before start of latest Oppfolgingstilfelle") {
+                val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    planlagt = LocalDate.now(),
+                )
+                createDialogmotekandidatStoppunkt(dialogmotekandidatStoppunkt = stoppunktPlanlagtIDag)
+
+                val oppfolgingstilfelleKandidatEn = generateOppfolgingstilfelleArbeidstaker(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                )
+                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
+
+                val dialogmotekandidatEndringStoppunkt = generateDialogmotekandidatEndringStoppunkt(
+                    personIdentNumber = kandidatFirstPersonIdent,
+                ).copy(
+                    createdAt = oppfolgingstilfelleKandidatEn.tilfelleStart.minusDays(1).atStartOfDay()
+                        .atOffset(defaultZoneOffset)
+                )
+                database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndringStoppunkt)
+
+                val dialogmotekandidatEndringFerdigstilt = generateDialogmotekandidatEndringFerdigstilt(
+                    personIdentNumber = kandidatFirstPersonIdent,
+                ).copy(
+                    createdAt = dialogmotekandidatEndringStoppunkt.createdAt.plusDays(1)
+                )
+                database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndringFerdigstilt)
+
+                val result = dialogmotekandidatStoppunktCronjob.runJob()
+
+                result.updated shouldBeEqualTo 1
+                verify(exactly = 1) {
+                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                }
+
+                val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+
+                stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.KANDIDAT.name
+                stoppunktKandidatEn.processedAt.shouldNotBeNull()
+
+                val dialogmotekandidatEndringList = database.connection.getDialogmotekandidatEndringListForPerson(
+                    personIdent = kandidatFirstPersonIdent
+                )
+                dialogmotekandidatEndringList.size shouldBeEqualTo 3
+
+                val firstDialogmotekandidatEndring = dialogmotekandidatEndringList[2]
+                firstDialogmotekandidatEndring.shouldNotBeNull()
+                firstDialogmotekandidatEndring.kandidat shouldBeEqualTo true
+                firstDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
+
+                val secondDialogmotekandidatEndring = dialogmotekandidatEndringList[1]
+                secondDialogmotekandidatEndring.shouldNotBeNull()
+                secondDialogmotekandidatEndring.kandidat shouldBeEqualTo false
+                secondDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name
+
+                val lastDialogmotekandidatEndring = dialogmotekandidatEndringList[0]
+                lastDialogmotekandidatEndring.shouldNotBeNull()
+                lastDialogmotekandidatEndring.kandidat shouldBeEqualTo true
+                lastDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
+            }
+
+            it("Updates status of DialogmotekandidatStoppunkt to IKKE_KANDIDAT and creates no new DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not Kandidat, but has been Kandidat with DialogmotekandidatEndringArsak Stoppunkt in latest Oppfolgingstilfelle") {
+                val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    planlagt = LocalDate.now(),
+                )
+                createDialogmotekandidatStoppunkt(dialogmotekandidatStoppunkt = stoppunktPlanlagtIDag)
+
+                val oppfolgingstilfelleKandidatEn = generateOppfolgingstilfelleArbeidstaker(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                )
+                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
+
+                val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
+                    personIdentNumber = kandidatFirstPersonIdent,
+                ).copy(
+                    createdAt = oppfolgingstilfelleKandidatEn.tilfelleEnd.minusDays(1).atStartOfDay()
+                        .atOffset(defaultZoneOffset)
+                )
+                database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
+
+                val result = dialogmotekandidatStoppunktCronjob.runJob()
+
+                result.updated shouldBeEqualTo 1
+                verify(exactly = 0) {
+                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                }
+
+                val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+
+                stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name
+                stoppunktKandidatEn.processedAt.shouldNotBeNull()
+
+                val latestDialogmotekandidatEndring =
+                    database.connection.getDialogmotekandidatEndringListForPerson(
+                        personIdent = kandidatFirstPersonIdent
+                    ).firstOrNull()
+
+                latestDialogmotekandidatEndring?.uuid shouldBeEqualTo dialogmotekandidatEndring.uuid
+            }
+
+            it("Updates status of DialogmotekandidatStoppunkt to IKKE_KANDIDAT and creates no new DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is Kandidat") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     planlagt = LocalDate.now(),
@@ -197,9 +300,9 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 stoppunktKandidatEn.processedAt.shouldNotBeNull()
 
                 val latestDialogmotekandidatEndring =
-                    database.connection.getLatestDialogmotekandidatEndringForPerson(
+                    database.connection.getDialogmotekandidatEndringListForPerson(
                         personIdent = kandidatFirstPersonIdent
-                    )
+                    ).firstOrNull()
 
                 latestDialogmotekandidatEndring?.uuid shouldBeEqualTo dialogmotekandidatEndring.uuid
             }

@@ -3,6 +3,7 @@ package no.nav.syfo.dialogmotekandidat.domain
 import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
@@ -59,4 +60,27 @@ fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring() = KafkaDialogmo
     arsak = this.arsak.name,
 )
 
-fun DialogmotekandidatEndring?.ikkeKandidat(): Boolean = this == null || !this.kandidat
+fun DialogmotekandidatEndring.isNotInOppfolgingstilfelle(
+    oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker,
+): Boolean {
+    val stoppunktKandidatAt = createdAt.toLocalDate()
+    return stoppunktKandidatAt.isBefore(oppfolgingstilfelle.tilfelleStart) || stoppunktKandidatAt.isAfter(oppfolgingstilfelle.tilfelleEnd)
+}
+
+private fun DialogmotekandidatEndring?.ikkeKandidat(): Boolean = this == null || !this.kandidat
+
+fun List<DialogmotekandidatEndring>.latest() = maxByOrNull { it.createdAt }
+
+fun List<DialogmotekandidatEndring>.isLatestIkkeKandidat() = this.latest().ikkeKandidat()
+
+private fun List<DialogmotekandidatEndring>.latestStoppunktKandidat() =
+    filter {
+        it.arsak == DialogmotekandidatEndringArsak.STOPPUNKT && it.kandidat
+    }.latest()
+
+fun List<DialogmotekandidatEndring>.isLatestStoppunktKandidatNotInOppfolgingstilfelle(
+    oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker,
+) = latestStoppunktKandidat()
+    ?.isNotInOppfolgingstilfelle(
+        oppfolgingstilfelle = oppfolgingstilfelle,
+    ) ?: true

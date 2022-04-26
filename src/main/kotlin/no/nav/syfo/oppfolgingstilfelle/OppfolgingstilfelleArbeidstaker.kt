@@ -18,10 +18,12 @@ data class OppfolgingstilfelleArbeidstaker(
 )
 
 fun OppfolgingstilfelleArbeidstaker.isDialogmotekandidat(
-    latestEndring: DialogmotekandidatEndring?,
-): Boolean {
-    return this.isDialogmotekandidat() && latestEndring.ikkeKandidat()
-}
+    dialogmotekandidatEndringList: List<DialogmotekandidatEndring>,
+) = isDialogmotekandidat() &&
+    dialogmotekandidatEndringList.isLatestIkkeKandidat() &&
+    dialogmotekandidatEndringList.isLatestStoppunktKandidatNotInOppfolgingstilfelle(
+        oppfolgingstilfelle = this,
+    )
 
 fun OppfolgingstilfelleArbeidstaker.isDialogmotekandidat(): Boolean {
     val dialogmotekandidatStoppunktPlanlagt = DialogmotekandidatStoppunkt.stoppunktPlanlagtDato(tilfelleStart)

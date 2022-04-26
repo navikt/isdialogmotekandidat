@@ -4,7 +4,7 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
-import no.nav.syfo.dialogmotekandidat.database.getLatestDialogmotekandidatEndringForPerson
+import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
@@ -118,9 +118,9 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                     }
 
                     val latestDialogmotekandidatEndring =
-                        database.connection.getLatestDialogmotekandidatEndringForPerson(
+                        database.connection.getDialogmotekandidatEndringListForPerson(
                             personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER
-                        )
+                        ).firstOrNull()
 
                     latestDialogmotekandidatEndring!!.kandidat shouldBeEqualTo false
                     latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name
@@ -140,9 +140,9 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                     }
 
                     val latestDialogmotekandidatEndring =
-                        database.connection.getLatestDialogmotekandidatEndringForPerson(
+                        database.connection.getDialogmotekandidatEndringListForPerson(
                             personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER
-                        )
+                        ).firstOrNull()
 
                     latestDialogmotekandidatEndring!!.uuid shouldBeEqualTo dialogmotekandidatEndringCreatedAfterStatusEndring.uuid
                 }

@@ -3,9 +3,10 @@ package no.nav.syfo.dialogmotestatusendring.kafka
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
-import no.nav.syfo.dialogmotekandidat.database.getLatestDialogmotekandidatEndringForPerson
-import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatEndring
+import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
+import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatEndringList
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
+import no.nav.syfo.dialogmotekandidat.domain.latest
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
 import no.nav.syfo.dialogmotestatusendring.domain.isFerdigstilt
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -63,8 +64,9 @@ class KafkaDialogmoteStatusEndringService(
         }
 
         val latestDialogmotekandidatEndring =
-            connection.getLatestDialogmotekandidatEndringForPerson(personIdent = dialogmoteStatusEndring.personIdentNumber)
-                ?.toDialogmotekandidatEndring()
+            connection.getDialogmotekandidatEndringListForPerson(personIdent = dialogmoteStatusEndring.personIdentNumber)
+                .toDialogmotekandidatEndringList()
+                .latest()
 
         if (shouldCreateDialogmotekandidatEndring(
                 latestDialogmotekandidatEndring = latestDialogmotekandidatEndring,
