@@ -63,3 +63,7 @@ spec:
       value: "false"
     - name: TOGGLE_KAFKA_DIALOGMOTE_STATUS_ENDRING_PROCESSING_ENABLED
       value: "false"
+    - name: SYFOTILGANGSKONTROLL_CLIENT_ID
+      value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
+    - name: SYFOTILGANGSKONTROLL_URL
+      value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"

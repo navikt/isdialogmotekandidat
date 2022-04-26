@@ -52,9 +52,11 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:${Versions.ktor}")
     implementation("io.ktor:ktor-client-apache:${Versions.ktor}")
     implementation("io.ktor:ktor-client-content-negotiation:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-auth-jwt:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-call-id:${Versions.ktor}")
     implementation("io.ktor:ktor-server-content-negotiation:${Versions.ktor}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
-    implementation("io.ktor:ktor-server-auth-jwt:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-status-pages:${Versions.ktor}")
 
     // Logging
     implementation("ch.qos.logback:logback-classic:${Versions.logback}")
