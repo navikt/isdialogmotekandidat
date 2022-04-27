@@ -8,4 +8,5 @@ object UserConstants {
     val PERSONIDENTNUMBER_VEILEDER_NO_ACCESS = PersonIdentNumber(ARBEIDSTAKER_PERSONIDENTNUMBER.value.replace("2", "1"))
 
     val VIRKSOMHETSNUMMER_DEFAULT = Virksomhetsnummer("987654321")
+    const val VEILEDER_IDENT = "Z999999"
 }
