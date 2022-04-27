@@ -1,7 +1,5 @@
 package no.nav.syfo.testhelper
 
-import io.ktor.server.netty.*
-import kotlinx.coroutines.runBlocking
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
@@ -34,8 +32,8 @@ class ExternalMockEnvironment private constructor() {
     val environment: Environment by lazy {
         testEnvironment(
             kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-            azureOpenIdTokenEndpoint = getMockUrl(azureAdMock.server),
-            syfoTilgangskontrollUrl = getMockUrl(syfoTilgangskontrollMock.server),
+            azureOpenIdTokenEndpoint = azureAdMock.url(),
+            syfoTilgangskontrollUrl = syfoTilgangskontrollMock.url(),
         )
     }
 
@@ -53,9 +51,4 @@ class ExternalMockEnvironment private constructor() {
 fun ExternalMockEnvironment.startExternalMocks() {
     this.embeddedEnvironment.start()
     this.externalMocks.forEach { (_, externalMock) -> externalMock.start() }
-}
-
-fun getMockUrl(server: NettyApplicationEngine): String {
-    val port = runBlocking { server.resolvedConnectors().first().port }
-    return "http://localhost:$port"
 }

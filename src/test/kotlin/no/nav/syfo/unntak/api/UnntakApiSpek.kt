@@ -8,7 +8,9 @@ import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListF
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
+import no.nav.syfo.unntak.database.getUnntakList
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
@@ -35,6 +37,10 @@ class UnntakApiSpek : Spek({
             val validToken = generateJWT(
                 audience = externalMockEnvironment.environment.azure.appClientId,
                 issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
+                navIdent = UserConstants.VEILEDER_IDENT,
+            )
+            val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
+                personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
             )
 
             beforeEachTest {
@@ -45,7 +51,8 @@ class UnntakApiSpek : Spek({
             }
 
             describe("Happy path") {
-                it("creates Unntak and DialogmotekandidatEndring (not kandidat) for person") {
+                it("creates Unntak and DialogmotekandidatEndring (not kandidat) when person is kandidat") {
+                    database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
                     val newUnntakDTO =
                         generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
                     with(
@@ -68,7 +75,14 @@ class UnntakApiSpek : Spek({
                         latestDialogmotekandidatEndring!!.kandidat shouldBeEqualTo false
                         latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.UNNTAK.name
 
-                        // TODO: Test unntak persisted
+                        val latestUnntak =
+                            database.getUnntakList(
+                                personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+                            ).first()
+                        latestUnntak.createdAt shouldNotBeEqualTo null
+                        latestUnntak.personIdent shouldBeEqualTo UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                        latestUnntak.createdBy shouldBeEqualTo UserConstants.VEILEDER_IDENT
+                        latestUnntak.arsak shouldBeEqualTo newUnntakDTO.arsak
                     }
                 }
             }
@@ -94,6 +108,22 @@ class UnntakApiSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        verify(exactly = 0) {
+                            dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        }
+                    }
+                }
+                it("returns Conflict when person is not kandidat") {
+                    val newUnntakDTO =
+                        generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+                    with(
+                        handleRequest(HttpMethod.Post, urlUnntakPersonIdent) {
+                            addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(objectMapper.writeValueAsString(newUnntakDTO))
+                        }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Conflict
                         verify(exactly = 0) {
                             dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                         }
