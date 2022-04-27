@@ -49,21 +49,26 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
             partition
         )
 
+        val statusEndringTidspunkt = OffsetDateTime.now()
         val dialogmotekandidatEndringCreatedBeforeStatusEndring = generateDialogmotekandidatEndringStoppunkt(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+        ).copy(
+            createdAt = statusEndringTidspunkt.minusDays(1)
         )
         val kDialogmoteStatusEndringFerdigstilt = generateKDialogmoteStatusEndring(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
             statusEndringType = DialogmoteStatusEndringType.FERDIGSTILT,
-            endringsTidspunkt = OffsetDateTime.now(),
+            endringsTidspunkt = statusEndringTidspunkt,
         )
         val kDialogmoteStatusEndringInnkalt = generateKDialogmoteStatusEndring(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
             statusEndringType = DialogmoteStatusEndringType.INNKALT,
-            endringsTidspunkt = OffsetDateTime.now(),
+            endringsTidspunkt = statusEndringTidspunkt,
         )
         val dialogmotekandidatEndringCreatedAfterStatusEndring = generateDialogmotekandidatEndringStoppunkt(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+        ).copy(
+            createdAt = statusEndringTidspunkt.plusDays(1)
         )
 
         val kDialogmoteStatusEndringFerdigstiltRecord = ConsumerRecord(

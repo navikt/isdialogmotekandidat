@@ -3,11 +3,16 @@ package no.nav.syfo.unntak.api
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.mockk.*
+import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
+import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
+import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -19,16 +24,28 @@ class UnntakApiSpek : Spek({
         with(TestApplicationEngine()) {
             start()
             val externalMockEnvironment = ExternalMockEnvironment.instance
+            val database = externalMockEnvironment.database
+            val dialogmotekandidatEndringProducer = mockk<DialogmotekandidatEndringProducer>()
+
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
+                dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
             )
+
             val validToken = generateJWT(
                 audience = externalMockEnvironment.environment.azure.appClientId,
                 issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
             )
 
+            beforeEachTest {
+                database.dropData()
+
+                clearMocks(dialogmotekandidatEndringProducer)
+                justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any()) }
+            }
+
             describe("Happy path") {
-                it("creates unntak and DialogmotekandidatEndring (not kandidat) for person") {
+                it("creates Unntak and DialogmotekandidatEndring (not kandidat) for person") {
                     val newUnntakDTO =
                         generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
                     with(
@@ -39,6 +56,19 @@ class UnntakApiSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.Created
+                        verify(exactly = 1) {
+                            dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        }
+
+                        val latestDialogmotekandidatEndring =
+                            database.connection.getDialogmotekandidatEndringListForPerson(
+                                personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+                            ).firstOrNull()
+                        latestDialogmotekandidatEndring shouldNotBeEqualTo null
+                        latestDialogmotekandidatEndring!!.kandidat shouldBeEqualTo false
+                        latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.UNNTAK.name
+
+                        // TODO: Test unntak persisted
                     }
                 }
             }
@@ -48,6 +78,9 @@ class UnntakApiSpek : Spek({
                         handleRequest(HttpMethod.Post, urlUnntakPersonIdent) {}
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                        verify(exactly = 0) {
+                            dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        }
                     }
                 }
                 it("returns status Forbidden if denied access to person") {
@@ -61,6 +94,9 @@ class UnntakApiSpek : Spek({
                         }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                        verify(exactly = 0) {
+                            dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        }
                     }
                 }
             }

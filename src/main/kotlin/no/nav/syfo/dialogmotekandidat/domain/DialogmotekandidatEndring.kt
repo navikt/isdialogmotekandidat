@@ -11,6 +11,7 @@ import java.util.*
 enum class DialogmotekandidatEndringArsak {
     STOPPUNKT,
     DIALOGMOTE_FERDIGSTILT,
+    UNNTAK,
 }
 
 data class DialogmotekandidatEndring private constructor(
@@ -23,9 +24,7 @@ data class DialogmotekandidatEndring private constructor(
     companion object {
         fun stoppunktKandidat(
             personIdentNumber: PersonIdentNumber,
-        ) = DialogmotekandidatEndring(
-            uuid = UUID.randomUUID(),
-            createdAt = nowUTC(),
+        ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = true,
             arsak = DialogmotekandidatEndringArsak.STOPPUNKT,
@@ -42,12 +41,30 @@ data class DialogmotekandidatEndring private constructor(
 
         fun ferdigstiltDialogmote(
             personIdentNumber: PersonIdentNumber,
+        ) = create(
+            personIdentNumber = personIdentNumber,
+            kandidat = false,
+            arsak = DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT
+        )
+
+        fun unntak(
+            personIdentNumber: PersonIdentNumber,
+        ) = create(
+            personIdentNumber = personIdentNumber,
+            kandidat = false,
+            arsak = DialogmotekandidatEndringArsak.UNNTAK
+        )
+
+        private fun create(
+            personIdentNumber: PersonIdentNumber,
+            kandidat: Boolean,
+            arsak: DialogmotekandidatEndringArsak,
         ) = DialogmotekandidatEndring(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
             personIdentNumber = personIdentNumber,
-            kandidat = false,
-            arsak = DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT,
+            kandidat = kandidat,
+            arsak = arsak
         )
     }
 }
