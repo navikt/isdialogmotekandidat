@@ -8,5 +8,5 @@ fun generateNewUnntakDTO(
     personIdent: PersonIdentNumber,
 ) = NewUnntakDTO(
     personIdent = personIdent.value,
-    arsak = UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER.name
+    arsak = UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER.name,
 )
