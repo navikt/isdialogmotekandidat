@@ -8,4 +8,5 @@ data class UnntakDTO(
     val createdBy: String,
     val personIdent: String,
     val arsak: String,
+    val begrunnelse: String?,
 )

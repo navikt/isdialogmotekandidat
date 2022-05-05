@@ -1,0 +1,2 @@
+ALTER TABLE UNNTAK
+    ADD COLUMN begrunnelse TEXT;

@@ -13,6 +13,7 @@ data class PUnntak(
     val createdBy: String,
     val personIdent: String,
     val arsak: String,
+    val begrunnelse: String?,
 )
 
 fun List<PUnntak>.toUnntakList() = this.map { pUnntak ->
@@ -22,5 +23,6 @@ fun List<PUnntak>.toUnntakList() = this.map { pUnntak ->
         createdBy = pUnntak.createdBy,
         personIdent = PersonIdentNumber(pUnntak.personIdent),
         arsak = UnntakArsak.valueOf(pUnntak.arsak),
+        begrunnelse = pUnntak.begrunnelse,
     )
 }
