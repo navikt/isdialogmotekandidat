@@ -31,7 +31,7 @@ jobs:
         if: ${{ !env.found_image }}
         uses: actions/setup-java@v1
         with:
-          java-version: '11.x'
+          java-version: '17.x'
       - name: Checkout code
         if: ${{ !env.found_image }}
         uses: actions/checkout@v2
@@ -45,6 +45,15 @@ jobs:
         if: ${{ !env.found_image }}
         run: |
           ./gradlew shadowJar -x test
+      - name: Install cosign
+        if: ${{ !env.found_image }}
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v1.3.1'
+      - name: Verify distroless base image
+        if: ${{ !env.found_image }}
+        run: |
+          cosign verify --key distroless.pub gcr.io/distroless/java17
       - name: Build and publish Docker image if not already done
         if: ${{ !env.found_image }}
         env:
