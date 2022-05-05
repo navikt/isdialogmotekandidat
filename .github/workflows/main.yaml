@@ -40,6 +40,13 @@ jobs:
       - name: Build jar
         run: |
           ./gradlew shadowJar -x test
+      - name: Install cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v1.3.1'
+      - name: Verify distroless base image
+        run: |
+          cosign verify --key distroless.pub gcr.io/distroless/java17
       - name: Build and publish Docker image
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
