@@ -8,7 +8,7 @@ import io.ktor.server.routing.*
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.unntak.UnntakService
-import no.nav.syfo.unntak.api.domain.NewUnntakDTO
+import no.nav.syfo.unntak.api.domain.CreateUnntakDTO
 import no.nav.syfo.unntak.api.domain.toUnntak
 import no.nav.syfo.unntak.domain.toUnntakDTOList
 import no.nav.syfo.util.*
@@ -22,14 +22,14 @@ fun Route.registerUnntakApi(
 ) {
     route(unntakApiBasePath) {
         post(unntakApiPersonidentPath) {
-            val newUnntakDTO = call.receive<NewUnntakDTO>()
-            val personIdent = PersonIdentNumber(newUnntakDTO.personIdent)
+            val createUnntakDTO = call.receive<CreateUnntakDTO>()
+            val personIdent = PersonIdentNumber(createUnntakDTO.personIdent)
             validateVeilederAccess(
                 action = "Create unntak for person",
                 personIdentToAccess = personIdent,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val unntak = newUnntakDTO.toUnntak(
+                val unntak = createUnntakDTO.toUnntak(
                     createdByIdent = call.getNAVIdent()
                 )
                 unntakService.createUnntak(unntak)

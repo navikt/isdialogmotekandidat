@@ -2,11 +2,11 @@ package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.unntak.domain.UnntakArsak
-import no.nav.syfo.unntak.api.domain.NewUnntakDTO
+import no.nav.syfo.unntak.api.domain.CreateUnntakDTO
 
 fun generateNewUnntakDTO(
     personIdent: PersonIdentNumber,
-) = NewUnntakDTO(
+) = CreateUnntakDTO(
     personIdent = personIdent.value,
     arsak = UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER.name,
     begrunnelse = "Dette er en begrunnelse",

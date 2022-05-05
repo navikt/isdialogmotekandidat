@@ -6,13 +6,13 @@ import no.nav.syfo.unntak.domain.UnntakArsak
 import no.nav.syfo.util.nowUTC
 import java.util.*
 
-data class NewUnntakDTO(
+data class CreateUnntakDTO(
     val personIdent: String,
     val arsak: String,
     val begrunnelse: String?,
 )
 
-fun NewUnntakDTO.toUnntak(
+fun CreateUnntakDTO.toUnntak(
     createdByIdent: String,
 ) = Unntak(
     uuid = UUID.randomUUID(),
