@@ -18,5 +18,5 @@ fun NewUnntakDTO.toUnntak(
     createdAt = nowUTC(),
     createdBy = createdByIdent,
     personIdent = PersonIdentNumber(this.personIdent),
-    arsak = UnntakArsak.valueOf(this.arsak)
+    arsak = UnntakArsak.valueOf(this.arsak),
 )
