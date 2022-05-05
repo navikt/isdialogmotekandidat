@@ -9,6 +9,7 @@ import java.util.*
 data class NewUnntakDTO(
     val personIdent: String,
     val arsak: String,
+    val begrunnelse: String?,
 )
 
 fun NewUnntakDTO.toUnntak(
@@ -19,4 +20,5 @@ fun NewUnntakDTO.toUnntak(
     createdBy = createdByIdent,
     personIdent = PersonIdentNumber(this.personIdent),
     arsak = UnntakArsak.valueOf(this.arsak),
+    begrunnelse = this.begrunnelse,
 )
