@@ -19,7 +19,7 @@ data class Unntak(
     val createdBy: String,
     val personIdent: PersonIdentNumber,
     val arsak: UnntakArsak,
-    val begrunnelse: String?,
+    val beskrivelse: String?,
 )
 
 fun List<Unntak>.toUnntakDTOList() = this.map { unntak ->
@@ -29,6 +29,6 @@ fun List<Unntak>.toUnntakDTOList() = this.map { unntak ->
         createdBy = unntak.createdBy,
         personIdent = unntak.personIdent.value,
         arsak = unntak.arsak.name,
-        begrunnelse = unntak.begrunnelse,
+        beskrivelse = unntak.beskrivelse,
     )
 }
