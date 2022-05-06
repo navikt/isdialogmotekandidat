@@ -6,6 +6,7 @@ import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING
 import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING
+import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.oppfolgingstilfelle.isDialogmotekandidat
 import org.slf4j.LoggerFactory
@@ -16,6 +17,12 @@ class DialogmotekandidatService(
     private val dialogmotekandidatEndringProducer: DialogmotekandidatEndringProducer,
     private val database: DatabaseInterface,
 ) {
+    fun getLatestDialogmotekandidatEndring(personIdent: PersonIdentNumber): DialogmotekandidatEndring? {
+        return database.connection.use { connection ->
+            connection.getDialogmotekandidatEndringListForPerson(personIdent = personIdent)
+        }.toDialogmotekandidatEndringList().firstOrNull()
+    }
+
     fun getDialogmotekandidatMedStoppunktPlanlagtTodayList(): List<DialogmotekandidatStoppunkt> =
         database.getDialogmotekandidatStoppunktTodayList().toDialogmotekandidatStoppunktList()
 

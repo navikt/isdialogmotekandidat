@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmotekandidat.domain
 
+import no.nav.syfo.dialogmotekandidat.api.DialogmotekandidatDTO
 import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
@@ -68,6 +69,10 @@ data class DialogmotekandidatEndring private constructor(
         )
     }
 }
+
+fun DialogmotekandidatEndring?.toDialogmotekandidatDTO() = DialogmotekandidatDTO(
+    kandidat = this?.kandidat ?: false,
+)
 
 fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring() = KafkaDialogmotekandidatEndring(
     uuid = this.uuid.toString(),

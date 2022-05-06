@@ -12,6 +12,7 @@ import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.client.wellknown.WellKnown
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
+import no.nav.syfo.dialogmotekandidat.api.registerDialogmotekandidatApi
 import no.nav.syfo.unntak.UnntakService
 import no.nav.syfo.unntak.api.registerUnntakApi
 
@@ -55,6 +56,10 @@ fun Application.apiModule(
         )
         registerMetricApi()
         authenticate(JwtIssuerType.INTERNAL_AZUREAD.name) {
+            registerDialogmotekandidatApi(
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                dialogmotekandidatService = dialogmotekandidatService
+            )
             registerUnntakApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 unntakService = unntakService
