@@ -77,7 +77,7 @@ class UnntakApiSpek : Spek({
                             unntakDTO.personIdent shouldBeEqualTo UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
                             unntakDTO.createdBy shouldBeEqualTo UserConstants.VEILEDER_IDENT
                             unntakDTO.arsak shouldBeEqualTo newUnntakDTO.arsak
-                            unntakDTO.begrunnelse shouldBeEqualTo newUnntakDTO.begrunnelse
+                            unntakDTO.beskrivelse shouldBeEqualTo newUnntakDTO.beskrivelse
                         }
                     }
                 }
@@ -162,7 +162,7 @@ class UnntakApiSpek : Spek({
                             latestUnntak.personIdent shouldBeEqualTo UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
                             latestUnntak.createdBy shouldBeEqualTo UserConstants.VEILEDER_IDENT
                             latestUnntak.arsak shouldBeEqualTo newUnntakDTO.arsak
-                            latestUnntak.begrunnelse shouldBeEqualTo newUnntakDTO.begrunnelse
+                            latestUnntak.beskrivelse shouldBeEqualTo newUnntakDTO.beskrivelse
                         }
                     }
                 }

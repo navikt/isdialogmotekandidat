@@ -18,7 +18,7 @@ const val queryCreateUnntak =
         created_by,
         personident,
         arsak,
-        begrunnelse
+        beskrivelse
     ) values (DEFAULT, ?, ?, ?, ?, ?, ?)
     RETURNING id
     """
@@ -30,7 +30,7 @@ fun Connection.createUnntak(unntak: Unntak) {
         it.setString(3, unntak.createdBy)
         it.setString(4, unntak.personIdent.value)
         it.setString(5, unntak.arsak.name)
-        it.setString(6, unntak.begrunnelse)
+        it.setString(6, unntak.beskrivelse)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -63,5 +63,5 @@ fun ResultSet.toPUnntakList() = PUnntak(
     createdBy = getString("created_by"),
     personIdent = getString("personident"),
     arsak = getString("arsak"),
-    begrunnelse = getString("begrunnelse"),
+    beskrivelse = getString("beskrivelse"),
 )

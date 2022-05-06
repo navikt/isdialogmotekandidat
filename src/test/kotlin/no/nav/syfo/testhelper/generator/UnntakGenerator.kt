@@ -9,5 +9,5 @@ fun generateNewUnntakDTO(
 ) = CreateUnntakDTO(
     personIdent = personIdent.value,
     arsak = UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER.name,
-    begrunnelse = "Dette er en begrunnelse",
+    beskrivelse = "Dette er en beskrivelse",
 )
