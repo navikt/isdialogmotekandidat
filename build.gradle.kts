@@ -16,10 +16,10 @@ object Versions {
     const val ktor = "2.0.1"
     const val logback = "1.2.11"
     const val logstashEncoder = "7.1.1"
-    const val micrometerRegistry = "1.8.5"
+    const val micrometerRegistry = "1.9.0"
     const val nimbusJoseJwt = "9.22"
-    const val mockk = "1.12.3"
-    const val postgres = "42.3.4"
+    const val mockk = "1.12.4"
+    const val postgres = "42.3.5"
     const val postgresEmbedded = "0.13.4"
     const val spek = "2.0.18"
 }
