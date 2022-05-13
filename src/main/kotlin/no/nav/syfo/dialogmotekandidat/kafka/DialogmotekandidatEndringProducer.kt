@@ -5,6 +5,7 @@ import no.nav.syfo.dialogmotekandidat.domain.toKafkaDialogmotekandidatEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
+import java.util.*
 
 class DialogmotekandidatEndringProducer(
     private val kafkaProducerDialogmotekandidatEndring: KafkaProducer<String, KafkaDialogmotekandidatEndring>,
@@ -12,9 +13,9 @@ class DialogmotekandidatEndringProducer(
     fun sendDialogmotekandidatEndring(
         dialogmotekandidatEndring: DialogmotekandidatEndring,
     ) {
-        val key = dialogmotekandidatEndring.uuid.toString()
+        val kafkaDialogmotekandidatEndring = dialogmotekandidatEndring.toKafkaDialogmotekandidatEndring()
+        val key = UUID.nameUUIDFromBytes(kafkaDialogmotekandidatEndring.personIdentNumber.toByteArray()).toString()
         try {
-            val kafkaDialogmotekandidatEndring = dialogmotekandidatEndring.toKafkaDialogmotekandidatEndring()
             kafkaProducerDialogmotekandidatEndring.send(
                 ProducerRecord(
                     DIALOGMOTEKANDIDAT_TOPIC,
