@@ -133,7 +133,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                     every { mockKafkaConsumerOppfolgingstilfellePerson.commitSync() } returns Unit
                 }
 
-                it("should create OppfolgingstilfelleArbeidstaker exactly once if Dialogmotekandidat and not already created(skip duplicates)") {
+                it("should create OppfolgingstilfelleArbeidstaker and DialogmotekandidatStoppunkt exactly once if Dialogmotekandidat and not already created(skip duplicates)") {
                     every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
                         mapOf(
                             oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
@@ -164,9 +164,23 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                         oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.first(),
                         kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
                     )
+
+                    val dialogmotekandidatStoppunktList =
+                        database.getDialogmotekandidatStoppunktList(
+                            arbeidstakerPersonIdent = PersonIdentNumber(
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
+                            )
+                        ).toDialogmotekandidatStoppunktList()
+
+                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 1
+
+                    assertDialogmotekandidatStoppunktPlanlagt(
+                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first(),
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
+                    )
                 }
 
-                it("should create 2 OppfolgingstilfelleArbeidstaker, if polled 1 that is not Dialogmotekandidat and 2 that are Dialogmotekandidat") {
+                it("should create 2 OppfolgingstilfelleArbeidstaker and 2 DialogmotekandidatStoppunkt, if polled 1 that is not Dialogmotekandidat and 2 that are Dialogmotekandidat") {
                     every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
                         mapOf(
                             oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
@@ -211,6 +225,8 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                             )
                         ).toDialogmotekandidatStoppunktList()
 
+                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 2
+
                     assertDialogmotekandidatStoppunktPlanlagt(
                         dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first(),
                         kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatLast,
@@ -222,7 +238,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                     )
                 }
 
-                it("should not create OppfolgingstilfellePerson, if polled 1 that is Dialogmotekandidat, but is not Arbeidstaker at end of tilfelle ") {
+                it("should not create OppfolgingstilfellePerson or DialogmotekandidatStoppunkt, if polled 1 that is Dialogmotekandidat, but is not Arbeidstaker at end of tilfelle ") {
                     val kafkaOppfolgingstilfellePersonDialogmotekandidatNotArbeidstakerAtLatestTilfelle =
                         generateKafkaOppfolgingstilfellePerson(
                             arbeidstakerAtTilfelleEnd = false,
@@ -262,6 +278,15 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                         ).toOppfolgingstilfelleArbeidstakerList()
 
                     oppfolgingstilfelleArbeidstakerList.size shouldBeEqualTo 0
+
+                    val dialogmotekandidatStoppunktList =
+                        database.getDialogmotekandidatStoppunktList(
+                            arbeidstakerPersonIdent = PersonIdentNumber(
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
+                            )
+                        ).toDialogmotekandidatStoppunktList()
+
+                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 0
                 }
             }
         }
