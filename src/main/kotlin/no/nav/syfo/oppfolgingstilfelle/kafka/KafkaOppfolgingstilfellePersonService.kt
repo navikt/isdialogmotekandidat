@@ -3,9 +3,8 @@ package no.nav.syfo.oppfolgingstilfelle.kafka
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.NoElementInsertedException
 import no.nav.syfo.dialogmotekandidat.database.createDialogmotekandidatStoppunkt
+import no.nav.syfo.oppfolgingstilfelle.*
 import no.nav.syfo.oppfolgingstilfelle.database.createOppfolgingstilfelleArbeidstaker
-import no.nav.syfo.oppfolgingstilfelle.isDialogmotekandidat
-import no.nav.syfo.oppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
@@ -54,47 +53,75 @@ class KafkaOppfolgingstilfellePersonService(
         connection: Connection,
         kafkaOppfolgingstilfellePerson: KafkaOppfolgingstilfellePerson,
     ) {
-        val latestTilfelle = kafkaOppfolgingstilfellePerson.oppfolgingstilfelleList.maxByOrNull {
-            it.start
-        }
-        if (latestTilfelle == null) {
-            log.warn("SKipped processing of record: No latest Oppfolgingstilfelle found in record.")
+        if (kafkaOppfolgingstilfellePerson.oppfolgingstilfelleList.isEmpty()) {
+            log.warn("Skipped processing of record: No Oppfolgingstilfelle found in record.")
             COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NO_TILFELLE.increment()
             return
         }
-        if (!latestTilfelle.arbeidstakerAtTilfelleEnd) {
-            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_ARBEIDSTAKER.increment()
-            return
-        }
 
-        val oppfolgingstilfelleArbeidstaker = kafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(
-            latestTilfelle = latestTilfelle,
-        )
+        val latestOppfolgingstilfelleArbeidstaker: OppfolgingstilfelleArbeidstaker? =
+            kafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelleArbeidstaker()
 
-        if (oppfolgingstilfelleArbeidstaker.isDialogmotekandidat()) {
-            try {
-                connection.createOppfolgingstilfelleArbeidstaker(
-                    commit = false,
-                    oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstaker,
-                )
+        if (latestOppfolgingstilfelleArbeidstaker?.isDialogmotekandidat() == true) {
+            createOppfolgingstilfelleArbeidstaker(
+                connection = connection,
+                oppfolgingstilfelleArbeidstaker = latestOppfolgingstilfelleArbeidstaker,
+            ) {
                 val dialogmotekandidatStoppunkt =
-                    oppfolgingstilfelleArbeidstaker.toDialogmotekandidatStoppunktPlanlagt()
+                    latestOppfolgingstilfelleArbeidstaker.toDialogmotekandidatStoppunktPlanlagt()
                 connection.createDialogmotekandidatStoppunkt(
                     commit = false,
                     dialogmotekandidatStoppunkt = dialogmotekandidatStoppunkt,
                 )
-                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_ARBEIDSTAKER_CREATED.increment()
-            } catch (noElementInsertedException: NoElementInsertedException) {
-                log.warn(
-                    "No ${KafkaOppfolgingstilfellePerson::class.java.simpleName} was inserted into database, attempted to insert a duplicate"
-                )
-                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_ARBEIDSTAKER_DUPLICATE.increment()
             }
         } else {
-            log.info(
-                "No ${KafkaOppfolgingstilfellePerson::class.java.simpleName} was inserted into database, not DialogmoteKandidat"
+            val oppfolgingstilfelleArbeidstakerList =
+                kafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstakerList()
+
+            if (oppfolgingstilfelleArbeidstakerList.isEmpty()) {
+                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_ARBEIDSTAKER.increment()
+                return
+            }
+
+            val previousOppfolgingstilfelleArbeidstakerKandidat: OppfolgingstilfelleArbeidstaker? =
+                oppfolgingstilfelleArbeidstakerList.filter { oppfolgingstilfelleArbeidstaker ->
+                    oppfolgingstilfelleArbeidstaker.isDialogmotekandidat()
+                }.filter { oppfolgingstilfelleArbeidstaker ->
+                    oppfolgingstilfelleArbeidstaker.tilfelleStart != latestOppfolgingstilfelleArbeidstaker?.tilfelleStart && oppfolgingstilfelleArbeidstaker.tilfelleEnd != latestOppfolgingstilfelleArbeidstaker?.tilfelleEnd
+                }.maxByOrNull { oppfolgingstilfelleArbeidstaker ->
+                    oppfolgingstilfelleArbeidstaker.tilfelleStart
+                }
+
+            if (previousOppfolgingstilfelleArbeidstakerKandidat == null) {
+                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_KANDIDAT.increment()
+                return
+            }
+
+            createOppfolgingstilfelleArbeidstaker(
+                connection = connection,
+                oppfolgingstilfelleArbeidstaker = previousOppfolgingstilfelleArbeidstakerKandidat,
+            ) {}
+            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_KANDIDAT_PREVIOUS_TILFELLE.increment()
+        }
+    }
+
+    private fun createOppfolgingstilfelleArbeidstaker(
+        connection: Connection,
+        oppfolgingstilfelleArbeidstaker: OppfolgingstilfelleArbeidstaker,
+        requestBlock: () -> Unit,
+    ) {
+        try {
+            connection.createOppfolgingstilfelleArbeidstaker(
+                commit = false,
+                oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstaker,
             )
-            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_KANDIDAT.increment()
+            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_ARBEIDSTAKER_CREATED.increment()
+            requestBlock()
+        } catch (noElementInsertedException: NoElementInsertedException) {
+            log.warn(
+                "No ${KafkaOppfolgingstilfellePerson::class.java.simpleName} was inserted into database, attempted to insert a duplicate"
+            )
+            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_ARBEIDSTAKER_DUPLICATE.increment()
         }
     }
 

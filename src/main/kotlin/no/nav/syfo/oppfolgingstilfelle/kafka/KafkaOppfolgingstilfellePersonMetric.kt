@@ -15,6 +15,8 @@ const val KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NO_TILFELLE = "${KAF
 const val KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_ARBEIDSTAKER = "${KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_BASE}_skipped_not_arbeidstaker"
 const val KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_KANDIDAT = "${KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_BASE}_skipped_not_kandidat"
 
+const val KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_KANDIDAT_PREVIOUS_TILFELLE = "${KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_BASE}_kandidat_previous_tilfelle"
+
 val COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_READ: Counter = Counter.builder(KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_READ)
     .description("Counts the number of reads from topic - oppfolgingstilfelle-person")
     .register(METRICS_REGISTRY)
@@ -36,5 +38,9 @@ val COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_ARBEIDSTAKER: Co
     .description("Counts the number of skipped from topic - oppfolgingstilfelle-person - Person is not arbeidstaker at end of latest Tilfelle")
     .register(METRICS_REGISTRY)
 val COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_KANDIDAT: Counter = Counter.builder(KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NOT_KANDIDAT)
+    .description("Counts the number of skipped from topic - oppfolgingstilfelle-person - Person is not Dialogmotekandidat")
+    .register(METRICS_REGISTRY)
+
+val COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_KANDIDAT_PREVIOUS_TILFELLE: Counter = Counter.builder(KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_KANDIDAT_PREVIOUS_TILFELLE)
     .description("Counts the number of skipped from topic - oppfolgingstilfelle-person - Person is not Dialogmotekandidat")
     .register(METRICS_REGISTRY)

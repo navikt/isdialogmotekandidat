@@ -35,3 +35,25 @@ fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(
     referanseTilfelleBitUuid = UUID.fromString(this.referanseTilfelleBitUuid),
     referanseTilfelleBitInntruffet = this.referanseTilfelleBitInntruffet,
 )
+
+fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelleArbeidstaker(): OppfolgingstilfelleArbeidstaker? =
+    this.oppfolgingstilfelleList.maxByOrNull {
+        it.start
+    }?.let { latestKafkaOppfolgingstilfelle ->
+        if (latestKafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
+            this.toOppfolgingstilfelleArbeidstaker(
+                latestTilfelle = latestKafkaOppfolgingstilfelle
+            )
+        } else {
+            null
+        }
+    }
+
+fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstakerList() =
+    this.oppfolgingstilfelleList.filter { kafkaOppfolgingstilfelle ->
+        kafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd
+    }.map { oppfolgingstilfelle ->
+        this.toOppfolgingstilfelleArbeidstaker(
+            latestTilfelle = oppfolgingstilfelle,
+        )
+    }
