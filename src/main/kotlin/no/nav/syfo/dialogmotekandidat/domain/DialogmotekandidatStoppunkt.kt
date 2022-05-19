@@ -7,7 +7,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-const val DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS = 112L
+const val DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS = 119L
 
 enum class DialogmotekandidatStoppunktStatus {
     PLANLAGT_KANDIDAT,
