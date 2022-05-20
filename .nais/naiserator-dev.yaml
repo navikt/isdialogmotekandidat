@@ -68,7 +68,7 @@ spec:
     - name: TOGGLE_DIALOGMOTEKANDIDAT_STOPPUNKT_CRONJOB_ENABLED
       value: "true"
     - name: TOGGLE_KAFKA_DIALOGMOTE_STATUS_ENDRING_PROCESSING_ENABLED
-      value: "false"
+      value: "true"
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
