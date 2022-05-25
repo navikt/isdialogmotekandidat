@@ -14,6 +14,7 @@ import no.nav.syfo.util.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.ZoneOffset
 
 class DialogmotekandidatApiSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -55,6 +56,7 @@ class DialogmotekandidatApiSpek : Spek({
                                 objectMapper.readValue<DialogmotekandidatDTO>(response.content!!)
 
                             dialogmotekandidatDTO.kandidat.shouldBeFalse()
+                            dialogmotekandidatDTO.kandidatAt.shouldBeNull()
                         }
                     }
 
@@ -78,6 +80,10 @@ class DialogmotekandidatApiSpek : Spek({
                                 objectMapper.readValue<DialogmotekandidatDTO>(response.content!!)
 
                             dialogmotekandidatDTO.kandidat.shouldBeTrue()
+                            dialogmotekandidatDTO.kandidatAt?.toInstant(ZoneOffset.UTC)
+                                ?.toEpochMilli() shouldBeEqualTo dialogmotekandidatEndring.createdAt.toLocalDateTimeOslo()
+                                .toInstant(ZoneOffset.UTC)
+                                .toEpochMilli()
                         }
                     }
 
@@ -107,6 +113,7 @@ class DialogmotekandidatApiSpek : Spek({
                                 objectMapper.readValue<DialogmotekandidatDTO>(response.content!!)
 
                             dialogmotekandidatDTO.kandidat.shouldBeFalse()
+                            dialogmotekandidatDTO.kandidatAt.shouldBeNull()
                         }
                     }
                 }
