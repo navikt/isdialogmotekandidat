@@ -6,6 +6,7 @@ import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.util.nowUTC
+import no.nav.syfo.util.toLocalDateTimeOslo
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -72,6 +73,7 @@ data class DialogmotekandidatEndring private constructor(
 
 fun DialogmotekandidatEndring?.toDialogmotekandidatDTO() = DialogmotekandidatDTO(
     kandidat = this?.kandidat ?: false,
+    kandidatAt = if (this?.kandidat == true) this.createdAt.toLocalDateTimeOslo() else null,
 )
 
 fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring() = KafkaDialogmotekandidatEndring(
