@@ -75,6 +75,7 @@ Apply formatting: `./gradlew addKtlintFormatGitPreCommitHook`
 This application produces the following topic(s):
 
 * teamsykefravr.isdialogmotekandidat-dialogmotekandidat
+* teamsykefravr.isdialogmotekandidat-dialogmotekandidat-midlertidig (Topic is created for temporary use, until topic `teamsykefravr.isdialogmotekandidat-dialogmotekandidat` is available in Production.
 
 This application consumes the following topic(s):
 
