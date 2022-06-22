@@ -1,0 +1,19 @@
+Skru på dialogmotekandidat/unntak i produksjon:
+	1. Isdialogmotekandidat: KAFKA_OPPFOLGINGSTILFELLE_PERSON_PROCESSING_ENABLED
+		NB! Innlesing av denne topic'en kan ta litt tid, så vent til den er ferdig.
+	2. Unleash-toggle for syfooversikt og syfomodiaperson: "syfo.dialogmote.kandidat"
+	3. Isdialogmotekandidat: DIALOGMOTEKANDIDAT_STOPPUNKT_CRONJOB_ENABLED // Denne jobben er satt opp til å starte å genere kandidater fra dagens dato
+	4. Syfooversiktsrv: KAFKA_DIALOGMOTEKANDIDAT_PROCESSING_ENABLED 
+	5. Syfooversiktsrv: KAFKA_DIALOGMOTE_STATUSENDRING_PROCESSING_ENABLED
+	6. Isdialogmotekandidat: KAFKA_DIALOGMOTE_STATUS_ENDRING_PROCESSING_ENABLED
+	
+NB! 
+	I Syfooversikt er det en forsinkelse på 7 dager for visning av kandidat i Syfooversikt fra den faktisk er generert som kandidat,
+	så husk dette når DIALOGMOTEKANDIDAT_STOPPUNKT_CRONJOB_ENABLED skrus på.
+	Altså at det først er 7 dager etter at denne skrus på at det vil begynne å dukke opp kandidater i Syfooversikt i Produksjon.
+ 
+Ting å følge med på og se at fungerer:
+	- At innlesing og planlegging av DialogmotekandidatStoppunkt får fungerer fint i pkt1. før man går videre til pkt 2/3.
+	- At unntak fungerer og skrur av kandidat i isdialogmotekandidat og i Syfooversiktsrv.
+	- At referat gjør at kandidat blir borte fra syfooversikt.(ved at kandidat skrus av i isdialogmotekandidat.)
+	- At referat skrur av kandidat i isdialogmotekandiat
