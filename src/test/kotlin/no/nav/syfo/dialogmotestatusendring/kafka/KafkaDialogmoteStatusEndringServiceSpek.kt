@@ -133,6 +133,10 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                     }
 
+                    verify(exactly = 1) {
+                        midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
+                    }
+
                     val latestDialogmotekandidatEndring =
                         database.connection.getDialogmotekandidatEndringListForPerson(
                             personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER
