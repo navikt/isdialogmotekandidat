@@ -31,10 +31,12 @@ class UnntakApiSpek : Spek({
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database
             val dialogmotekandidatEndringProducer = mockk<DialogmotekandidatEndringProducer>()
+            val midlertidigDialogmotekandidatEndringProducer = mockk<MidlertidigDialogmotekandidatEndringProducer>()
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
                 dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
+                midlertidigDialogmotekandidatEndringProducer = midlertidigDialogmotekandidatEndringProducer,
             )
 
             beforeEachTest {
@@ -42,6 +44,7 @@ class UnntakApiSpek : Spek({
 
                 clearMocks(dialogmotekandidatEndringProducer)
                 justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any()) }
+                justRun { midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any()) }
             }
 
             val validToken = generateJWT(

@@ -104,6 +104,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
             clearMocks(dialogmotekandidatEndringProducer, mockKafkaConsumerDialogmoteStatusEndring)
             justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any()) }
             every { mockKafkaConsumerDialogmoteStatusEndring.commitSync() } returns Unit
+            justRun { midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any()) }
         }
 
         describe("${KafkaDialogmoteStatusEndringService::class.java.simpleName}: pollAndProcessRecords") {

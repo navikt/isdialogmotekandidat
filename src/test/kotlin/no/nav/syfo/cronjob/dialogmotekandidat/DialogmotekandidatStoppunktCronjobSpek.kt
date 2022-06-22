@@ -52,6 +52,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
             clearMocks(dialogmotekandidatEndringProducer)
             justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any()) }
+            justRun { midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any()) }
         }
 
         fun createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker: OppfolgingstilfelleArbeidstaker) {

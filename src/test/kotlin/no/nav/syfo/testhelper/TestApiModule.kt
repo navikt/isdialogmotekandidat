@@ -12,11 +12,11 @@ import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
     dialogmotekandidatEndringProducer: DialogmotekandidatEndringProducer,
+    midlertidigDialogmotekandidatEndringProducer: MidlertidigDialogmotekandidatEndringProducer = mockk<MidlertidigDialogmotekandidatEndringProducer>()
 ) {
     val oppfolgingstilfelleService = OppfolgingstilfelleService(
         database = externalMockEnvironment.database
     )
-    val midlertidigDialogmotekandidatEndringProducer = mockk<MidlertidigDialogmotekandidatEndringProducer>()
     val midlertidigDialogmotekandidatService = MidlertidigDialogmotekandidatService(
         database = externalMockEnvironment.database,
         midlertidigDialogmotekandidatEndringProducer = midlertidigDialogmotekandidatEndringProducer,
