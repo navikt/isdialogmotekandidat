@@ -7,8 +7,7 @@ import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
-import no.nav.syfo.dialogmotekandidat.midlertidig.MidlertidigDialogmotekandidatEndringProducer
-import no.nav.syfo.dialogmotekandidat.midlertidig.MidlertidigDialogmotekandidatService
+import no.nav.syfo.dialogmotekandidat.midlertidig.*
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.testhelper.*
@@ -133,10 +132,6 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                     }
 
-                    verify(exactly = 1) {
-                        midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
-                    }
-
                     val latestDialogmotekandidatEndring =
                         database.connection.getDialogmotekandidatEndringListForPerson(
                             personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER
@@ -144,6 +139,18 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
 
                     latestDialogmotekandidatEndring!!.kandidat shouldBeEqualTo false
                     latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name
+
+                    // TODO: Remove after removal of midlertidig-topic
+                    verify(exactly = 1) {
+                        midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
+                    }
+                    val latestMidlertidigDialogmotekandidatEndring =
+                        database.connection.getMidlertidigDialogmotekandidatEndringListForPerson(
+                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER
+                        ).firstOrNull()
+
+                    latestMidlertidigDialogmotekandidatEndring!!.kandidat shouldBeEqualTo false
+                    latestMidlertidigDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name
                 }
                 it("creates no new DialogmotekandidatEndring when latest endring for person is kandidat and created after ferdigstilling") {
                     database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndringCreatedAfterStatusEndring)
