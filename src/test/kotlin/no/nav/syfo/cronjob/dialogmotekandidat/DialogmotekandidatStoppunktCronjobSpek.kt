@@ -6,6 +6,8 @@ import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.database.*
 import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.midlertidig.MidlertidigDialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.midlertidig.MidlertidigDialogmotekandidatService
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
@@ -27,10 +29,19 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
         val oppfolgingstilfelleService = OppfolgingstilfelleService(
             database = database
         )
+        val midlertidigDialogmotekandidatEndringProducer = mockk<MidlertidigDialogmotekandidatEndringProducer>()
+        val midlertidigDialogmotekandidatService = MidlertidigDialogmotekandidatService(
+            database = externalMockEnvironment.database,
+            midlertidigDialogmotekandidatEndringProducer = midlertidigDialogmotekandidatEndringProducer,
+            oppfolgingstilfelleService = oppfolgingstilfelleService,
+        )
         val dialogmotekandidatService = DialogmotekandidatService(
             oppfolgingstilfelleService = oppfolgingstilfelleService,
             dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
             database = database,
+            dialogmotekandidatStoppunktCronjobEnabled = externalMockEnvironment.environment.dialogmotekandidatStoppunktCronjobEnabled,
+            midlertidigDialogmotekandidatStoppunktCronjobEnabled = externalMockEnvironment.environment.midlertidigDialogmotekandidatStoppunktCronjobEnabled,
+            midlertidigDialogmotekandidatService = midlertidigDialogmotekandidatService,
         )
         val dialogmotekandidatStoppunktCronjob = DialogmotekandidatStoppunktCronjob(
             dialogmotekandidatService = dialogmotekandidatService

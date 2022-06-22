@@ -3,6 +3,7 @@ package no.nav.syfo.dialogmotekandidat.domain
 import no.nav.syfo.dialogmotekandidat.api.DialogmotekandidatDTO
 import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
+import no.nav.syfo.dialogmotekandidat.midlertidig.PMidlertidigDialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.util.nowUTC
@@ -39,6 +40,15 @@ data class DialogmotekandidatEndring private constructor(
                 personIdentNumber = pDialogmotekandidatEndring.personIdent,
                 kandidat = pDialogmotekandidatEndring.kandidat,
                 arsak = DialogmotekandidatEndringArsak.valueOf(pDialogmotekandidatEndring.arsak),
+            )
+
+        fun create(pMidlertidigDialogmotekandidatEndring: PMidlertidigDialogmotekandidatEndring) =
+            DialogmotekandidatEndring(
+                uuid = pMidlertidigDialogmotekandidatEndring.uuid,
+                createdAt = pMidlertidigDialogmotekandidatEndring.createdAt,
+                personIdentNumber = pMidlertidigDialogmotekandidatEndring.personIdent,
+                kandidat = pMidlertidigDialogmotekandidatEndring.kandidat,
+                arsak = DialogmotekandidatEndringArsak.valueOf(pMidlertidigDialogmotekandidatEndring.arsak),
             )
 
         fun ferdigstiltDialogmote(
@@ -88,7 +98,9 @@ fun DialogmotekandidatEndring.isNotInOppfolgingstilfelle(
     oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker,
 ): Boolean {
     val stoppunktKandidatAt = createdAt.toLocalDate()
-    return stoppunktKandidatAt.isBefore(oppfolgingstilfelle.tilfelleStart) || stoppunktKandidatAt.isAfter(oppfolgingstilfelle.tilfelleEnd)
+    return stoppunktKandidatAt.isBefore(oppfolgingstilfelle.tilfelleStart) || stoppunktKandidatAt.isAfter(
+        oppfolgingstilfelle.tilfelleEnd
+    )
 }
 
 private fun DialogmotekandidatEndring?.ikkeKandidat(): Boolean = this == null || !this.kandidat

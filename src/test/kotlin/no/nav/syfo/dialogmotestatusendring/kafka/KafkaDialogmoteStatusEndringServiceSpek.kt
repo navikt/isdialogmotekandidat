@@ -7,6 +7,8 @@ import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.midlertidig.MidlertidigDialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.midlertidig.MidlertidigDialogmotekandidatService
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.testhelper.*
@@ -32,10 +34,19 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
         val oppfolgingstilfelleService = OppfolgingstilfelleService(
             database = database
         )
+        val midlertidigDialogmotekandidatEndringProducer = mockk<MidlertidigDialogmotekandidatEndringProducer>()
+        val midlertidigDialogmotekandidatService = MidlertidigDialogmotekandidatService(
+            database = externalMockEnvironment.database,
+            midlertidigDialogmotekandidatEndringProducer = midlertidigDialogmotekandidatEndringProducer,
+            oppfolgingstilfelleService = oppfolgingstilfelleService,
+        )
         val dialogmotekandidatService = DialogmotekandidatService(
             oppfolgingstilfelleService = oppfolgingstilfelleService,
             dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
             database = database,
+            dialogmotekandidatStoppunktCronjobEnabled = externalMockEnvironment.environment.dialogmotekandidatStoppunktCronjobEnabled,
+            midlertidigDialogmotekandidatStoppunktCronjobEnabled = externalMockEnvironment.environment.midlertidigDialogmotekandidatStoppunktCronjobEnabled,
+            midlertidigDialogmotekandidatService = midlertidigDialogmotekandidatService,
         )
 
         val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(

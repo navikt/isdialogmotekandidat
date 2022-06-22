@@ -15,6 +15,8 @@ import no.nav.syfo.cronjob.launchCronjobModule
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.dialogmotekandidat.kafka.kafkaDialogmotekandidatEndringProducerConfig
+import no.nav.syfo.dialogmotekandidat.midlertidig.MidlertidigDialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.midlertidig.MidlertidigDialogmotekandidatService
 import no.nav.syfo.dialogmotestatusendring.kafka.KafkaDialogmoteStatusEndringService
 import no.nav.syfo.dialogmotestatusendring.kafka.launchKafkaTaskDialogmoteStatusEndring
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
@@ -53,14 +55,30 @@ fun main() {
             databaseModule(
                 databaseEnvironment = environment.database,
             )
-
             val oppfolgingstilfelleService = OppfolgingstilfelleService(
                 database = applicationDatabase
             )
+
+            val midlertidigDialogmotekandidatEndringProducer = MidlertidigDialogmotekandidatEndringProducer(
+                kafkaProducerDialogmotekandidatEndring = KafkaProducer(
+                    kafkaDialogmotekandidatEndringProducerConfig(
+                        kafkaEnvironment = environment.kafka,
+                    )
+                )
+            )
+            val midlertidigDialogmotekandidatService = MidlertidigDialogmotekandidatService(
+                oppfolgingstilfelleService = oppfolgingstilfelleService,
+                midlertidigDialogmotekandidatEndringProducer = midlertidigDialogmotekandidatEndringProducer,
+                database = applicationDatabase,
+            )
+
             dialogmotekandidatService = DialogmotekandidatService(
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
                 database = applicationDatabase,
+                dialogmotekandidatStoppunktCronjobEnabled = environment.dialogmotekandidatStoppunktCronjobEnabled,
+                midlertidigDialogmotekandidatStoppunktCronjobEnabled = environment.midlertidigDialogmotekandidatStoppunktCronjobEnabled,
+                midlertidigDialogmotekandidatService = midlertidigDialogmotekandidatService,
             )
             apiModule(
                 applicationState = applicationState,
@@ -98,13 +116,11 @@ fun main() {
                 kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
             )
         }
-        if (environment.dialogmotekandidatStoppunktCronjobEnabled) {
-            launchCronjobModule(
-                applicationState = applicationState,
-                environment = environment,
-                dialogmotekandidatService = dialogmotekandidatService,
-            )
-        }
+        launchCronjobModule(
+            applicationState = applicationState,
+            environment = environment,
+            dialogmotekandidatService = dialogmotekandidatService,
+        )
     }
 
     val server = embeddedServer(

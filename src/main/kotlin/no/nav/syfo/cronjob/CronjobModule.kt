@@ -19,15 +19,24 @@ fun launchCronjobModule(
         applicationState = applicationState,
         leaderPodClient = leaderPodClient
     )
+
     val dialogmotekandidatStoppunktCronjob = DialogmotekandidatStoppunktCronjob(
         dialogmotekandidatService = dialogmotekandidatService
     )
 
-    launchBackgroundTask(
-        applicationState = applicationState,
-    ) {
-        cronjobRunner.start(
-            cronjob = dialogmotekandidatStoppunktCronjob
-        )
+    /*
+    Without changes, only one StoppunktCronjob can be enabled at time.
+    When Dialogmotekandidat is ready for production, there are two options:
+       1. Enable dialogmotekandidatStoppunktCronjob and disable midlertidigDialogmotekandidatStoppunktCronjob(with this option, Syfomotebehov change the topic it is consuming at the same day as the switch is made).
+       2. Change the code to support enabling of both dialogmotekandidatStoppunktCronjob and midlertidigDialogmotekandidatStoppunktCronjob simultaneously.
+     */
+    if (environment.dialogmotekandidatStoppunktCronjobEnabled || environment.midlertidigDialogmotekandidatStoppunktCronjobEnabled) {
+        launchBackgroundTask(
+            applicationState = applicationState,
+        ) {
+            cronjobRunner.start(
+                cronjob = dialogmotekandidatStoppunktCronjob
+            )
+        }
     }
 }

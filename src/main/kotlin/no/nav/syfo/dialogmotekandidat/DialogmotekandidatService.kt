@@ -6,6 +6,7 @@ import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING
 import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING
+import no.nav.syfo.dialogmotekandidat.midlertidig.MidlertidigDialogmotekandidatService
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.oppfolgingstilfelle.isDialogmotekandidat
@@ -16,6 +17,9 @@ class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
     private val dialogmotekandidatEndringProducer: DialogmotekandidatEndringProducer,
     private val database: DatabaseInterface,
+    private val dialogmotekandidatStoppunktCronjobEnabled: Boolean,
+    private val midlertidigDialogmotekandidatStoppunktCronjobEnabled: Boolean,
+    private val midlertidigDialogmotekandidatService: MidlertidigDialogmotekandidatService,
 ) {
     fun getLatestDialogmotekandidatEndring(personIdent: PersonIdentNumber): DialogmotekandidatEndring? {
         return database.connection.use { connection ->
@@ -34,33 +38,50 @@ class DialogmotekandidatService(
         )
             ?: throw RuntimeException("No Oppfolgingstilfelle found for dialogmote-kandidat-stoppunkt with uuid: ${dialogmotekandidatStoppunkt.uuid}")
 
-        database.connection.use { connection ->
-            val dialogmotekandidatEndringList = connection.getDialogmotekandidatEndringListForPerson(
-                personIdent = dialogmotekandidatStoppunkt.personIdent
-            ).toDialogmotekandidatEndringList()
+        if (dialogmotekandidatStoppunktCronjobEnabled) {
+            database.connection.use { connection ->
+                val dialogmotekandidatEndringList = connection.getDialogmotekandidatEndringListForPerson(
+                    personIdent = dialogmotekandidatStoppunkt.personIdent
+                ).toDialogmotekandidatEndringList()
 
-            val status =
-                if (latestOppfolgingstilfelle.isDialogmotekandidat(dialogmotekandidatEndringList = dialogmotekandidatEndringList)) DialogmotekandidatStoppunktStatus.KANDIDAT
-                else DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
+                val status =
+                    if (latestOppfolgingstilfelle.isDialogmotekandidat(dialogmotekandidatEndringList = dialogmotekandidatEndringList)) DialogmotekandidatStoppunktStatus.KANDIDAT
+                    else DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
 
-            connection.updateDialogmotekandidatStoppunktStatus(
-                uuid = dialogmotekandidatStoppunkt.uuid,
-                status = status,
-            )
-
-            if (status == DialogmotekandidatStoppunktStatus.KANDIDAT) {
-                val newDialogmotekandidatEndring = dialogmotekandidatStoppunkt.toDialogmotekandidatEndring()
-                createDialogmotekandidatEndring(
-                    connection = connection,
-                    dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                connection.updateDialogmotekandidatStoppunktStatus(
+                    uuid = dialogmotekandidatStoppunkt.uuid,
+                    status = status,
                 )
-                COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING.increment()
-            } else {
-                COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING.increment()
-                log.info("Processed ${DialogmotekandidatStoppunkt::class.java.simpleName}, not kandidat - no DialogmotekandidatEndring created")
-            }
 
-            connection.commit()
+                if (status == DialogmotekandidatStoppunktStatus.KANDIDAT) {
+                    val newDialogmotekandidatEndring = dialogmotekandidatStoppunkt.toDialogmotekandidatEndring()
+
+                    createDialogmotekandidatEndring(
+                        connection = connection,
+                        dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                    )
+                    COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING.increment()
+
+                    // TODO: Remove after removal of midlertidig-topic
+                    if (midlertidigDialogmotekandidatStoppunktCronjobEnabled) {
+                        midlertidigDialogmotekandidatService.createMidlertidigDialogmotekandidatEndring(
+                            connection = connection,
+                            dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                        )
+                    }
+                } else {
+                    COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING.increment()
+                    log.info("Processed ${DialogmotekandidatStoppunkt::class.java.simpleName}, not kandidat - no DialogmotekandidatEndring created")
+                }
+                connection.commit()
+            }
+        }
+
+        // TODO: Remove after removal of midlertidig-topic
+        if (midlertidigDialogmotekandidatStoppunktCronjobEnabled && !dialogmotekandidatStoppunktCronjobEnabled) {
+            midlertidigDialogmotekandidatService.updateDialogmotekandidatStoppunktStatus(
+                dialogmotekandidatStoppunkt = dialogmotekandidatStoppunkt,
+            )
         }
     }
 

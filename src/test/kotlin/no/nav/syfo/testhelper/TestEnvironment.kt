@@ -45,6 +45,7 @@ fun testEnvironment(
     kafkaOppfolgingstilfellePersonProcessingEnabled = true,
     dialogmotekandidatStoppunktCronjobEnabled = true,
     kafkaDialogmoteStatusEndringProcessingEnabled = true,
+    midlertidigDialogmotekandidatStoppunktCronjobEnabled = true,
 )
 
 fun testAppState() = ApplicationState(
