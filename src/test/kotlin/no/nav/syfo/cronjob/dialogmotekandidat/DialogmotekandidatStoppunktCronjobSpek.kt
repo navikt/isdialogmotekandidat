@@ -144,15 +144,15 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
-                // TODO: Remove after removal of midlertidig-topic
-                verify(exactly = 0) {
-                    midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
-                }
-
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
 
                 stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT.name
                 stoppunktKandidatEn.processedAt.shouldBeNull()
+
+                // TODO: Remove after removal of midlertidig-topic
+                verify(exactly = 0) {
+                    midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
+                }
             }
             it("Updates status of DialogmotekandidatStoppunkt to KANDIDAT and creates DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not Kandidat") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(

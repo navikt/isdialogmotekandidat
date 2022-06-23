@@ -79,9 +79,9 @@ class DialogmotekandidatService(
 
         // TODO: Remove after removal of midlertidig-topic
         if (midlertidigDialogmotekandidatStoppunktCronjobEnabled && !dialogmotekandidatStoppunktCronjobEnabled) {
-            midlertidigDialogmotekandidatService.updateDialogmotekandidatStoppunktStatus(
-                dialogmotekandidatStoppunkt = dialogmotekandidatStoppunkt,
-            )
+//            midlertidigDialogmotekandidatService.updateDialogmotekandidatStoppunktStatus(
+//                dialogmotekandidatStoppunkt = dialogmotekandidatStoppunkt,
+//            )
         }
     }
 
