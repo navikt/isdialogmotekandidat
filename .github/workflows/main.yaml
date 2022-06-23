@@ -36,7 +36,7 @@ jobs:
           ./gradlew --continue ktlintCheck
       - name: Run tests
         run: |
-          ./gradlew test
+          ./gradlew test -i
       - name: Build jar
         run: |
           ./gradlew shadowJar -x test
