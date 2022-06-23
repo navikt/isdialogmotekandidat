@@ -112,6 +112,11 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
+                // TODO: Remove after removal of midlertidig-topic
+                verify(exactly = 1) {
+                    midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
+                }
+
                 val stoppunktKandidatFirst =
                     database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
                 val stoppunktKandidatSecond =
@@ -140,6 +145,11 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
+                // TODO: Remove after removal of midlertidig-topic
+                verify(exactly = 0) {
+                    midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
+                }
+
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
 
                 stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT.name
@@ -163,6 +173,11 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 result.updated shouldBeEqualTo 1
                 verify(exactly = 1) {
                     dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                }
+
+                // TODO: Remove after removal of midlertidig-topic
+                verify(exactly = 1) {
+                    midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
                 }
 
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
@@ -212,6 +227,11 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 result.updated shouldBeEqualTo 1
                 verify(exactly = 1) {
                     dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                }
+
+                // TODO: Remove after removal of midlertidig-topic
+                verify(exactly = 1) {
+                    midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
                 }
 
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()

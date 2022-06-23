@@ -140,18 +140,6 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
 
                     latestDialogmotekandidatEndring!!.kandidat shouldBeEqualTo false
                     latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name
-
-                    // TODO: Remove after removal of midlertidig-topic
-                    verify(exactly = 1) {
-                        midlertidigDialogmotekandidatEndringProducer.sendMidlertidigDialogmotekandidatEndring(any())
-                    }
-                    val latestMidlertidigDialogmotekandidatEndring =
-                        database.connection.getMidlertidigDialogmotekandidatEndringListForPerson(
-                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER
-                        ).firstOrNull()
-
-                    latestMidlertidigDialogmotekandidatEndring!!.kandidat shouldBeEqualTo false
-                    latestMidlertidigDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name
                 }
                 it("creates no new DialogmotekandidatEndring when latest endring for person is kandidat and created after ferdigstilling") {
                     database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndringCreatedAfterStatusEndring)
