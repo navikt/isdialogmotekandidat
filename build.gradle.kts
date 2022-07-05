@@ -13,7 +13,7 @@ object Versions {
     const val kafka = "3.1.0"
     const val kafkaEmbedded = "3.1.4"
     const val kluent = "1.68"
-    const val ktor = "2.0.2"
+    const val ktor = "2.0.3"
     const val logback = "1.2.11"
     const val logstashEncoder = "7.2"
     const val micrometerRegistry = "1.9.1"
