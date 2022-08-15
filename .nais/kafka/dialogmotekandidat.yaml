@@ -25,3 +25,6 @@ spec:
     - team: teamsykefravr
       application: syfooversiktsrv
       access: read
+    - team: team-esyfo
+      application: syfomotebehov
+      access: read
