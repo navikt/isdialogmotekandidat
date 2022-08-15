@@ -5,8 +5,7 @@ import no.nav.syfo.application.database.NoElementInsertedException
 import no.nav.syfo.dialogmotekandidat.database.createDialogmotekandidatStoppunkt
 import no.nav.syfo.oppfolgingstilfelle.*
 import no.nav.syfo.oppfolgingstilfelle.database.createOppfolgingstilfelleArbeidstaker
-import org.apache.kafka.clients.consumer.ConsumerRecords
-import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.consumer.*
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.Duration
@@ -29,14 +28,33 @@ class KafkaOppfolgingstilfellePersonService(
     private fun processRecords(
         consumerRecords: ConsumerRecords<String, KafkaOppfolgingstilfellePerson>,
     ) {
+        val (tombstoneRecordList, recordsValid) = consumerRecords.partition {
+            it.value() == null
+        }
+
+        processTombstoneRecordList(
+            tombstoneRecordList = tombstoneRecordList,
+        )
+        processRelevantRecordList(
+            consumerRecords = recordsValid,
+        )
+    }
+
+    private fun processTombstoneRecordList(
+        tombstoneRecordList: List<ConsumerRecord<String, KafkaOppfolgingstilfellePerson>>,
+    ) {
+        if (tombstoneRecordList.isNotEmpty()) {
+            val numberOfTombstones = tombstoneRecordList.size
+            log.error("Value of $numberOfTombstones ConsumerRecord are null, most probably due to a tombstone. Contact the owner of the topic if an error is suspected")
+            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_TOMBSTONE.increment(numberOfTombstones.toDouble())
+        }
+    }
+
+    private fun processRelevantRecordList(
+        consumerRecords: List<ConsumerRecord<String, KafkaOppfolgingstilfellePerson>>,
+    ) {
         database.connection.use { connection ->
             consumerRecords.forEach { consumerRecord ->
-                if (consumerRecord.value() == null) {
-                    log.error("Value of ConsumerRecord is null, most probably due to a tombstone. Contact the owner of the topic if an error is suspected. key=${consumerRecord.key()} from topic: ${consumerRecord.topic()}, partiion=${consumerRecord.partition()}, offset=${consumerRecord.offset()}")
-                    COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_TOMBSTONE.increment()
-                    return
-                }
-
                 COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_READ.increment()
                 log.info("Received ${KafkaOppfolgingstilfellePerson::class.java.simpleName}, ready to process. id=${consumerRecord.key()}, timestamp=${consumerRecord.timestamp()}")
 
