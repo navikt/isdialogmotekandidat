@@ -102,7 +102,7 @@ private fun List<DialogmotekandidatEndring>.latestStoppunktKandidat() =
         it.arsak == DialogmotekandidatEndringArsak.STOPPUNKT && it.kandidat
     }.latest()
 
-fun List<DialogmotekandidatEndring>.isLatestStoppunktKandidatNotInOppfolgingstilfelle(
+fun List<DialogmotekandidatEndring>.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
     oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker,
 ) = latestStoppunktKandidat()
     ?.isNotInOppfolgingstilfelle(

@@ -53,7 +53,29 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             result.shouldBeTrue()
         }
 
-        it("returns false if latest DialogmoteKandidatEndring is Kandidat, latest dialogmotekandidatEndringStoppunkt is before tilfelleStart, and tilfelleEnd is not before dialogmotekandidatStoppunktPlanlagt") {
+        it("returns false if latest DialogmoteKandidatEndring is Kandidat and within oppfolgingstilfelle") {
+            val latestOppfolgingstilfelle = generateOppfolgingstilfelleArbeidstaker(
+                arbeidstakerPersonIdent = personIdent,
+                oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+            )
+            val dialogmotekandidatEndringStoppunkt = generateDialogmotekandidatEndringStoppunkt(
+                personIdentNumber = personIdent,
+            ).copy(
+                createdAt = latestOppfolgingstilfelle.tilfelleEnd.minusDays(1).atStartOfDay()
+                    .atOffset(defaultZoneOffset)
+            )
+
+            val dialogmotekandidatEndringList: List<DialogmotekandidatEndring> = listOf(
+                dialogmotekandidatEndringStoppunkt,
+            )
+
+            val result = latestOppfolgingstilfelle.isDialogmotekandidat(
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList
+            )
+            result.shouldBeFalse()
+        }
+
+        it("returns true if latest DialogmoteKandidatEndring is Kandidat, but is before tilfelleStart") {
             val latestOppfolgingstilfelle = generateOppfolgingstilfelleArbeidstaker(
                 arbeidstakerPersonIdent = personIdent,
                 oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
@@ -72,7 +94,7 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
                 dialogmotekandidatEndringList = dialogmotekandidatEndringList
             )
-            result.shouldBeFalse()
+            result.shouldBeTrue()
         }
 
         it("returns false if latest dialogmotekandidatEndringStoppunkt is equal to tilfelleStart, latest DialogmoteKandidatEndring is not Kandidat, and tilfelleEnd is not before dialogmotekandidatStoppunktPlanlagt") {

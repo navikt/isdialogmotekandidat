@@ -20,8 +20,7 @@ data class OppfolgingstilfelleArbeidstaker(
 fun OppfolgingstilfelleArbeidstaker.isDialogmotekandidat(
     dialogmotekandidatEndringList: List<DialogmotekandidatEndring>,
 ) = this.isDialogmotekandidat() &&
-    dialogmotekandidatEndringList.isLatestIkkeKandidat() &&
-    dialogmotekandidatEndringList.isLatestStoppunktKandidatNotInOppfolgingstilfelle(
+    dialogmotekandidatEndringList.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
         oppfolgingstilfelle = this,
     )
 
