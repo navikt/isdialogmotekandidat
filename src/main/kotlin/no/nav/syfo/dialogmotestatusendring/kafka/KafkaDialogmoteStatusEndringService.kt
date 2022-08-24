@@ -7,6 +7,7 @@ import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListF
 import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatEndringList
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.domain.latest
+import no.nav.syfo.dialogmotestatusendring.database.createDialogmoteStatus
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
 import no.nav.syfo.dialogmotestatusendring.domain.isFerdigstilt
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -62,6 +63,10 @@ class KafkaDialogmoteStatusEndringService(
             log.info("Skipped processing of ${KDialogmoteStatusEndring::class.java.simpleName} record, not Ferdigstilt status-endring")
             return
         }
+
+        connection.createDialogmoteStatus(
+            dialogmoteStatusEndring = dialogmoteStatusEndring,
+        )
 
         val latestDialogmotekandidatEndring =
             connection.getDialogmotekandidatEndringListForPerson(personIdent = dialogmoteStatusEndring.personIdentNumber)

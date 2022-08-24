@@ -16,15 +16,22 @@ data class DialogmoteStatusEndring private constructor(
     val personIdentNumber: PersonIdentNumber,
     val type: DialogmoteStatusEndringType,
     val createdAt: OffsetDateTime,
+    val moteTidspunkt: OffsetDateTime,
+    val ferdigstiltTidspunkt: OffsetDateTime,
 ) {
     companion object {
         fun create(kafkaDialogmoteStatusEndring: KDialogmoteStatusEndring) = DialogmoteStatusEndring(
             personIdentNumber = PersonIdentNumber(kafkaDialogmoteStatusEndring.getPersonIdent()),
             type = DialogmoteStatusEndringType.valueOf(kafkaDialogmoteStatusEndring.getStatusEndringType()),
-            createdAt = OffsetDateTime.ofInstant(
+            createdAt = OffsetDateTime.now(),
+            moteTidspunkt = OffsetDateTime.ofInstant(
+                kafkaDialogmoteStatusEndring.getDialogmoteTidspunkt(),
+                ZoneOffset.UTC,
+            ),
+            ferdigstiltTidspunkt = OffsetDateTime.ofInstant(
                 kafkaDialogmoteStatusEndring.getStatusEndringTidspunkt(),
-                ZoneOffset.UTC
-            )
+                ZoneOffset.UTC,
+            ),
         )
     }
 }
