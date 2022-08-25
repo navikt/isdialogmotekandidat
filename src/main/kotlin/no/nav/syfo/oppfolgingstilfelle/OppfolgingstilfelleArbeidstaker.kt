@@ -19,7 +19,9 @@ data class OppfolgingstilfelleArbeidstaker(
 
 fun OppfolgingstilfelleArbeidstaker.isDialogmotekandidat(
     dialogmotekandidatEndringList: List<DialogmotekandidatEndring>,
+    latestDialogmoteFerdigstilt: OffsetDateTime? = null,
 ) = this.isDialogmotekandidat() &&
+    (latestDialogmoteFerdigstilt == null || latestDialogmoteFerdigstilt.toLocalDate().isBefore(this.tilfelleStart)) &&
     dialogmotekandidatEndringList.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
         oppfolgingstilfelle = this,
     )
