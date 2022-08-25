@@ -11,12 +11,12 @@ object Versions {
     const val isdialogmoteSchema = "1.0.5"
     const val jackson = "2.13.3"
     const val kafka = "3.2.0"
-    const val kafkaEmbedded = "3.1.4"
+    const val kafkaEmbedded = "3.2.1"
     const val kluent = "1.68"
-    const val ktor = "2.0.3"
+    const val ktor = "2.1.0"
     const val logback = "1.2.11"
     const val logstashEncoder = "7.2"
-    const val micrometerRegistry = "1.9.1"
+    const val micrometerRegistry = "1.9.2"
     const val nimbusJoseJwt = "9.23"
     const val mockk = "1.12.4"
     const val postgres = "42.4.1"
@@ -84,6 +84,14 @@ dependencies {
     implementation("io.confluent:kafka-schema-registry:${Versions.confluent}", excludeLog4j)
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}", excludeLog4j)
+    constraints {
+        implementation("org.eclipse.jetty.http2:http2-server") {
+            because("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-2048/")
+            version {
+                require("9.4.48.v20220622")
+            }
+        }
+    }
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusJoseJwt}")
     testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")
