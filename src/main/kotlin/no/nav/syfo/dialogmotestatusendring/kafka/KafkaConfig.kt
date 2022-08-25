@@ -14,6 +14,7 @@ fun kafkaDialogmoteStatusEndringConsumerConfig(
     return Properties().apply {
         putAll(commonKafkaAivenConsumerConfig(kafkaEnvironment))
         // override group_id_config to start consuming the topic from the beginning
+        // (since AUTO_OFFSET_RESET_CONFIG = "earliest")
         this[ConsumerConfig.GROUP_ID_CONFIG] = "isdialogmotekandidat-v2"
 
         this[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.canonicalName
