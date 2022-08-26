@@ -22,7 +22,8 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             )
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
-                dialogmotekandidatEndringList = emptyList()
+                dialogmotekandidatEndringList = emptyList(),
+                latestDialogmoteFerdigstilt = null,
             )
             result.shouldBeFalse()
         }
@@ -34,7 +35,8 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             )
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
-                dialogmotekandidatEndringList = emptyList()
+                dialogmotekandidatEndringList = emptyList(),
+                latestDialogmoteFerdigstilt = null,
             )
             result.shouldBeTrue()
         }
@@ -48,7 +50,8 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             val dialogmotekandidatEndringList: List<DialogmotekandidatEndring> = emptyList()
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
-                dialogmotekandidatEndringList = dialogmotekandidatEndringList
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                latestDialogmoteFerdigstilt = null,
             )
             result.shouldBeTrue()
         }
@@ -70,7 +73,8 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             )
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
-                dialogmotekandidatEndringList = dialogmotekandidatEndringList
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                latestDialogmoteFerdigstilt = null,
             )
             result.shouldBeFalse()
         }
@@ -92,7 +96,8 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             )
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
-                dialogmotekandidatEndringList = dialogmotekandidatEndringList
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                latestDialogmoteFerdigstilt = null,
             )
             result.shouldBeTrue()
         }
@@ -120,7 +125,8 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             )
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
-                dialogmotekandidatEndringList = dialogmotekandidatEndringList
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                latestDialogmoteFerdigstilt = null,
             )
             result.shouldBeFalse()
         }
@@ -148,7 +154,8 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             )
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
-                dialogmotekandidatEndringList = dialogmotekandidatEndringList
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                latestDialogmoteFerdigstilt = null,
             )
             result.shouldBeFalse()
         }
@@ -176,7 +183,8 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             )
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
-                dialogmotekandidatEndringList = dialogmotekandidatEndringList
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                latestDialogmoteFerdigstilt = null,
             )
             result.shouldBeTrue()
         }
@@ -204,7 +212,8 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             )
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
-                dialogmotekandidatEndringList = dialogmotekandidatEndringList
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                latestDialogmoteFerdigstilt = null,
             )
             result.shouldBeTrue()
         }
