@@ -204,10 +204,10 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
-                val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+                val stoppunktKandidat = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
 
-                stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name
-                stoppunktKandidatEn.processedAt.shouldNotBeNull()
+                stoppunktKandidat.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name
+                stoppunktKandidat.processedAt.shouldNotBeNull()
 
                 val latestDialogmotekandidatEndring = database.connection.getDialogmotekandidatEndringListForPerson(
                     personIdent = kandidatFirstPersonIdent
@@ -245,10 +245,10 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
                 }
 
-                val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+                val stoppunktKandidat = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
 
-                stoppunktKandidatEn.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.KANDIDAT.name
-                stoppunktKandidatEn.processedAt.shouldNotBeNull()
+                stoppunktKandidat.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.KANDIDAT.name
+                stoppunktKandidat.processedAt.shouldNotBeNull()
 
                 val latestDialogmotekandidatEndring = database.connection.getDialogmotekandidatEndringListForPerson(
                     personIdent = kandidatFirstPersonIdent
