@@ -6,6 +6,7 @@ import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING
 import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING
+import no.nav.syfo.dialogmotestatusendring.database.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.oppfolgingstilfelle.isDialogmotekandidat
@@ -38,9 +39,15 @@ class DialogmotekandidatService(
             val dialogmotekandidatEndringList = connection.getDialogmotekandidatEndringListForPerson(
                 personIdent = dialogmotekandidatStoppunkt.personIdent
             ).toDialogmotekandidatEndringList()
-
+            val latestDialogmoteFerdigstilt = connection.getLatestDialogmoteFerdigstiltForPerson(
+                personIdent = dialogmotekandidatStoppunkt.personIdent
+            )
             val status =
-                if (latestOppfolgingstilfelle.isDialogmotekandidat(dialogmotekandidatEndringList = dialogmotekandidatEndringList)) DialogmotekandidatStoppunktStatus.KANDIDAT
+                if (latestOppfolgingstilfelle.isDialogmotekandidat(
+                        dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                        latestDialogmoteFerdigstilt = latestDialogmoteFerdigstilt,
+                    )
+                ) DialogmotekandidatStoppunktStatus.KANDIDAT
                 else DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
 
             connection.updateDialogmotekandidatStoppunktStatus(

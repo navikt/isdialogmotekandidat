@@ -22,6 +22,7 @@ const val queryCreateDialogmoteStatus =
     """
 
 fun Connection.createDialogmoteStatus(
+    commit: Boolean = false,
     dialogmoteStatusEndring: DialogmoteStatusEndring,
 ) {
     val idList = this.prepareStatement(queryCreateDialogmoteStatus).use {
@@ -35,6 +36,9 @@ fun Connection.createDialogmoteStatus(
 
     if (idList.size != 1) {
         throw NoElementInsertedException("Creating DIALOGMOTESTATUS failed, no rows affected.")
+    }
+    if (commit) {
+        this.commit()
     }
 }
 

@@ -6,6 +6,9 @@ import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.database.*
 import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotestatusendring.database.createDialogmoteStatus
+import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
+import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
@@ -17,6 +20,7 @@ import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 class DialogmotekandidatStoppunktCronjobSpek : Spek({
     with(TestApplicationEngine()) {
@@ -49,6 +53,10 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
         fun createDialogmotekandidatStoppunkt(dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt) {
             database.connection.createDialogmotekandidatStoppunkt(true, dialogmotekandidatStoppunkt)
+        }
+
+        fun createDialogmoteStatus(dialogmoteStatusEndring: DialogmoteStatusEndring) {
+            database.connection.createDialogmoteStatus(true, dialogmoteStatusEndring)
         }
 
         val kandidatFirstPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
@@ -166,7 +174,90 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 latestDialogmotekandidatEndring.kandidat shouldBeEqualTo true
                 latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
             }
+            it("Updates status of DialogmotekandidatStoppunkt to IKKE_KANDIDAT for DialogmotekandidatStoppunkt planlagt today when meeting already ferdigstilt within oppfolgingstilfelle") {
+                val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    planlagt = LocalDate.now(),
+                )
+                createDialogmotekandidatStoppunkt(dialogmotekandidatStoppunkt = stoppunktPlanlagtIDag)
+                createDialogmoteStatus(
+                    DialogmoteStatusEndring.create(
+                        generateKDialogmoteStatusEndring(
+                            personIdentNumber = kandidatFirstPersonIdent,
+                            statusEndringType = DialogmoteStatusEndringType.FERDIGSTILT,
+                            moteTidspunkt = OffsetDateTime.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 10),
+                            endringsTidspunkt = OffsetDateTime.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 11),
+                        )
+                    )
+                )
 
+                val oppfolgingstilfelleKandidatEn = generateOppfolgingstilfelleArbeidstaker(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                )
+                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
+
+                val result = dialogmotekandidatStoppunktCronjob.runJob()
+
+                result.updated shouldBeEqualTo 1
+                verify(exactly = 0) {
+                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                }
+
+                val stoppunktKandidat = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+
+                stoppunktKandidat.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name
+                stoppunktKandidat.processedAt.shouldNotBeNull()
+
+                val latestDialogmotekandidatEndring = database.connection.getDialogmotekandidatEndringListForPerson(
+                    personIdent = kandidatFirstPersonIdent
+                ).firstOrNull()
+
+                latestDialogmotekandidatEndring shouldBe null
+            }
+            it("Updates status of DialogmotekandidatStoppunkt to KANDIDAT for DialogmotekandidatStoppunkt planlagt today when already ferdigstilt mote is before oppfolgingstilfelle") {
+                val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    planlagt = LocalDate.now(),
+                )
+                createDialogmotekandidatStoppunkt(dialogmotekandidatStoppunkt = stoppunktPlanlagtIDag)
+                createDialogmoteStatus(
+                    DialogmoteStatusEndring.create(
+                        generateKDialogmoteStatusEndring(
+                            personIdentNumber = kandidatFirstPersonIdent,
+                            statusEndringType = DialogmoteStatusEndringType.FERDIGSTILT,
+                            moteTidspunkt = OffsetDateTime.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 10),
+                            endringsTidspunkt = OffsetDateTime.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 9),
+                        )
+                    )
+                )
+
+                val oppfolgingstilfelleKandidatEn = generateOppfolgingstilfelleArbeidstaker(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                )
+                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
+
+                val result = dialogmotekandidatStoppunktCronjob.runJob()
+
+                result.updated shouldBeEqualTo 1
+                verify(exactly = 1) {
+                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                }
+
+                val stoppunktKandidat = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+
+                stoppunktKandidat.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.KANDIDAT.name
+                stoppunktKandidat.processedAt.shouldNotBeNull()
+
+                val latestDialogmotekandidatEndring = database.connection.getDialogmotekandidatEndringListForPerson(
+                    personIdent = kandidatFirstPersonIdent
+                ).firstOrNull()
+
+                latestDialogmotekandidatEndring.shouldNotBeNull()
+                latestDialogmotekandidatEndring.kandidat shouldBeEqualTo true
+                latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
+            }
             it("Updates status of DialogmotekandidatStoppunkt to KANDIDAT and creates new DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not Kandidat, and has been Kandidat with DialogmotekandidatEndringArsak Stoppunkt before start of latest Oppfolgingstilfelle") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
