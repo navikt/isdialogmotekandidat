@@ -23,6 +23,7 @@ fun Application.testApiModule(
         database = externalMockEnvironment.database,
         environment = externalMockEnvironment.environment,
         wellKnownInternalAzureAD = externalMockEnvironment.wellKnownInternalAzureAD,
+        oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatService = dialogmotekandidatService,
     )
 }

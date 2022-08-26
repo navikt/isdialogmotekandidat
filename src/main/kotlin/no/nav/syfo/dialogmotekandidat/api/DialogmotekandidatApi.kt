@@ -7,6 +7,7 @@ import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.domain.toDialogmotekandidatDTO
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.util.*
 
 const val kandidatApiBasePath = "/api/internad/v1/kandidat"
@@ -14,6 +15,7 @@ const val kandidatApiPersonidentPath = "/personident"
 
 fun Route.registerDialogmotekandidatApi(
     dialogmotekandidatService: DialogmotekandidatService,
+    oppfolgingstilfelleService: OppfolgingstilfelleService,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
 ) {
     route(kandidatApiBasePath) {
@@ -27,10 +29,25 @@ fun Route.registerDialogmotekandidatApi(
                 personIdentToAccess = personIdent,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val kandidatDTO: DialogmotekandidatDTO = dialogmotekandidatService.getLatestDialogmotekandidatEndring(
+                val oppfolgingstilfelle = oppfolgingstilfelleService.getSisteOppfolgingstilfelle(
+                    arbeidstakerPersonIdent = personIdent,
+                )
+                val latestKandidatEndring = dialogmotekandidatService.getLatestDialogmotekandidatEndring(
                     personIdent = personIdent
-                ).toDialogmotekandidatDTO()
+                )
+                val kandidatDate = latestKandidatEndring?.createdAt?.toLocalDate()
+                val oppfolgingstilfelleStart = oppfolgingstilfelle?.tilfelleStart
 
+                val kandidatDTO = if (kandidatDate != null && oppfolgingstilfelleStart != null &&
+                    (kandidatDate == oppfolgingstilfelleStart || kandidatDate.isAfter(oppfolgingstilfelleStart))
+                ) {
+                    latestKandidatEndring.toDialogmotekandidatDTO()
+                } else {
+                    DialogmotekandidatDTO(
+                        kandidat = false,
+                        kandidatAt = null,
+                    )
+                }
                 call.respond(kandidatDTO)
             }
         }

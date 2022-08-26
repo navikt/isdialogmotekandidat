@@ -13,6 +13,7 @@ import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.client.wellknown.WellKnown
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.api.registerDialogmotekandidatApi
+import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.unntak.UnntakService
 import no.nav.syfo.unntak.api.registerUnntakApi
 
@@ -21,6 +22,7 @@ fun Application.apiModule(
     database: DatabaseInterface,
     environment: Environment,
     wellKnownInternalAzureAD: WellKnown,
+    oppfolgingstilfelleService: OppfolgingstilfelleService,
     dialogmotekandidatService: DialogmotekandidatService,
 ) {
     installMetrics()
@@ -58,6 +60,7 @@ fun Application.apiModule(
         authenticate(JwtIssuerType.INTERNAL_AZUREAD.name) {
             registerDialogmotekandidatApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatService = dialogmotekandidatService
             )
             registerUnntakApi(

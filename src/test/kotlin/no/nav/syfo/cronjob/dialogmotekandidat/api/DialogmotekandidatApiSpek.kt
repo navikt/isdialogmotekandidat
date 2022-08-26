@@ -6,14 +6,16 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
 import no.nav.syfo.dialogmotekandidat.api.*
+import no.nav.syfo.dialogmotekandidat.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.oppfolgingstilfelle.database.createOppfolgingstilfelleArbeidstaker
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringFerdigstilt
-import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
+import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class DialogmotekandidatApiSpek : Spek({
@@ -61,6 +63,13 @@ class DialogmotekandidatApiSpek : Spek({
                     }
 
                     it("returns kandidat=true for person that is Stoppunkt-Kandidat") {
+                        val oppfolgingstilfelleArbeidstaker = generateOppfolgingstilfelleArbeidstaker(
+                            arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                            oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                        )
+                        database.connection.use {
+                            it.createOppfolgingstilfelleArbeidstaker(true, oppfolgingstilfelleArbeidstaker)
+                        }
                         val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
                             personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
                         )
@@ -84,6 +93,37 @@ class DialogmotekandidatApiSpek : Spek({
                                 ?.toEpochMilli() shouldBeEqualTo dialogmotekandidatEndring.createdAt.toLocalDateTimeOslo()
                                 .toInstant(ZoneOffset.UTC)
                                 .toEpochMilli()
+                        }
+                    }
+                    it("returns kandidat=false for person that is Stoppunkt-Kandidat but not in current oppfolgingstilfelle") {
+                        val oppfolgingstilfelleArbeidstaker = generateOppfolgingstilfelleArbeidstaker(
+                            arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                            oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                        )
+                        database.connection.use {
+                            it.createOppfolgingstilfelleArbeidstaker(true, oppfolgingstilfelleArbeidstaker)
+                        }
+                        val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
+                            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        ).copy(
+                            createdAt = OffsetDateTime.now().minusYears(1),
+                        )
+                        database.createDialogmotekandidatEndring(
+                            dialogmotekandidatEndring = dialogmotekandidatEndring,
+                        )
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlUnntakPersonIdent) {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmotekandidatDTO =
+                                objectMapper.readValue<DialogmotekandidatDTO>(response.content!!)
+
+                            dialogmotekandidatDTO.kandidat.shouldBeFalse()
                         }
                     }
 
