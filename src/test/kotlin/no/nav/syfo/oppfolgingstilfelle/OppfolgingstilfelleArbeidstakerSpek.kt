@@ -9,6 +9,7 @@ import org.amshove.kluent.shouldBeFalse
 import org.amshove.kluent.shouldBeTrue
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.*
 
 class OppfolgingstilfelleArbeidstakerSpek : Spek({
     describe("isDialogmotekandidat") {
@@ -52,6 +53,36 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
                 dialogmotekandidatEndringList = dialogmotekandidatEndringList,
                 latestDialogmoteFerdigstilt = null,
+            )
+            result.shouldBeTrue()
+        }
+
+        it("returns false if tilfelleEnd is after dialogmotekandidatStoppunktPlanlagt, and list of DialogmoteKandidatEndring is empty, and latestDialogmoteFerdigstilt after tilfelle start") {
+            val latestOppfolgingstilfelle = generateOppfolgingstilfelleArbeidstaker(
+                arbeidstakerPersonIdent = personIdent,
+                oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1,
+            )
+
+            val dialogmotekandidatEndringList: List<DialogmotekandidatEndring> = emptyList()
+
+            val result = latestOppfolgingstilfelle.isDialogmotekandidat(
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                latestDialogmoteFerdigstilt = latestOppfolgingstilfelle.tilfelleStart.toOffsetDatetime().plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 10),
+            )
+            result.shouldBeFalse()
+        }
+
+        it("returns true if tilfelleEnd is after dialogmotekandidatStoppunktPlanlagt, and list of DialogmoteKandidatEndring is empty, and latestDialogmoteFerdigstilt before tilfelle start") {
+            val latestOppfolgingstilfelle = generateOppfolgingstilfelleArbeidstaker(
+                arbeidstakerPersonIdent = personIdent,
+                oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1,
+            )
+
+            val dialogmotekandidatEndringList: List<DialogmotekandidatEndring> = emptyList()
+
+            val result = latestOppfolgingstilfelle.isDialogmotekandidat(
+                dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                latestDialogmoteFerdigstilt = latestOppfolgingstilfelle.tilfelleStart.toOffsetDatetime().minusDays(1),
             )
             result.shouldBeTrue()
         }
@@ -219,3 +250,5 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
         }
     }
 })
+
+fun LocalDate.toOffsetDatetime() = OffsetDateTime.of(this, LocalTime.NOON, ZoneOffset.UTC)
