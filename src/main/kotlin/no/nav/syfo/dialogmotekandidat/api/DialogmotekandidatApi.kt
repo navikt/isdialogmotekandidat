@@ -39,7 +39,7 @@ fun Route.registerDialogmotekandidatApi(
                 val oppfolgingstilfelleStart = oppfolgingstilfelle?.tilfelleStart
 
                 val kandidatDTO = if (kandidatDate != null && oppfolgingstilfelleStart != null &&
-                    (kandidatDate == oppfolgingstilfelleStart || kandidatDate.isAfter(oppfolgingstilfelleStart))
+                    (kandidatDate.isEqual(oppfolgingstilfelleStart) || kandidatDate.isAfter(oppfolgingstilfelleStart))
                 ) {
                     latestKandidatEndring.toDialogmotekandidatDTO()
                 } else {
