@@ -67,6 +67,7 @@ fun main() {
                 database = applicationDatabase,
                 environment = environment,
                 wellKnownInternalAzureAD = wellKnownInternalAzureAD,
+                oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatService = dialogmotekandidatService,
             )
         }
