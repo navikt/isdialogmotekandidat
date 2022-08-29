@@ -7,6 +7,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.nowUTC
 import java.sql.*
 import java.sql.Date
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -94,13 +95,14 @@ const val queryGetDialogmotekandidatStoppunktIdag =
     """
         SELECT *
         FROM DIALOGMOTEKANDIDAT_STOPPUNKT
-        WHERE stoppunkt_planlagt = CURRENT_DATE AND processed_at IS NULL
+        WHERE stoppunkt_planlagt = ? AND processed_at IS NULL
     """
 
 fun DatabaseInterface.getDialogmotekandidatStoppunktTodayList(): List<PDialogmotekandidatStoppunkt> =
     this.connection.use { connection ->
-        connection.prepareStatement(queryGetDialogmotekandidatStoppunktIdag).use {
-            it.executeQuery().toList { toPDialogmotekandidatStoppunktList() }
+        connection.prepareStatement(queryGetDialogmotekandidatStoppunktIdag).use { preparedStatement ->
+            preparedStatement.setDate(1, Date.valueOf(LocalDate.now()))
+            preparedStatement.executeQuery().toList { toPDialogmotekandidatStoppunktList() }
         }
     }
 
