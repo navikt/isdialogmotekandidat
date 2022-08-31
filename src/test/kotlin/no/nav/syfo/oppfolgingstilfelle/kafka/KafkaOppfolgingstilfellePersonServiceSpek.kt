@@ -116,17 +116,17 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
             "key2",
             kafkaOppfolgingstilfellePersonNotDialogmotekandidat,
         )
-        val kafkaOppfolgingstilfellePersonNotDialogmotekandidatBackDated = generateKafkaOppfolgingstilfellePerson(
+        val kafkaOppfolgingstilfellePersonTilbakedatert = generateKafkaOppfolgingstilfellePerson(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
             start = LocalDate.now().minusDays(110),
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 1,
         )
-        val kafkaOppfolgingstilfellePersonNotDialogmotekandidatBackDatedRecord = ConsumerRecord(
+        val kafkaOppfolgingstilfellePersonTilbakedatertRecord = ConsumerRecord(
             OPPFOLGINGSTILFELLE_PERSON_TOPIC,
             partition,
             3,
             "key3",
-            kafkaOppfolgingstilfellePersonNotDialogmotekandidatBackDated,
+            kafkaOppfolgingstilfellePersonTilbakedatert,
         )
         val kafkaOppfolgingstilfellePersonDialogmotekandidatLast = generateKafkaOppfolgingstilfellePerson(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -139,17 +139,17 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
             "key4",
             kafkaOppfolgingstilfellePersonDialogmotekandidatLast,
         )
-        val kafkaOppfolgingstilfellePersonDialogmotekandidatBackDatedLast = generateKafkaOppfolgingstilfellePerson(
+        val kafkaOppfolgingstilfellePersonTilbakedatertLast = generateKafkaOppfolgingstilfellePerson(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
             start = LocalDate.now().minusDays(130),
             oppfolgingstilfelleDurationInDays = 140,
         )
-        val kafkaOppfolgingstilfellePersonDialogmotekandidatBackDatedLastRecord = ConsumerRecord(
+        val kafkaOppfolgingstilfellePersonTilbakedatertLastRecord = ConsumerRecord(
             OPPFOLGINGSTILFELLE_PERSON_TOPIC,
             partition,
             5,
             "key5",
-            kafkaOppfolgingstilfellePersonDialogmotekandidatBackDatedLast,
+            kafkaOppfolgingstilfellePersonTilbakedatertLast,
         )
 
         val mockKafkaConsumerOppfolgingstilfellePerson =
@@ -272,8 +272,8 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                     every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
                         mapOf(
                             oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
-                                kafkaOppfolgingstilfellePersonNotDialogmotekandidatBackDatedRecord,
-                                kafkaOppfolgingstilfellePersonDialogmotekandidatBackDatedLastRecord,
+                                kafkaOppfolgingstilfellePersonTilbakedatertRecord,
+                                kafkaOppfolgingstilfellePersonTilbakedatertLastRecord,
                             )
                         )
                     )
@@ -297,13 +297,13 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
                     assertOppfolgingstilfelleArbeidstaker(
                         oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.first(),
-                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatBackDatedLast,
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonTilbakedatertLast,
                     )
 
                     val dialogmotekandidatStoppunktList: List<DialogmotekandidatStoppunkt> =
                         database.getDialogmotekandidatStoppunktList(
                             arbeidstakerPersonIdent = PersonIdentNumber(
-                                kafkaOppfolgingstilfellePersonDialogmotekandidatBackDatedLast.personIdentNumber
+                                kafkaOppfolgingstilfellePersonTilbakedatertLast.personIdentNumber
                             )
                         ).toDialogmotekandidatStoppunktList()
 
@@ -313,7 +313,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
                     val stoppunktPlanlagtExpected = LocalDate.now().plusDays(1)
 
-                    dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidatBackDatedLast.personIdentNumber
+                    dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonTilbakedatertLast.personIdentNumber
                     dialogmotekandidatStoppunkt.processedAt.shouldBeNull()
                     dialogmotekandidatStoppunkt.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT
                     dialogmotekandidatStoppunkt.stoppunktPlanlagt shouldBeEqualTo stoppunktPlanlagtExpected
