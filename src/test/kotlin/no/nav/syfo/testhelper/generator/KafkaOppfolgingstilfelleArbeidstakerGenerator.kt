@@ -13,10 +13,10 @@ import java.util.*
 fun generateKafkaOppfolgingstilfellePerson(
     arbeidstakerAtTilfelleEnd: Boolean = true,
     personIdentNumber: PersonIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+    start: LocalDate = LocalDate.now().minusDays(1),
     oppfolgingstilfelleDurationInDays: Long,
     virksomhetsnummer: Virksomhetsnummer = VIRKSOMHETSNUMMER_DEFAULT,
 ): KafkaOppfolgingstilfellePerson {
-    val start = LocalDate.now().minusDays(1)
     return KafkaOppfolgingstilfellePerson(
         uuid = UUID.randomUUID().toString(),
         createdAt = nowUTC(),

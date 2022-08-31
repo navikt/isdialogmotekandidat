@@ -10,6 +10,7 @@ fun generateDialogmotekandidatStoppunktPlanlagt(
 ): DialogmotekandidatStoppunkt = DialogmotekandidatStoppunkt.planlagt(
     arbeidstakerPersonIdent = arbeidstakerPersonIdent,
     tilfelleStart = planlagt.minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS),
+    tilfelleEnd = planlagt.plusDays(1),
 )
 
 fun generateDialogmotekandidatEndringStoppunkt(

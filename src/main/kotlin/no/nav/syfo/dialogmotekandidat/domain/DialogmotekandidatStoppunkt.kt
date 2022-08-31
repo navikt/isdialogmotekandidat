@@ -24,19 +24,26 @@ data class DialogmotekandidatStoppunkt private constructor(
     val stoppunktPlanlagt: LocalDate,
 ) {
     companion object {
-        fun stoppunktPlanlagtDato(tilfelleStart: LocalDate): LocalDate =
-            tilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
+        fun stoppunktPlanlagtDato(
+            tilfelleStart: LocalDate,
+            tilfelleEnd: LocalDate,
+        ): LocalDate {
+            val stoppunkt = tilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
+            val today = LocalDate.now()
+            return if (stoppunkt.isBefore(today) && today.isBefore(tilfelleEnd)) today.plusDays(1) else stoppunkt
+        }
 
         fun planlagt(
             arbeidstakerPersonIdent: PersonIdentNumber,
             tilfelleStart: LocalDate,
+            tilfelleEnd: LocalDate,
         ) = DialogmotekandidatStoppunkt(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
             personIdent = arbeidstakerPersonIdent,
             processedAt = null,
             status = DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT,
-            stoppunktPlanlagt = stoppunktPlanlagtDato(tilfelleStart),
+            stoppunktPlanlagt = stoppunktPlanlagtDato(tilfelleStart, tilfelleEnd),
         )
 
         fun create(pDialogmotekandidatStoppunkt: PDialogmotekandidatStoppunkt) =
