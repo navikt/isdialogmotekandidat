@@ -9,6 +9,10 @@ import java.util.*
 
 const val DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS = 119L
 
+// Oppfølgingstilfeller som begynner før denne datoen antas å ha blitt generert som kandidater i Arena,
+// så vi genererer ikke stoppunkt fram i tid for disse
+var ARENA_CUTOFF = LocalDate.of(2022, 5, 16)
+
 enum class DialogmotekandidatStoppunktStatus {
     PLANLAGT_KANDIDAT,
     KANDIDAT,
@@ -28,9 +32,11 @@ data class DialogmotekandidatStoppunkt private constructor(
             tilfelleStart: LocalDate,
             tilfelleEnd: LocalDate,
         ): LocalDate {
-            val stoppunkt = tilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
             val today = LocalDate.now()
-            return if (stoppunkt.isBefore(today) && today.isBefore(tilfelleEnd)) today.plusDays(1) else stoppunkt
+            val stoppunkt = tilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
+            return if (tilfelleStart.isBefore(ARENA_CUTOFF)) stoppunkt else {
+                if (stoppunkt.isBefore(today) && today.isBefore(tilfelleEnd)) today.plusDays(1) else stoppunkt
+            }
         }
 
         fun planlagt(

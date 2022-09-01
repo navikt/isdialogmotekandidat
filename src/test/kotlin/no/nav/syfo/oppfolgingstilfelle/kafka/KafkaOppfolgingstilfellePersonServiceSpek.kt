@@ -269,6 +269,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                 }
 
                 it("should not generate stoppunkt back in time for current oppfolgingstilfelle") {
+                    ARENA_CUTOFF = LocalDate.of(2022, 1, 1)
                     every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
                         mapOf(
                             oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
@@ -312,6 +313,59 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                     dialogmotekandidatStoppunkt.shouldNotBeNull()
 
                     val stoppunktPlanlagtExpected = LocalDate.now().plusDays(1)
+
+                    dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonTilbakedatertLast.personIdentNumber
+                    dialogmotekandidatStoppunkt.processedAt.shouldBeNull()
+                    dialogmotekandidatStoppunkt.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT
+                    dialogmotekandidatStoppunkt.stoppunktPlanlagt shouldBeEqualTo stoppunktPlanlagtExpected
+                }
+
+                it("should generate stoppunkt back in time for oppfolgingstilfelle that started before ARENA_CUTOFF") {
+                    ARENA_CUTOFF = kafkaOppfolgingstilfellePersonTilbakedatertLast.oppfolgingstilfelleList.first().start.plusDays(1)
+                    every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
+                        mapOf(
+                            oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
+                                kafkaOppfolgingstilfellePersonTilbakedatertRecord,
+                                kafkaOppfolgingstilfellePersonTilbakedatertLastRecord,
+                            )
+                        )
+                    )
+
+                    kafkaSyketilfellebitService.pollAndProcessRecords(
+                        kafkaConsumerOppfolgingstilfellePerson = mockKafkaConsumerOppfolgingstilfellePerson,
+                    )
+
+                    verify(exactly = 1) {
+                        mockKafkaConsumerOppfolgingstilfellePerson.commitSync()
+                    }
+
+                    val oppfolgingstilfelleArbeidstakerList: List<OppfolgingstilfelleArbeidstaker?> =
+                        database.getOppfolgingstilfelleArbeidstakerList(
+                            arbeidstakerPersonIdent = PersonIdentNumber(
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
+                            )
+                        ).toOppfolgingstilfelleArbeidstakerList()
+
+                    oppfolgingstilfelleArbeidstakerList.size shouldBeEqualTo 1
+
+                    assertOppfolgingstilfelleArbeidstaker(
+                        oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.first(),
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonTilbakedatertLast,
+                    )
+
+                    val dialogmotekandidatStoppunktList: List<DialogmotekandidatStoppunkt> =
+                        database.getDialogmotekandidatStoppunktList(
+                            arbeidstakerPersonIdent = PersonIdentNumber(
+                                kafkaOppfolgingstilfellePersonTilbakedatertLast.personIdentNumber
+                            )
+                        ).toDialogmotekandidatStoppunktList()
+
+                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 1
+                    val dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first()
+                    dialogmotekandidatStoppunkt.shouldNotBeNull()
+
+                    val stoppunktPlanlagtExpected = kafkaOppfolgingstilfellePersonTilbakedatertLast.oppfolgingstilfelleList
+                        .first().start.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
 
                     dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonTilbakedatertLast.personIdentNumber
                     dialogmotekandidatStoppunkt.processedAt.shouldBeNull()
