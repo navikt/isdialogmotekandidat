@@ -55,7 +55,7 @@ const val queryGetOppfolgingstilfelleArbeidstaker =
         SELECT * 
         FROM OPPFOLGINGSTILFELLE_ARBEIDSTAKER
         WHERE personident = ?
-        ORDER BY referanse_tilfelle_bit_inntruffet DESC;
+        ORDER BY tilfelle_end DESC, referanse_tilfelle_bit_inntruffet DESC;
     """
 
 fun DatabaseInterface.getOppfolgingstilfelleArbeidstakerList(
