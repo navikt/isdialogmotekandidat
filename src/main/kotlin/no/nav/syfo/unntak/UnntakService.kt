@@ -27,11 +27,17 @@ class UnntakService(
             }
 
             connection.createUnntak(unntak = unntak)
-
-            val newDialogmotekandidatEndring = DialogmotekandidatEndring.unntak(personIdentNumber = unntak.personIdent)
+            val latestOppfolgingstilfelleArbeidstaker = dialogmotekandidatService.getLatestOppfolgingstilfelle(
+                personIdentNumber = unntak.personIdent,
+            )
+            val newDialogmotekandidatEndring = DialogmotekandidatEndring.unntak(
+                personIdentNumber = unntak.personIdent,
+            )
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
-                dialogmotekandidatEndring = newDialogmotekandidatEndring
+                dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                oppfolgingstilfelle = latestOppfolgingstilfelleArbeidstaker,
+                unntak = unntak,
             )
             connection.commit()
         }

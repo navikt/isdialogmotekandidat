@@ -5,6 +5,7 @@ import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
+import no.nav.syfo.unntak.domain.Unntak
 import no.nav.syfo.util.nowUTC
 import no.nav.syfo.util.toLocalDateTimeOslo
 import java.time.OffsetDateTime
@@ -76,12 +77,17 @@ fun DialogmotekandidatEndring?.toDialogmotekandidatDTO() = DialogmotekandidatDTO
     kandidatAt = if (this?.kandidat == true) this.createdAt.toLocalDateTimeOslo() else null,
 )
 
-fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring() = KafkaDialogmotekandidatEndring(
+fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring(
+    unntak: Unntak?,
+    oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker?,
+) = KafkaDialogmotekandidatEndring(
     uuid = this.uuid.toString(),
     createdAt = this.createdAt,
     personIdentNumber = this.personIdentNumber.value,
     kandidat = this.kandidat,
     arsak = this.arsak.name,
+    unntakArsak = unntak?.arsak?.name,
+    tilfelleStart = oppfolgingstilfelle?.tilfelleStart,
 )
 
 fun DialogmotekandidatEndring.isNotInOppfolgingstilfelle(

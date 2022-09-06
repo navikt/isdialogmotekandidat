@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmotekandidat.kafka
 
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 data class KafkaDialogmotekandidatEndring(
@@ -8,4 +9,6 @@ data class KafkaDialogmotekandidatEndring(
     val personIdentNumber: String,
     val kandidat: Boolean,
     val arsak: String,
+    val unntakArsak: String?,
+    val tilfelleStart: LocalDate?,
 )

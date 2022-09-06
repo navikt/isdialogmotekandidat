@@ -107,7 +107,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
             database.dropData()
 
             clearMocks(dialogmotekandidatEndringProducer, mockKafkaConsumerDialogmoteStatusEndring)
-            justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any()) }
+            justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any()) }
             every { mockKafkaConsumerDialogmoteStatusEndring.commitSync() } returns Unit
         }
 
@@ -136,7 +136,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 1) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                     }
 
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
@@ -163,7 +163,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                     }
 
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
@@ -187,7 +187,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                     }
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
                         personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -217,7 +217,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                     }
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
                         personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -235,7 +235,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                     }
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
                         personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -251,7 +251,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                     }
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
                         personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,

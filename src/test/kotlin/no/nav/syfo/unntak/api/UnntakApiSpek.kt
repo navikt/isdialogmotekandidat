@@ -41,7 +41,7 @@ class UnntakApiSpek : Spek({
                 database.dropData()
 
                 clearMocks(dialogmotekandidatEndringProducer)
-                justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any()) }
+                justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any()) }
             }
 
             val validToken = generateJWT(
@@ -143,7 +143,7 @@ class UnntakApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Created
                             verify(exactly = 1) {
-                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                             }
 
                             val latestDialogmotekandidatEndring =
@@ -173,7 +173,7 @@ class UnntakApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                             verify(exactly = 0) {
-                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                             }
                         }
                     }
@@ -189,7 +189,7 @@ class UnntakApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
                             verify(exactly = 0) {
-                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                             }
                         }
                     }
@@ -203,7 +203,7 @@ class UnntakApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Conflict
                             verify(exactly = 0) {
-                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any())
+                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
                             }
                         }
                     }

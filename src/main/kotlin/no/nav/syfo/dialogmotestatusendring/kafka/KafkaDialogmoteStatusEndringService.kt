@@ -78,11 +78,17 @@ class KafkaDialogmoteStatusEndringService(
                 ferdigstiltStatusEndring = dialogmoteStatusEndring
             )
         ) {
-            val newDialogmotekandidatEndring =
-                DialogmotekandidatEndring.ferdigstiltDialogmote(personIdentNumber = dialogmoteStatusEndring.personIdentNumber)
+            val latestOppfolgingstilfelle = dialogmotekandidatService.getLatestOppfolgingstilfelle(
+                personIdentNumber = dialogmoteStatusEndring.personIdentNumber,
+            )
+            val newDialogmotekandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
+                personIdentNumber = dialogmoteStatusEndring.personIdentNumber,
+            )
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
-                dialogmotekandidatEndring = newDialogmotekandidatEndring
+                dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                oppfolgingstilfelle = latestOppfolgingstilfelle,
+                unntak = null,
             )
             COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_CREATED_KANDIDATENDRING.increment()
         } else {
