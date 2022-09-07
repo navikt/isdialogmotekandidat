@@ -2,6 +2,8 @@ package no.nav.syfo.dialogmotekandidat.kafka
 
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.domain.toKafkaDialogmotekandidatEndring
+import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
+import no.nav.syfo.unntak.domain.Unntak
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
@@ -12,8 +14,13 @@ class DialogmotekandidatEndringProducer(
 ) {
     fun sendDialogmotekandidatEndring(
         dialogmotekandidatEndring: DialogmotekandidatEndring,
+        oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker?,
+        unntak: Unntak?,
     ) {
-        val kafkaDialogmotekandidatEndring = dialogmotekandidatEndring.toKafkaDialogmotekandidatEndring()
+        val kafkaDialogmotekandidatEndring = dialogmotekandidatEndring.toKafkaDialogmotekandidatEndring(
+            oppfolgingstilfelle = oppfolgingstilfelle,
+            unntak = unntak,
+        )
         val key = UUID.nameUUIDFromBytes(kafkaDialogmotekandidatEndring.personIdentNumber.toByteArray()).toString()
         try {
             kafkaProducerDialogmotekandidatEndring.send(

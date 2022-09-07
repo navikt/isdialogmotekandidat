@@ -8,8 +8,8 @@ import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_
 import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING
 import no.nav.syfo.dialogmotestatusendring.database.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
-import no.nav.syfo.oppfolgingstilfelle.isDialogmotekandidat
+import no.nav.syfo.oppfolgingstilfelle.*
+import no.nav.syfo.unntak.domain.Unntak
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 
@@ -24,15 +24,16 @@ class DialogmotekandidatService(
         }.toDialogmotekandidatEndringList().firstOrNull()
     }
 
+    fun getLatestOppfolgingstilfelle(personIdentNumber: PersonIdentNumber): OppfolgingstilfelleArbeidstaker? =
+        oppfolgingstilfelleService.getSisteOppfolgingstilfelle(personIdentNumber)
+
     fun getDialogmotekandidatMedStoppunktPlanlagtTodayList(): List<DialogmotekandidatStoppunkt> =
         database.getDialogmotekandidatStoppunktTodayList().toDialogmotekandidatStoppunktList()
 
     fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
     ) {
-        val latestOppfolgingstilfelle = oppfolgingstilfelleService.getSisteOppfolgingstilfelle(
-            arbeidstakerPersonIdent = dialogmotekandidatStoppunkt.personIdent
-        )
+        val latestOppfolgingstilfelle = getLatestOppfolgingstilfelle(dialogmotekandidatStoppunkt.personIdent)
             ?: throw RuntimeException("No Oppfolgingstilfelle found for dialogmote-kandidat-stoppunkt with uuid: ${dialogmotekandidatStoppunkt.uuid}")
 
         database.connection.use { connection ->
@@ -60,6 +61,8 @@ class DialogmotekandidatService(
                 createDialogmotekandidatEndring(
                     connection = connection,
                     dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                    oppfolgingstilfelle = latestOppfolgingstilfelle,
+                    unntak = null,
                 )
                 COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING.increment()
             } else {
@@ -74,12 +77,16 @@ class DialogmotekandidatService(
     fun createDialogmotekandidatEndring(
         connection: Connection,
         dialogmotekandidatEndring: DialogmotekandidatEndring,
+        oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker?,
+        unntak: Unntak?,
     ) {
         connection.createDialogmotekandidatEndring(
             dialogmotekandidatEndring = dialogmotekandidatEndring
         )
         dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
-            dialogmotekandidatEndring = dialogmotekandidatEndring
+            dialogmotekandidatEndring = dialogmotekandidatEndring,
+            oppfolgingstilfelle = oppfolgingstilfelle,
+            unntak = unntak,
         )
     }
 
