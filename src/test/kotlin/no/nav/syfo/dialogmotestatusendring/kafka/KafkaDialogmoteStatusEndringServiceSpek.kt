@@ -7,6 +7,7 @@ import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.dialogmotestatusendring.database.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
@@ -16,10 +17,12 @@ import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppun
 import no.nav.syfo.testhelper.generator.generateKDialogmoteStatusEndring
 import org.amshove.kluent.*
 import org.apache.kafka.clients.consumer.*
+import org.apache.kafka.clients.producer.*
 import org.apache.kafka.common.TopicPartition
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.*
+import java.util.concurrent.Future
 
 class KafkaDialogmoteStatusEndringServiceSpek : Spek({
 
@@ -28,7 +31,10 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
 
         val externalMockEnvironment = ExternalMockEnvironment.instance
         val database = externalMockEnvironment.database
-        val dialogmotekandidatEndringProducer = mockk<DialogmotekandidatEndringProducer>()
+        val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
+        val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
+            kafkaProducerDialogmotekandidatEndring = kafkaProducer,
+        )
         val oppfolgingstilfelleService = OppfolgingstilfelleService(
             database = database
         )
@@ -105,9 +111,10 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
 
         beforeEachTest {
             database.dropData()
-
-            clearMocks(dialogmotekandidatEndringProducer, mockKafkaConsumerDialogmoteStatusEndring)
-            justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any()) }
+            clearMocks(kafkaProducer, mockKafkaConsumerDialogmoteStatusEndring)
+            coEvery {
+                kafkaProducer.send(any())
+            } returns mockk<Future<RecordMetadata>>(relaxed = true)
             every { mockKafkaConsumerDialogmoteStatusEndring.commitSync() } returns Unit
         }
 
@@ -135,8 +142,9 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                     verify(exactly = 1) {
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
+                    val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
                     verify(exactly = 1) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                        kafkaProducer.send(capture(producerRecordSlot))
                     }
 
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
@@ -151,6 +159,13 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
 
                     latestDialogmotekandidatEndring!!.kandidat shouldBeEqualTo false
                     latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name
+
+                    val kafkaDialogmoteKandidatEndring = producerRecordSlot.captured.value()
+                    kafkaDialogmoteKandidatEndring.personIdentNumber shouldBeEqualTo ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                    kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name
+                    kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo false
+                    kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo null
+                    kafkaDialogmoteKandidatEndring.tilfelleStart shouldBeEqualTo null
                 }
                 it("creates no new DialogmotekandidatEndring when latest endring for person is kandidat and created after ferdigstilling") {
                     database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndringCreatedAfterStatusEndring)
@@ -163,7 +178,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                        kafkaProducer.send(any())
                     }
 
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
@@ -187,7 +202,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                        kafkaProducer.send(any())
                     }
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
                         personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -217,7 +232,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                        kafkaProducer.send(any())
                     }
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
                         personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -235,7 +250,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                        kafkaProducer.send(any())
                     }
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
                         personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -251,7 +266,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         mockKafkaConsumerDialogmoteStatusEndring.commitSync()
                     }
                     verify(exactly = 0) {
-                        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                        kafkaProducer.send(any())
                     }
                     val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
                         personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,

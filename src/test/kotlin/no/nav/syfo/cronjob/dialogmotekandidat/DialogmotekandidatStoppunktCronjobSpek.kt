@@ -6,6 +6,7 @@ import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.database.*
 import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.dialogmotestatusendring.database.createDialogmoteStatus
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
@@ -17,17 +18,24 @@ import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.defaultZoneOffset
 import org.amshove.kluent.*
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.concurrent.Future
 
 class DialogmotekandidatStoppunktCronjobSpek : Spek({
     with(TestApplicationEngine()) {
         start()
         val externalMockEnvironment = ExternalMockEnvironment.instance
         val database = externalMockEnvironment.database
-        val dialogmotekandidatEndringProducer = mockk<DialogmotekandidatEndringProducer>()
+        val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
+        val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
+            kafkaProducerDialogmotekandidatEndring = kafkaProducer,
+        )
         val oppfolgingstilfelleService = OppfolgingstilfelleService(
             database = database
         )
@@ -43,8 +51,10 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
         beforeEachTest {
             database.dropData()
 
-            clearMocks(dialogmotekandidatEndringProducer)
-            justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any()) }
+            clearMocks(kafkaProducer)
+            coEvery {
+                kafkaProducer.send(any())
+            } returns mockk<Future<RecordMetadata>>(relaxed = true)
         }
 
         fun createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker: OppfolgingstilfelleArbeidstaker) {
@@ -104,8 +114,9 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 val result = dialogmotekandidatStoppunktCronjob.runJob()
                 result.failed shouldBeEqualTo 0
                 result.updated shouldBeEqualTo 2
+                val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
                 verify(exactly = 1) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                    kafkaProducer.send(capture(producerRecordSlot))
                 }
 
                 val stoppunktKandidatFirst =
@@ -121,6 +132,13 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 stoppunktKandidatFirst.processedAt.shouldNotBeNull()
                 stoppunktKandidatSecond.processedAt.shouldNotBeNull()
                 stoppunktKandidatThird.processedAt.shouldBeNull()
+
+                val kafkaDialogmoteKandidatEndring = producerRecordSlot.captured.value()
+                kafkaDialogmoteKandidatEndring.personIdentNumber shouldBeEqualTo kandidatFirstPersonIdent.value
+                kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
+                kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo true
+                kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo null
+                kafkaDialogmoteKandidatEndring.tilfelleStart shouldBeEqualTo oppfolgingstilfelleKandidatEn.tilfelleStart
             }
             it("Do not update status of DialogmotekandidatStoppunkt, if planlagt is today and no OppfolgingstilfelleArbeidstaker exists for person") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
@@ -133,7 +151,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 result.failed shouldBeEqualTo 1
                 result.updated shouldBeEqualTo 0
                 verify(exactly = 0) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                    kafkaProducer.send(any())
                 }
 
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
@@ -158,7 +176,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
                 result.updated shouldBeEqualTo 1
                 verify(exactly = 1) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                    kafkaProducer.send(any())
                 }
 
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
@@ -201,7 +219,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
                 result.updated shouldBeEqualTo 1
                 verify(exactly = 0) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                    kafkaProducer.send(any())
                 }
 
                 val stoppunktKandidat = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
@@ -241,8 +259,9 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 val result = dialogmotekandidatStoppunktCronjob.runJob()
 
                 result.updated shouldBeEqualTo 1
+                val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
                 verify(exactly = 1) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                    kafkaProducer.send(capture(producerRecordSlot))
                 }
 
                 val stoppunktKandidat = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
@@ -257,6 +276,13 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 latestDialogmotekandidatEndring.shouldNotBeNull()
                 latestDialogmotekandidatEndring.kandidat shouldBeEqualTo true
                 latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
+
+                val kafkaDialogmoteKandidatEndring = producerRecordSlot.captured.value()
+                kafkaDialogmoteKandidatEndring.personIdentNumber shouldBeEqualTo kandidatFirstPersonIdent.value
+                kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
+                kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo true
+                kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo null
+                kafkaDialogmoteKandidatEndring.tilfelleStart shouldBeEqualTo oppfolgingstilfelleKandidatEn.tilfelleStart
             }
             it("Updates status of DialogmotekandidatStoppunkt to KANDIDAT and creates new DialogmotekandidatEndring for DialogmotekandidatStoppunkt planlagt today when latest endring for person is not Kandidat, and has been Kandidat with DialogmotekandidatEndringArsak Stoppunkt before start of latest Oppfolgingstilfelle") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
@@ -290,7 +316,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
                 result.updated shouldBeEqualTo 1
                 verify(exactly = 1) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                    kafkaProducer.send(any())
                 }
 
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
@@ -344,7 +370,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
                 result.updated shouldBeEqualTo 1
                 verify(exactly = 0) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                    kafkaProducer.send(any())
                 }
 
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
@@ -382,7 +408,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
 
                 result.updated shouldBeEqualTo 1
                 verify(exactly = 0) {
-                    dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                    kafkaProducer.send(any())
                 }
 
                 val stoppunktKandidatEn = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()

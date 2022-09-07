@@ -8,6 +8,7 @@ import io.mockk.*
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
@@ -18,8 +19,10 @@ import no.nav.syfo.unntak.database.getUnntakList
 import no.nav.syfo.util.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
+import org.apache.kafka.clients.producer.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.util.concurrent.Future
 
 class UnntakApiSpek : Spek({
     val objectMapper: ObjectMapper = configuredJacksonMapper()
@@ -30,7 +33,10 @@ class UnntakApiSpek : Spek({
             start()
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database
-            val dialogmotekandidatEndringProducer = mockk<DialogmotekandidatEndringProducer>()
+            val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
+            val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
+                kafkaProducerDialogmotekandidatEndring = kafkaProducer,
+            )
 
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
@@ -40,8 +46,10 @@ class UnntakApiSpek : Spek({
             beforeEachTest {
                 database.dropData()
 
-                clearMocks(dialogmotekandidatEndringProducer)
-                justRun { dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any()) }
+                clearMocks(kafkaProducer)
+                coEvery {
+                    kafkaProducer.send(any())
+                } returns mockk<Future<RecordMetadata>>(relaxed = true)
             }
 
             val validToken = generateJWT(
@@ -142,8 +150,9 @@ class UnntakApiSpek : Spek({
                             }
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Created
+                            val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
                             verify(exactly = 1) {
-                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                                kafkaProducer.send(capture(producerRecordSlot))
                             }
 
                             val latestDialogmotekandidatEndring =
@@ -163,6 +172,13 @@ class UnntakApiSpek : Spek({
                             latestUnntak.createdBy shouldBeEqualTo UserConstants.VEILEDER_IDENT
                             latestUnntak.arsak shouldBeEqualTo newUnntakDTO.arsak
                             latestUnntak.beskrivelse shouldBeEqualTo newUnntakDTO.beskrivelse
+
+                            val kafkaDialogmoteKandidatEndring = producerRecordSlot.captured.value()
+                            kafkaDialogmoteKandidatEndring.personIdentNumber shouldBeEqualTo UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                            kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.UNNTAK.name
+                            kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo false
+                            kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo newUnntakDTO.arsak
+                            kafkaDialogmoteKandidatEndring.tilfelleStart shouldBeEqualTo null
                         }
                     }
                 }
@@ -173,7 +189,7 @@ class UnntakApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                             verify(exactly = 0) {
-                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                                kafkaProducer.send(any())
                             }
                         }
                     }
@@ -189,7 +205,7 @@ class UnntakApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Forbidden
                             verify(exactly = 0) {
-                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                                kafkaProducer.send(any())
                             }
                         }
                     }
@@ -203,7 +219,7 @@ class UnntakApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.Conflict
                             verify(exactly = 0) {
-                                dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(any(), any(), any())
+                                kafkaProducer.send(any())
                             }
                         }
                     }
