@@ -11,7 +11,7 @@ const val DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS = 119L
 
 // Oppfølgingstilfeller som begynner før denne datoen antas å ha blitt generert som kandidater i Arena,
 // så vi genererer ikke stoppunkt fram i tid for disse
-var ARENA_CUTOFF = LocalDate.of(2022, 5, 16)
+var ARENA_CUTOFF = LocalDate.of(2022, 5, 21)
 
 enum class DialogmotekandidatStoppunktStatus {
     PLANLAGT_KANDIDAT,
