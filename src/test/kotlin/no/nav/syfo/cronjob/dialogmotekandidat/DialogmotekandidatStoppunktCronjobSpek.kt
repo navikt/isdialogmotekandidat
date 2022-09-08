@@ -156,9 +156,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                     backdatedNumberOfDays = 2,
                 )
-                listOf(
-                    oppfolgingstilfelleKandidatEn,
-                ).forEach { createOppfolgingstilfelle(it) }
+                createOppfolgingstilfelle(oppfolgingstilfelleKandidatEn)
 
                 val result = dialogmotekandidatStoppunktCronjob.runJob()
                 result.failed shouldBeEqualTo 0
