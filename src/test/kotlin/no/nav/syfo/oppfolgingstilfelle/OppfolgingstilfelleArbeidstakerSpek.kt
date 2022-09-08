@@ -220,7 +220,7 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
             result.shouldBeTrue()
         }
 
-        it("returns true if latest dialogmotekandidatEndringStoppunkt is after tilfelleEnd, latest DialogmoteKandidatEndring is not Kandidat, and tilfelleEnd is not before dialogmotekandidatStoppunktPlanlagt") {
+        it("returns false if latest dialogmotekandidatEndringStoppunkt is after tilfelleEnd, latest DialogmoteKandidatEndring is not Kandidat, and tilfelleEnd is not before dialogmotekandidatStoppunktPlanlagt") {
             val latestOppfolgingstilfelle = generateOppfolgingstilfelleArbeidstaker(
                 arbeidstakerPersonIdent = personIdent,
                 oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
@@ -246,7 +246,7 @@ class OppfolgingstilfelleArbeidstakerSpek : Spek({
                 dialogmotekandidatEndringList = dialogmotekandidatEndringList,
                 latestDialogmoteFerdigstilt = null,
             )
-            result.shouldBeTrue()
+            result.shouldBeFalse()
         }
     }
 })

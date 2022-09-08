@@ -90,11 +90,11 @@ fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring(
     tilfelleStart = oppfolgingstilfelle?.tilfelleStart,
 )
 
-fun DialogmotekandidatEndring.isNotInOppfolgingstilfelle(
+fun DialogmotekandidatEndring.isBeforeStartOfOppfolgingstilfelle(
     oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker,
 ): Boolean {
-    val stoppunktKandidatAt = createdAt.toLocalDate()
-    return stoppunktKandidatAt.isBefore(oppfolgingstilfelle.tilfelleStart) || stoppunktKandidatAt.isAfter(oppfolgingstilfelle.tilfelleEnd)
+    val stoppunktKandidatAt = createdAt.toLocalDateTimeOslo().toLocalDate()
+    return stoppunktKandidatAt.isBefore(oppfolgingstilfelle.tilfelleStart)
 }
 
 private fun DialogmotekandidatEndring?.ikkeKandidat(): Boolean = this == null || !this.kandidat
@@ -111,6 +111,6 @@ private fun List<DialogmotekandidatEndring>.latestStoppunktKandidat() =
 fun List<DialogmotekandidatEndring>.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
     oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker,
 ) = latestStoppunktKandidat()
-    ?.isNotInOppfolgingstilfelle(
+    ?.isBeforeStartOfOppfolgingstilfelle(
         oppfolgingstilfelle = oppfolgingstilfelle,
     ) ?: true
