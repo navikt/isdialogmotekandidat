@@ -9,13 +9,14 @@ import java.util.*
 fun generateOppfolgingstilfelleArbeidstaker(
     arbeidstakerPersonIdent: PersonIdentNumber,
     oppfolgingstilfelleDurationInDays: Long,
+    backdatedNumberOfDays: Long = 0,
 ): OppfolgingstilfelleArbeidstaker = OppfolgingstilfelleArbeidstaker(
     uuid = UUID.randomUUID(),
     createdAt = nowUTC(),
     personIdent = arbeidstakerPersonIdent,
     tilfelleGenerert = nowUTC().minusDays(1),
-    tilfelleStart = LocalDate.now().minusDays(oppfolgingstilfelleDurationInDays),
-    tilfelleEnd = LocalDate.now(),
+    tilfelleStart = LocalDate.now().minusDays(oppfolgingstilfelleDurationInDays + backdatedNumberOfDays),
+    tilfelleEnd = LocalDate.now().minusDays(backdatedNumberOfDays),
     referanseTilfelleBitUuid = UUID.randomUUID(),
     referanseTilfelleBitInntruffet = nowUTC()
         .minusDays(oppfolgingstilfelleDurationInDays)

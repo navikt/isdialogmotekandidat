@@ -25,6 +25,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.UUID
 import java.util.concurrent.Future
 
 class DialogmotekandidatStoppunktCronjobSpek : Spek({
@@ -132,6 +133,49 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 stoppunktKandidatFirst.processedAt.shouldNotBeNull()
                 stoppunktKandidatSecond.processedAt.shouldNotBeNull()
                 stoppunktKandidatThird.processedAt.shouldBeNull()
+
+                val kafkaDialogmoteKandidatEndring = producerRecordSlot.captured.value()
+                kafkaDialogmoteKandidatEndring.personIdentNumber shouldBeEqualTo kandidatFirstPersonIdent.value
+                kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
+                kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo true
+                kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo null
+                kafkaDialogmoteKandidatEndring.tilfelleStart shouldBeEqualTo oppfolgingstilfelleKandidatEn.tilfelleStart
+            }
+            it("Update status of DialogmotekandidatStoppunkt and handles duplicate stoppunktPlanlagt") {
+                val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    planlagt = LocalDate.now(),
+                )
+                createDialogmotekandidatStoppunkt(stoppunktPlanlagtIDag)
+                (1..9).map {
+                    stoppunktPlanlagtIDag.copy(uuid = UUID.randomUUID())
+                }.forEach { createDialogmotekandidatStoppunkt(it) }
+
+                val oppfolgingstilfelleKandidatEn = generateOppfolgingstilfelleArbeidstaker(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                    backdatedNumberOfDays = 2,
+                )
+                createOppfolgingstilfelle(oppfolgingstilfelleKandidatEn)
+
+                val result = dialogmotekandidatStoppunktCronjob.runJob()
+                result.failed shouldBeEqualTo 0
+                result.updated shouldBeEqualTo 10
+                val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+                verify(exactly = 1) {
+                    kafkaProducer.send(capture(producerRecordSlot))
+                }
+
+                val stoppunktKandidatFirst =
+                    database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+                stoppunktKandidatFirst.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.KANDIDAT.name
+                stoppunktKandidatFirst.processedAt.shouldNotBeNull()
+                (1..9).forEach {
+                    val stoppunktKandidat =
+                        database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent)[it]
+                    stoppunktKandidat.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name
+                    stoppunktKandidat.processedAt.shouldNotBeNull()
+                }
 
                 val kafkaDialogmoteKandidatEndring = producerRecordSlot.captured.value()
                 kafkaDialogmoteKandidatEndring.personIdentNumber shouldBeEqualTo kandidatFirstPersonIdent.value
