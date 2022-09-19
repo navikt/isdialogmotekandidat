@@ -21,7 +21,7 @@ class DialogmotekandidatStoppunktCronjob(
         val result = CronjobResult()
 
         val dialogmotekandidatStoppunktList =
-            dialogmotekandidatService.getDialogmotekandidatMedStoppunktPlanlagtTodayList()
+            dialogmotekandidatService.getDialogmotekandidatMedStoppunktPlanlagtTodayOrYesterdayList()
         dialogmotekandidatStoppunktList.forEach { dialogmotekandidatStoppunkt ->
             try {
                 dialogmotekandidatService.updateDialogmotekandidatStoppunktStatus(dialogmotekandidatStoppunkt)

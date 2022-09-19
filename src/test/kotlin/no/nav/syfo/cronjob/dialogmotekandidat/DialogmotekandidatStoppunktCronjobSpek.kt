@@ -141,6 +141,72 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo null
                 kafkaDialogmoteKandidatEndring.tilfelleStart shouldBeEqualTo oppfolgingstilfelleKandidatEn.tilfelleStart
             }
+            it("Update status of DialogmotekandidatStoppunkt, if planlagt is yesterday and OppfolgingstilfelleArbeidstaker exists for person") {
+                val stoppunktPlanlagtYesterday = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    planlagt = LocalDate.now().minusDays(1),
+                )
+                val annetStoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = kandidatSecondPersonIdent,
+                    planlagt = LocalDate.now(),
+                )
+                val stoppunktPlanlagtIMorgen = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = kandidatThirdPersonIdent,
+                    planlagt = LocalDate.now().plusDays(1),
+                )
+                listOf(
+                    stoppunktPlanlagtYesterday,
+                    annetStoppunktPlanlagtIDag,
+                    stoppunktPlanlagtIMorgen
+                ).forEach { createDialogmotekandidatStoppunkt(it) }
+
+                val oppfolgingstilfelleKandidatEn = generateOppfolgingstilfelleArbeidstaker(
+                    arbeidstakerPersonIdent = kandidatFirstPersonIdent,
+                    oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                )
+                val oppfolgingstilfelleIkkeKandidatTo = generateOppfolgingstilfelleArbeidstaker(
+                    arbeidstakerPersonIdent = kandidatSecondPersonIdent,
+                    oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 1,
+                )
+                val oppfolgingstilfelleKandidatTre = generateOppfolgingstilfelleArbeidstaker(
+                    arbeidstakerPersonIdent = kandidatThirdPersonIdent,
+                    oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1,
+                )
+                listOf(
+                    oppfolgingstilfelleKandidatEn,
+                    oppfolgingstilfelleIkkeKandidatTo,
+                    oppfolgingstilfelleKandidatTre
+                ).forEach { createOppfolgingstilfelle(it) }
+
+                val result = dialogmotekandidatStoppunktCronjob.runJob()
+                result.failed shouldBeEqualTo 0
+                result.updated shouldBeEqualTo 2
+                val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+                verify(exactly = 1) {
+                    kafkaProducer.send(capture(producerRecordSlot))
+                }
+
+                val stoppunktKandidatFirst =
+                    database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
+                val stoppunktKandidatSecond =
+                    database.getDialogmotekandidatStoppunktList(kandidatSecondPersonIdent).first()
+                val stoppunktKandidatThird =
+                    database.getDialogmotekandidatStoppunktList(kandidatThirdPersonIdent).first()
+
+                stoppunktKandidatFirst.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.KANDIDAT.name
+                stoppunktKandidatSecond.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name
+                stoppunktKandidatThird.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT.name
+                stoppunktKandidatFirst.processedAt.shouldNotBeNull()
+                stoppunktKandidatSecond.processedAt.shouldNotBeNull()
+                stoppunktKandidatThird.processedAt.shouldBeNull()
+
+                val kafkaDialogmoteKandidatEndring = producerRecordSlot.captured.value()
+                kafkaDialogmoteKandidatEndring.personIdentNumber shouldBeEqualTo kandidatFirstPersonIdent.value
+                kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.STOPPUNKT.name
+                kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo true
+                kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo null
+                kafkaDialogmoteKandidatEndring.tilfelleStart shouldBeEqualTo oppfolgingstilfelleKandidatEn.tilfelleStart
+            }
             it("Update status of DialogmotekandidatStoppunkt and handles duplicate stoppunktPlanlagt") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
@@ -166,16 +232,15 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     kafkaProducer.send(capture(producerRecordSlot))
                 }
 
-                val stoppunktKandidatFirst =
-                    database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent).first()
-                stoppunktKandidatFirst.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.KANDIDAT.name
-                stoppunktKandidatFirst.processedAt.shouldNotBeNull()
-                (1..9).forEach {
-                    val stoppunktKandidat =
-                        database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent)[it]
-                    stoppunktKandidat.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name
+                val stoppunktList = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonIdent)
+                stoppunktList.size shouldBeEqualTo 10
+                var kandidatCounter = 0
+                (0..9).forEach {
+                    val stoppunktKandidat = stoppunktList[it]
+                    if (stoppunktKandidat.status == DialogmotekandidatStoppunktStatus.KANDIDAT.name) kandidatCounter++
                     stoppunktKandidat.processedAt.shouldNotBeNull()
                 }
+                kandidatCounter shouldBeEqualTo 1
 
                 val kafkaDialogmoteKandidatEndring = producerRecordSlot.captured.value()
                 kafkaDialogmoteKandidatEndring.personIdentNumber shouldBeEqualTo kandidatFirstPersonIdent.value
