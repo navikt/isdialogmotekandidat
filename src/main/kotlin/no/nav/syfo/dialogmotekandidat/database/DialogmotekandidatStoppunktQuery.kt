@@ -91,16 +91,16 @@ fun Connection.updateDialogmotekandidatStoppunktStatus(
     }
 }
 
-const val queryGetDialogmotekandidatStoppunktTodayOrYesterday =
+const val queryGetDialogmotekandidaterWithStoppunktTodayOrYesterday =
     """
         SELECT *
         FROM DIALOGMOTEKANDIDAT_STOPPUNKT
         WHERE (stoppunkt_planlagt = ? OR stoppunkt_planlagt = ?) AND processed_at IS NULL
     """
 
-fun DatabaseInterface.getDialogmotekandidatStoppunktTodayOrYesterdayList(): List<PDialogmotekandidatStoppunkt> =
+fun DatabaseInterface.getDialogmotekandidaterWithStoppunktTodayOrYesterday(): List<PDialogmotekandidatStoppunkt> =
     this.connection.use { connection ->
-        connection.prepareStatement(queryGetDialogmotekandidatStoppunktTodayOrYesterday).use { preparedStatement ->
+        connection.prepareStatement(queryGetDialogmotekandidaterWithStoppunktTodayOrYesterday).use { preparedStatement ->
             preparedStatement.setDate(1, Date.valueOf(LocalDate.now()))
             preparedStatement.setDate(2, Date.valueOf(LocalDate.now().minusDays(1)))
             preparedStatement.executeQuery().toList { toPDialogmotekandidatStoppunktList() }

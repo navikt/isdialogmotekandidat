@@ -146,18 +146,18 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     planlagt = LocalDate.now().minusDays(1),
                 )
-                val annetStoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
+                val stoppunktPlanlagtToday = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatSecondPersonIdent,
                     planlagt = LocalDate.now(),
                 )
-                val stoppunktPlanlagtIMorgen = generateDialogmotekandidatStoppunktPlanlagt(
+                val stoppunktPlanlagtTomorrow = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatThirdPersonIdent,
                     planlagt = LocalDate.now().plusDays(1),
                 )
                 listOf(
                     stoppunktPlanlagtYesterday,
-                    annetStoppunktPlanlagtIDag,
-                    stoppunktPlanlagtIMorgen
+                    stoppunktPlanlagtToday,
+                    stoppunktPlanlagtTomorrow
                 ).forEach { createDialogmotekandidatStoppunkt(it) }
 
                 val oppfolgingstilfelleKandidatEn = generateOppfolgingstilfelleArbeidstaker(

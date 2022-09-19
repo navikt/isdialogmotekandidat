@@ -27,8 +27,8 @@ class DialogmotekandidatService(
     fun getLatestOppfolgingstilfelle(personIdentNumber: PersonIdentNumber): OppfolgingstilfelleArbeidstaker? =
         oppfolgingstilfelleService.getSisteOppfolgingstilfelle(personIdentNumber)
 
-    fun getDialogmotekandidatMedStoppunktPlanlagtTodayOrYesterdayList(): List<DialogmotekandidatStoppunkt> =
-        database.getDialogmotekandidatStoppunktTodayOrYesterdayList().toDialogmotekandidatStoppunktList()
+    fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday(): List<DialogmotekandidatStoppunkt> =
+        database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
 
     fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
