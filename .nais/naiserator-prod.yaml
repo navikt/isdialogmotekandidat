@@ -48,7 +48,7 @@ spec:
           cluster: prod-fss
   gcp:
     sqlInstances:
-      - type: POSTGRES_12
+      - type: POSTGRES_14
         databases:
           - name: isdialogmotekandidat-db
         diskAutoresize: true
