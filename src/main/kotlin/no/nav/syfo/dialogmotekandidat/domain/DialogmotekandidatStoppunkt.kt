@@ -35,7 +35,7 @@ data class DialogmotekandidatStoppunkt private constructor(
             val today = LocalDate.now()
             val stoppunkt = tilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
             return if (tilfelleStart.isBefore(ARENA_CUTOFF)) stoppunkt else {
-                if (stoppunkt.isBefore(today) && today.isBefore(tilfelleEnd)) today.plusDays(1) else stoppunkt
+                if (stoppunkt.isBefore(today) && today.isBefore(tilfelleEnd)) today else stoppunkt
             }
         }
 
