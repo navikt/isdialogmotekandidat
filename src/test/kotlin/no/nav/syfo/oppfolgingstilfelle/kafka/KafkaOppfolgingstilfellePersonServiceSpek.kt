@@ -312,7 +312,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                     val dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first()
                     dialogmotekandidatStoppunkt.shouldNotBeNull()
 
-                    val stoppunktPlanlagtExpected = LocalDate.now().plusDays(1)
+                    val stoppunktPlanlagtExpected = LocalDate.now()
 
                     dialogmotekandidatStoppunkt.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonTilbakedatertLast.personIdentNumber
                     dialogmotekandidatStoppunkt.processedAt.shouldBeNull()
