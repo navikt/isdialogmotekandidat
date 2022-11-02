@@ -15,6 +15,7 @@ import no.nav.syfo.util.*
 
 const val unntakApiBasePath = "/api/internad/v1/unntak"
 const val unntakApiPersonidentPath = "/personident"
+const val unntakApiHackaton = "/hackaton"
 
 fun Route.registerUnntakApi(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
@@ -53,6 +54,9 @@ fun Route.registerUnntakApi(
 
                 call.respond(unntakDTOList)
             }
+        }
+        get(unntakApiHackaton) {
+            call.respond(unntakService.getHackaton(call.getNAVIdent()))
         }
     }
 }
