@@ -56,7 +56,7 @@ fun DatabaseInterface.getUnntakList(
     }
 }
 
-const val queryGetUnntakForVeilder: String =
+const val queryGetUnntakForVeileder: String =
     """
         SELECT * 
         FROM UNNTAK
@@ -67,7 +67,7 @@ const val queryGetUnntakForVeilder: String =
 fun DatabaseInterface.getUnntakForVeileder(
     veilederIdent: String,
 ): List<PUnntak> = this.connection.use { connection ->
-    connection.prepareStatement(queryGetUnntakForVeilder).use {
+    connection.prepareStatement(queryGetUnntakForVeileder).use {
         it.setString(1, veilederIdent)
         it.executeQuery().toList { toPUnntakList() }
     }
