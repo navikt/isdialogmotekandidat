@@ -78,4 +78,3 @@ data class HackatonResponse(
     val tilfelleStart: LocalDate,
     val tilfelleEnd: LocalDate,
 )
-
