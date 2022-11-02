@@ -56,6 +56,23 @@ fun DatabaseInterface.getUnntakList(
     }
 }
 
+const val queryGetUnntakForVeilder: String =
+    """
+        SELECT * 
+        FROM UNNTAK
+        WHERE created_by = ?
+        ORDER BY created_at DESC;
+    """
+
+fun DatabaseInterface.getUnntakForVeileder(
+    veilederIdent: String,
+): List<PUnntak> = this.connection.use { connection ->
+    connection.prepareStatement(queryGetUnntakForVeilder).use {
+        it.setString(1, veilederIdent)
+        it.executeQuery().toList { toPUnntakList() }
+    }
+}
+
 fun ResultSet.toPUnntakList() = PUnntak(
     id = getInt("id"),
     uuid = UUID.fromString(getString("uuid")),
