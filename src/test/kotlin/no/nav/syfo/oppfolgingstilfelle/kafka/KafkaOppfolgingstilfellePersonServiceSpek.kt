@@ -644,6 +644,11 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
                     oppfolgingstilfelleArbeidstakerList.size shouldBeEqualTo 2
                     assertOppfolgingstilfelleArbeidstaker(
+                        oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.first(),
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatPreviousOppfolgingstilfelle,
+                        assertLatestTilfelle = false,
+                    )
+                    assertOppfolgingstilfelleArbeidstaker(
                         oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.last(),
                         kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatLatestOppfolgingstilfelle,
                     )
