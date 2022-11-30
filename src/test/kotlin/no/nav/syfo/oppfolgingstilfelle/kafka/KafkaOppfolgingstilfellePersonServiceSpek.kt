@@ -568,8 +568,8 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                             oppfolgingstilfelleList = listOf(
                                 KafkaOppfolgingstilfelle(
                                     arbeidstakerAtTilfelleEnd = true,
-                                    start = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 10),
-                                    end = LocalDate.now().minusDays(11),
+                                    start = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 31),
+                                    end = LocalDate.now().minusDays(30),
                                     virksomhetsnummerList = listOf(
                                         UserConstants.VIRKSOMHETSNUMMER_DEFAULT.value,
                                     ),
@@ -594,11 +594,11 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                                 kafkaOppfolgingstilfellePersonDialogmotekandidatLatestOppfolgingstilfelle.oppfolgingstilfelleList.first(),
                                 KafkaOppfolgingstilfelle(
                                     arbeidstakerAtTilfelleEnd = true,
-                                    start = kafkaOppfolgingstilfellePersonDialogmotekandidatLatestOppfolgingstilfelle.oppfolgingstilfelleList.first().start.minusDays(
-                                        147
-                                    ),
-                                    end = kafkaOppfolgingstilfellePersonDialogmotekandidatLatestOppfolgingstilfelle.oppfolgingstilfelleList.first().start.minusDays(
+                                    start = kafkaOppfolgingstilfellePersonDialogmotekandidatLatestOppfolgingstilfelle.oppfolgingstilfelleList.first().end.plusDays(
                                         17
+                                    ),
+                                    end = kafkaOppfolgingstilfellePersonDialogmotekandidatLatestOppfolgingstilfelle.oppfolgingstilfelleList.first().end.plusDays(
+                                        27
                                     ),
                                     virksomhetsnummerList = listOf(
                                         UserConstants.VIRKSOMHETSNUMMER_DEFAULT.value,
@@ -642,12 +642,10 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                             )
                         ).toOppfolgingstilfelleArbeidstakerList()
 
-                    oppfolgingstilfelleArbeidstakerList.size shouldBeEqualTo 1
-
+                    oppfolgingstilfelleArbeidstakerList.size shouldBeEqualTo 2
                     assertOppfolgingstilfelleArbeidstaker(
-                        oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.first(),
-                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatPreviousOppfolgingstilfelle,
-                        assertLatestTilfelle = false,
+                        oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleArbeidstakerList.last(),
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatLatestOppfolgingstilfelle,
                     )
 
                     val dialogmotekandidatStoppunktList = database.getDialogmotekandidatStoppunktList(
@@ -656,7 +654,12 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                         ),
                     ).toDialogmotekandidatStoppunktList()
 
-                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 0
+                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 1
+
+                    assertDialogmotekandidatStoppunktPlanlagt(
+                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first(),
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatLatestOppfolgingstilfelle,
+                    )
                 }
 
                 it("should not create OppfolgingstilfellePerson and not create DialogmotekandidatStoppunkt, if polled 1 where arbeidstakerAtTilfelleEnd=false and Dialogmotekandidat=true in previous Oppfolgingstilfelle, and Dialogmotekandidat=false in latest Oppfolgingstilfelle") {
