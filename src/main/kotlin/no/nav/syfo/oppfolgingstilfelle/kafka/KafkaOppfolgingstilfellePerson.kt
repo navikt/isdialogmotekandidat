@@ -3,6 +3,7 @@ package no.nav.syfo.oppfolgingstilfelle.kafka
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.util.nowUTC
+import no.nav.syfo.util.tomorrow
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -59,5 +60,3 @@ fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstakerList() =
             latestTilfelle = oppfolgingstilfelle,
         )
     }
-
-fun tomorrow() = LocalDate.now().plusDays(1)
