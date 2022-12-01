@@ -30,10 +30,10 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
         oppfolgingstilfelleArbeidstaker.shouldNotBeNull()
 
         val latestTilfelle = if (assertLatestTilfelle) {
-            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.filter { it.start < LocalDate.now() }.maxByOrNull { it.start }
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfellerWithoutFutureTilfeller().maxByOrNull { it.start }
                 ?: throw RuntimeException("No Oppfolgingstilfelle found")
         } else {
-            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.minByOrNull { it.start }
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfellerWithoutFutureTilfeller().minByOrNull { it.start }
                 ?: throw RuntimeException("No Oppfolgingstilfelle found")
         }
 
@@ -56,7 +56,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
         dialogmotekandidatStoppunkt.shouldNotBeNull()
 
         val latestTilfelleStart =
-            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.excludeFutureTilfeller().maxByOrNull {
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfellerWithoutFutureTilfeller().maxByOrNull {
                 it.start
             }!!.start
         val stoppunktPlanlagtExpected = latestTilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
