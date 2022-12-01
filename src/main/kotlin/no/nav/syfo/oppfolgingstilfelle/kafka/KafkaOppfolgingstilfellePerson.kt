@@ -38,9 +38,7 @@ fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(
 )
 
 fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelleArbeidstaker(): OppfolgingstilfelleArbeidstaker? =
-    this.oppfolgingstilfelleList.filter {
-        it.start.isBefore(tomorrow())
-    }.maxByOrNull {
+    this.oppfolgingstilfelleList.excludeFutureTilfeller().maxByOrNull {
         it.start
     }?.let { latestKafkaOppfolgingstilfelle ->
         if (latestKafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
@@ -53,10 +51,14 @@ fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelleArbeidstaker(): Op
     }
 
 fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstakerList() =
-    this.oppfolgingstilfelleList.filter { kafkaOppfolgingstilfelle ->
-        kafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd && kafkaOppfolgingstilfelle.start.isBefore(tomorrow())
+    this.oppfolgingstilfelleList.excludeFutureTilfeller().filter { kafkaOppfolgingstilfelle ->
+        kafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd
     }.map { oppfolgingstilfelle ->
         this.toOppfolgingstilfelleArbeidstaker(
             latestTilfelle = oppfolgingstilfelle,
         )
     }
+
+fun List<KafkaOppfolgingstilfelle>.excludeFutureTilfeller() = this.filter {
+    it.start.isBefore(tomorrow())
+}

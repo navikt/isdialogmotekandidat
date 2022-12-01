@@ -12,7 +12,6 @@ import no.nav.syfo.oppfolgingstilfelle.database.toOppfolgingstilfelleArbeidstake
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.generator.generateKafkaOppfolgingstilfellePerson
-import no.nav.syfo.util.tomorrow
 import org.amshove.kluent.*
 import org.apache.kafka.clients.consumer.*
 import org.apache.kafka.common.TopicPartition
@@ -57,7 +56,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
         dialogmotekandidatStoppunkt.shouldNotBeNull()
 
         val latestTilfelleStart =
-            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.filter { it.start.isBefore(tomorrow()) }.maxByOrNull {
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.excludeFutureTilfeller().maxByOrNull {
                 it.start
             }!!.start
         val stoppunktPlanlagtExpected = latestTilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
