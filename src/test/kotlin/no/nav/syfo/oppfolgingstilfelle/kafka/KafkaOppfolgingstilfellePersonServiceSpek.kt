@@ -56,7 +56,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
         dialogmotekandidatStoppunkt.shouldNotBeNull()
 
         val latestTilfelleStart =
-            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.filter { it.start.isBefore(LocalDate.now()) }.maxByOrNull {
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.filter { it.start.isBefore(tomorrow()) }.maxByOrNull {
                 it.start
             }!!.start
         val stoppunktPlanlagtExpected = latestTilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
