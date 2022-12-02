@@ -70,7 +70,7 @@ class KafkaOppfolgingstilfellePersonService(
         connection: Connection,
         kafkaOppfolgingstilfellePerson: KafkaOppfolgingstilfellePerson,
     ) {
-        if (kafkaOppfolgingstilfellePerson.oppfolgingstilfelleList.isEmpty()) {
+        if (kafkaOppfolgingstilfellePerson.oppfolgingstilfellerWithoutFutureTilfeller().isEmpty()) {
             log.warn("Skipped processing of record: No Oppfolgingstilfelle found in record.")
             COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NO_TILFELLE.increment()
             return

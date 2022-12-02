@@ -3,6 +3,7 @@ package no.nav.syfo.oppfolgingstilfelle.kafka
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.util.nowUTC
+import no.nav.syfo.util.tomorrow
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -37,7 +38,7 @@ fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(
 )
 
 fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelleArbeidstaker(): OppfolgingstilfelleArbeidstaker? =
-    this.oppfolgingstilfelleList.maxByOrNull {
+    this.oppfolgingstilfellerWithoutFutureTilfeller().maxByOrNull {
         it.start
     }?.let { latestKafkaOppfolgingstilfelle ->
         if (latestKafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
@@ -50,10 +51,15 @@ fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelleArbeidstaker(): Op
     }
 
 fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstakerList() =
-    this.oppfolgingstilfelleList.filter { kafkaOppfolgingstilfelle ->
+    this.oppfolgingstilfellerWithoutFutureTilfeller().filter { kafkaOppfolgingstilfelle ->
         kafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd
     }.map { oppfolgingstilfelle ->
         this.toOppfolgingstilfelleArbeidstaker(
             latestTilfelle = oppfolgingstilfelle,
         )
+    }
+
+fun KafkaOppfolgingstilfellePerson.oppfolgingstilfellerWithoutFutureTilfeller() =
+    this.oppfolgingstilfelleList.filter {
+        it.start.isBefore(tomorrow())
     }
