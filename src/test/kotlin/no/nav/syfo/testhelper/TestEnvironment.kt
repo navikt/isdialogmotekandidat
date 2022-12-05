@@ -11,6 +11,7 @@ fun testEnvironment(
     kafkaBootstrapServers: String,
     azureOpenIdTokenEndpoint: String,
     syfoTilgangskontrollUrl: String,
+    oppfolgingstilfelleUrl: String,
 ) = Environment(
     database = DatabaseEnvironment(
         host = "localhost",
@@ -41,10 +42,11 @@ fun testEnvironment(
             baseUrl = syfoTilgangskontrollUrl,
             clientId = "dev-fss.teamsykefravr.syfotilgangskontroll",
         ),
+        oppfolgingstilfelle = ClientEnvironment(
+            baseUrl = oppfolgingstilfelleUrl,
+            clientId = "dev-gcp.teamsykefravr.isoppfolgingstilfelle",
+        ),
     ),
-    kafkaOppfolgingstilfellePersonProcessingEnabled = true,
-    dialogmotekandidatStoppunktCronjobEnabled = true,
-    kafkaDialogmoteStatusEndringProcessingEnabled = true,
 )
 
 fun testAppState() = ApplicationState(
