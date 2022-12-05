@@ -7,6 +7,4 @@ data class AzureAdToken(
     val accessToken: String,
     val expires: LocalDateTime,
 ) : Serializable
-
 fun AzureAdToken.isExpired() = this.expires < LocalDateTime.now().plusSeconds(60)
-

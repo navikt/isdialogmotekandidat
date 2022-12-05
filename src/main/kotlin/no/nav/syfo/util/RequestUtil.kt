@@ -8,4 +8,3 @@ const val NAV_PERSONIDENT_HEADER = "nav-personident"
 fun bearerHeader(token: String) = "Bearer $token"
 
 fun callIdArgument(callId: String) = StructuredArguments.keyValue("callId", callId)!!
-
