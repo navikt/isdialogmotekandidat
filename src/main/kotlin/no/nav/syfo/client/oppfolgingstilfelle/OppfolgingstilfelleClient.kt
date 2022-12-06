@@ -1,0 +1,59 @@
+package no.nav.syfo.client.oppfolgingstilfelle
+
+import io.ktor.client.call.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.azuread.AzureAdClient
+import no.nav.syfo.client.httpClientDefault
+import no.nav.syfo.domain.*
+import no.nav.syfo.util.*
+import org.slf4j.LoggerFactory
+import java.util.UUID
+
+class OppfolgingstilfelleClient(
+    private val azureAdClient: AzureAdClient,
+    private val isoppfolgingstilfelleClientId: String,
+    isoppfolgingstilfelleBaseUrl: String,
+) {
+    private val personOppfolgingstilfelleSystemUrl: String =
+        "$isoppfolgingstilfelleBaseUrl$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH"
+
+    private val httpClient = httpClientDefault()
+
+    suspend fun getOppfolgingstilfellePerson(
+        personIdent: PersonIdentNumber,
+    ): OppfolgingstilfellePersonDTO? {
+        val callId = UUID.randomUUID().toString()
+        return try {
+            val token = azureAdClient.getSystemToken(isoppfolgingstilfelleClientId)
+                ?: throw RuntimeException("Could not get azuread access token")
+            val response: HttpResponse = httpClient.get(personOppfolgingstilfelleSystemUrl) {
+                header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
+                header(NAV_CALL_ID_HEADER, callId)
+                header(NAV_PERSONIDENT_HEADER, personIdent.value)
+                accept(ContentType.Application.Json)
+            }
+            response.body<OppfolgingstilfellePersonDTO>().also {
+                COUNT_CALL_OPPFOLGINGSTILFELLE_PERSON_SUCCESS.increment()
+            }
+        } catch (responseException: ResponseException) {
+            log.error(
+                "Error while requesting OppfolgingstilfellePerson from Isoppfolgingstilfelle with {}, {}",
+                StructuredArguments.keyValue("statusCode", responseException.response.status.value),
+                callIdArgument(callId),
+            )
+            COUNT_CALL_OPPFOLGINGSTILFELLE_PERSON_FAIL.increment()
+            null
+        }
+    }
+
+    companion object {
+        const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH =
+            "/api/system/v1/oppfolgingstilfelle/personident"
+
+        private val log = LoggerFactory.getLogger(OppfolgingstilfelleClient::class.java)
+    }
+}

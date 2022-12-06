@@ -85,27 +85,21 @@ fun main() {
             dialogmotekandidatService = dialogmotekandidatService,
         )
 
-        if (environment.kafkaOppfolgingstilfellePersonProcessingEnabled) {
-            launchKafkaTaskOppfolgingstilfellePerson(
-                applicationState = applicationState,
-                kafkaEnvironment = environment.kafka,
-                kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
-            )
-        }
-        if (environment.kafkaDialogmoteStatusEndringProcessingEnabled) {
-            launchKafkaTaskDialogmoteStatusEndring(
-                applicationState = applicationState,
-                kafkaEnvironment = environment.kafka,
-                kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
-            )
-        }
-        if (environment.dialogmotekandidatStoppunktCronjobEnabled) {
-            launchCronjobModule(
-                applicationState = applicationState,
-                environment = environment,
-                dialogmotekandidatService = dialogmotekandidatService,
-            )
-        }
+        launchKafkaTaskOppfolgingstilfellePerson(
+            applicationState = applicationState,
+            kafkaEnvironment = environment.kafka,
+            kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
+        )
+        launchKafkaTaskDialogmoteStatusEndring(
+            applicationState = applicationState,
+            kafkaEnvironment = environment.kafka,
+            kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
+        )
+        launchCronjobModule(
+            applicationState = applicationState,
+            environment = environment,
+            dialogmotekandidatService = dialogmotekandidatService,
+        )
     }
 
     val server = embeddedServer(

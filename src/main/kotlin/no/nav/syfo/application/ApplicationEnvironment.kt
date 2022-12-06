@@ -36,13 +36,15 @@ data class Environment(
         aivenRegistryUser = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
         aivenRegistryPassword = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
     ),
-    val kafkaOppfolgingstilfellePersonProcessingEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_OPPFOLGINGSTILFELLE_PERSON_PROCESSING_ENABLED").toBoolean(),
-    val dialogmotekandidatStoppunktCronjobEnabled: Boolean = getEnvVar("TOGGLE_DIALOGMOTEKANDIDAT_STOPPUNKT_CRONJOB_ENABLED").toBoolean(),
-    val kafkaDialogmoteStatusEndringProcessingEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_DIALOGMOTE_STATUS_ENDRING_PROCESSING_ENABLED").toBoolean(),
+    val readFromIsoppfolgingstilfelleEnabled: Boolean = getEnvVar("TOGGLE_READ_FROM_ISOPPFOLGINGSTILFELLE_ENABLED").toBoolean(),
     val clients: ClientsEnvironment = ClientsEnvironment(
         syfotilgangskontroll = ClientEnvironment(
             baseUrl = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
             clientId = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
+        ),
+        oppfolgingstilfelle = ClientEnvironment(
+            baseUrl = getEnvVar("ISOPPFOLGINGSTILFELLE_URL"),
+            clientId = getEnvVar("ISOPPFOLGINGSTILFELLE_CLIENT_ID"),
         ),
     ),
 )
