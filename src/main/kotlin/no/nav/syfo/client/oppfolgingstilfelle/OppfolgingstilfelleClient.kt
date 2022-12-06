@@ -23,7 +23,7 @@ class OppfolgingstilfelleClient(
 
     private val httpClient = httpClientDefault()
 
-    suspend fun oppfolgingstilfelle(
+    suspend fun getOppfolgingstilfellePerson(
         personIdent: PersonIdentNumber,
     ): OppfolgingstilfellePersonDTO? {
         val callId = UUID.randomUUID().toString()
