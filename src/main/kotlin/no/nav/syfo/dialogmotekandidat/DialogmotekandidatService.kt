@@ -22,29 +22,29 @@ class DialogmotekandidatService(
     private val dialogmotekandidatEndringProducer: DialogmotekandidatEndringProducer,
     private val database: DatabaseInterface,
 ) {
-    fun getLatestDialogmotekandidatEndring(personIdent: PersonIdentNumber): DialogmotekandidatEndring? {
-        return database.connection.use { connection ->
-            connection.getDialogmotekandidatEndringListForPerson(personIdent = personIdent)
-        }.toDialogmotekandidatEndringList().firstOrNull()
-    }
+    fun getLatestDialogmotekandidatEndring(
+        personIdent: PersonIdentNumber
+    ) = database.connection.use { connection ->
+        connection.getDialogmotekandidatEndringListForPerson(personIdent = personIdent)
+    }.toDialogmotekandidatEndringList().firstOrNull()
 
-    suspend fun getLatestOppfolgingstilfelle(personIdentNumber: PersonIdentNumber): OppfolgingstilfelleDTO? =
-        oppfolgingstilfelleService.getLatestOppfolgingstilfelle(personIdentNumber)
+    suspend fun getLatestOppfolgingstilfelle(
+        personIdent: PersonIdentNumber
+    ) = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(personIdent)
 
     suspend fun getOppfolgingstilfelleForDate(
-        personIdentNumber: PersonIdentNumber,
+        personIdent: PersonIdentNumber,
         date: LocalDate,
-    ): OppfolgingstilfelleDTO? =
-        oppfolgingstilfelleService.getOppfolgingstilfelleForDate(personIdentNumber, date)
+    ) = oppfolgingstilfelleService.getOppfolgingstilfelleForDate(personIdent, date)
 
-    fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday(): List<DialogmotekandidatStoppunkt> =
+    fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
 
     suspend fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
     ) {
         val oppfolgingstilfelleForDate = getOppfolgingstilfelleForDate(
-            personIdentNumber = dialogmotekandidatStoppunkt.personIdent,
+            personIdent = dialogmotekandidatStoppunkt.personIdent,
             date = dialogmotekandidatStoppunkt.stoppunktPlanlagt,
         )
 
@@ -103,8 +103,7 @@ class DialogmotekandidatService(
     ): Boolean {
         val tilfelleStart = oppfolgingstilfelle.start
         val tilfelleEnd = oppfolgingstilfelle.end
-        val stoppunkt = DialogmotekandidatStoppunkt.stoppunktPlanlagtDato(tilfelleStart, tilfelleEnd)
-        return tilfelleEnd.isAfterOrEqual(stoppunkt)
+        return tilfelleEnd.isAfterOrEqual(DialogmotekandidatStoppunkt.stoppunktPlanlagtDato(tilfelleStart, tilfelleEnd))
     }
 
     fun createDialogmotekandidatEndring(

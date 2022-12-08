@@ -82,7 +82,7 @@ class KafkaDialogmoteStatusEndringService(
             )
         ) {
             val latestOppfolgingstilfelle = dialogmotekandidatService.getLatestOppfolgingstilfelle(
-                personIdentNumber = dialogmoteStatusEndring.personIdentNumber,
+                personIdent = dialogmoteStatusEndring.personIdentNumber,
             )
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
                 personIdentNumber = dialogmoteStatusEndring.personIdentNumber,

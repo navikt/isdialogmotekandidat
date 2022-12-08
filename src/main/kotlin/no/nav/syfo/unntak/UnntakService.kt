@@ -32,7 +32,7 @@ class UnntakService(
 
             connection.createUnntak(unntak = unntak)
             val latestOppfolgingstilfelleArbeidstaker = dialogmotekandidatService.getLatestOppfolgingstilfelle(
-                personIdentNumber = unntak.personIdent,
+                personIdent = unntak.personIdent,
             )
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.unntak(
                 personIdentNumber = unntak.personIdent,
