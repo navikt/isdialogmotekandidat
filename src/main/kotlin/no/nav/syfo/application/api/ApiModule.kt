@@ -22,6 +22,7 @@ fun Application.apiModule(
     database: DatabaseInterface,
     environment: Environment,
     wellKnownInternalAzureAD: WellKnown,
+    azureAdClient: AzureAdClient,
     oppfolgingstilfelleService: OppfolgingstilfelleService,
     dialogmotekandidatService: DialogmotekandidatService,
 ) {
@@ -39,9 +40,6 @@ fun Application.apiModule(
     )
     installStatusPages()
 
-    val azureAdClient = AzureAdClient(
-        azureEnvironment = environment.azure
-    )
     val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
         azureAdClient = azureAdClient,
         clientEnvironment = environment.clients.syfotilgangskontroll

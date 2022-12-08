@@ -1,6 +1,7 @@
 package no.nav.syfo.dialogmotekandidat
 
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.syfo.dialogmotekandidat.database.*
 import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
@@ -10,8 +11,11 @@ import no.nav.syfo.dialogmotestatusendring.database.getLatestDialogmoteFerdigsti
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.*
 import no.nav.syfo.unntak.domain.Unntak
+import no.nav.syfo.util.isAfterOrEqual
 import org.slf4j.LoggerFactory
 import java.sql.Connection
+import java.time.LocalDate
+import java.time.OffsetDateTime
 
 class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
@@ -24,17 +28,25 @@ class DialogmotekandidatService(
         }.toDialogmotekandidatEndringList().firstOrNull()
     }
 
-    fun getLatestOppfolgingstilfelle(personIdentNumber: PersonIdentNumber): OppfolgingstilfelleArbeidstaker? =
-        oppfolgingstilfelleService.getSisteOppfolgingstilfelle(personIdentNumber)
+    suspend fun getLatestOppfolgingstilfelle(personIdentNumber: PersonIdentNumber): OppfolgingstilfelleDTO? =
+        oppfolgingstilfelleService.getLatestOppfolgingstilfelle(personIdentNumber)
+
+    suspend fun getOppfolgingstilfelleForDate(
+        personIdentNumber: PersonIdentNumber,
+        date: LocalDate,
+    ): OppfolgingstilfelleDTO? =
+        oppfolgingstilfelleService.getOppfolgingstilfelleForDate(personIdentNumber, date)
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday(): List<DialogmotekandidatStoppunkt> =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
 
-    fun updateDialogmotekandidatStoppunktStatus(
+    suspend fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
     ) {
-        val latestOppfolgingstilfelle = getLatestOppfolgingstilfelle(dialogmotekandidatStoppunkt.personIdent)
-            ?: throw RuntimeException("No Oppfolgingstilfelle found for dialogmote-kandidat-stoppunkt with uuid: ${dialogmotekandidatStoppunkt.uuid}")
+        val oppfolgingstilfelleForDate = getOppfolgingstilfelleForDate(
+            personIdentNumber = dialogmotekandidatStoppunkt.personIdent,
+            date = dialogmotekandidatStoppunkt.stoppunktPlanlagt,
+        )
 
         database.connection.use { connection ->
             val dialogmotekandidatEndringList = connection.getDialogmotekandidatEndringListForPerson(
@@ -43,13 +55,17 @@ class DialogmotekandidatService(
             val latestDialogmoteFerdigstilt = connection.getLatestDialogmoteFerdigstiltForPerson(
                 personIdent = dialogmotekandidatStoppunkt.personIdent
             )
-            val status =
-                if (latestOppfolgingstilfelle.isDialogmotekandidat(
-                        dialogmotekandidatEndringList = dialogmotekandidatEndringList,
-                        latestDialogmoteFerdigstilt = latestDialogmoteFerdigstilt,
-                    )
-                ) DialogmotekandidatStoppunktStatus.KANDIDAT
-                else DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
+            val status = if (
+                oppfolgingstilfelleForDate != null &&
+                isDialogmotekandidat(
+                    oppfolgingstilfelle = oppfolgingstilfelleForDate,
+                    dialogmotekandidatEndringList = dialogmotekandidatEndringList,
+                    latestDialogmoteFerdigstilt = latestDialogmoteFerdigstilt,
+                )
+            )
+                DialogmotekandidatStoppunktStatus.KANDIDAT
+            else
+                DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
 
             connection.updateDialogmotekandidatStoppunktStatus(
                 uuid = dialogmotekandidatStoppunkt.uuid,
@@ -61,7 +77,7 @@ class DialogmotekandidatService(
                 createDialogmotekandidatEndring(
                     connection = connection,
                     dialogmotekandidatEndring = newDialogmotekandidatEndring,
-                    oppfolgingstilfelle = latestOppfolgingstilfelle,
+                    tilfelleStart = oppfolgingstilfelleForDate?.start,
                     unntak = null,
                 )
                 COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING.increment()
@@ -74,10 +90,27 @@ class DialogmotekandidatService(
         }
     }
 
+    private fun isDialogmotekandidat(
+        oppfolgingstilfelle: OppfolgingstilfelleDTO,
+        dialogmotekandidatEndringList: List<DialogmotekandidatEndring>,
+        latestDialogmoteFerdigstilt: OffsetDateTime?,
+    ) = isDialogmotekandidatTilfelle(oppfolgingstilfelle) &&
+        (latestDialogmoteFerdigstilt == null || latestDialogmoteFerdigstilt.toLocalDate().isBefore(oppfolgingstilfelle.start)) &&
+        dialogmotekandidatEndringList.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(oppfolgingstilfelle.start)
+
+    fun isDialogmotekandidatTilfelle(
+        oppfolgingstilfelle: OppfolgingstilfelleDTO
+    ): Boolean {
+        val tilfelleStart = oppfolgingstilfelle.start
+        val tilfelleEnd = oppfolgingstilfelle.end
+        val stoppunkt = DialogmotekandidatStoppunkt.stoppunktPlanlagtDato(tilfelleStart, tilfelleEnd)
+        return tilfelleEnd.isAfterOrEqual(stoppunkt)
+    }
+
     fun createDialogmotekandidatEndring(
         connection: Connection,
         dialogmotekandidatEndring: DialogmotekandidatEndring,
-        oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker?,
+        tilfelleStart: LocalDate?,
         unntak: Unntak?,
     ) {
         connection.createDialogmotekandidatEndring(
@@ -85,7 +118,7 @@ class DialogmotekandidatService(
         )
         dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
             dialogmotekandidatEndring = dialogmotekandidatEndring,
-            oppfolgingstilfelle = oppfolgingstilfelle,
+            tilfelleStart = tilfelleStart,
             unntak = unntak,
         )
     }

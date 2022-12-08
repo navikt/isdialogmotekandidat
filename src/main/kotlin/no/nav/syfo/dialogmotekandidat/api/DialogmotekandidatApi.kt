@@ -29,14 +29,14 @@ fun Route.registerDialogmotekandidatApi(
                 personIdentToAccess = personIdent,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val oppfolgingstilfelle = oppfolgingstilfelleService.getSisteOppfolgingstilfelle(
+                val oppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                     arbeidstakerPersonIdent = personIdent,
                 )
                 val latestKandidatEndring = dialogmotekandidatService.getLatestDialogmotekandidatEndring(
                     personIdent = personIdent
                 )
                 val kandidatDate = latestKandidatEndring?.createdAt?.toLocalDate()
-                val oppfolgingstilfelleStart = oppfolgingstilfelle?.tilfelleStart
+                val oppfolgingstilfelleStart = oppfolgingstilfelle?.start
 
                 val kandidatDTO = if (kandidatDate != null && oppfolgingstilfelleStart != null &&
                     (kandidatDate.isEqual(oppfolgingstilfelleStart) || kandidatDate.isAfter(oppfolgingstilfelleStart))
