@@ -2,10 +2,10 @@ package no.nav.syfo.oppfolgingstilfelle
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.oppfolgingstilfelle.toOppfolgingstilfelle
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.database.*
-import no.nav.syfo.util.isAfterOrEqual
-import no.nav.syfo.util.isBeforeOrEqual
+import no.nav.syfo.util.*
 import java.time.LocalDate
 
 class OppfolgingstilfelleService(
@@ -21,16 +21,17 @@ class OppfolgingstilfelleService(
         arbeidstakerPersonIdent: PersonIdentNumber,
         date: LocalDate,
     ) = getAllOppfolgingstilfeller(arbeidstakerPersonIdent)
-        .filter { it.start.isBeforeOrEqual(date) && it.end.isAfterOrEqual(date) }
-        .firstOrNull()
+        .firstOrNull { it.tilfelleStart.isBeforeOrEqual(date) && it.tilfelleEnd.isAfterOrEqual(date) }
 
     private suspend fun getAllOppfolgingstilfeller(
         arbeidstakerPersonIdent: PersonIdentNumber
     ) = if (readFromIsoppfolgingstilfelleEnabled) {
-        oppfolgingstilfelleClient.getOppfolgingstilfellePerson(personIdent = arbeidstakerPersonIdent)?.oppfolgingstilfelleList
+        oppfolgingstilfelleClient.getOppfolgingstilfellePerson(personIdent = arbeidstakerPersonIdent)
+            ?.oppfolgingstilfelleList?.filter { it.start.isBeforeOrEqual(tomorrow()) }
+            ?.map { it.toOppfolgingstilfelle(arbeidstakerPersonIdent) }
             ?: emptyList()
     } else {
         database.getOppfolgingstilfelleArbeidstakerList(arbeidstakerPersonIdent = arbeidstakerPersonIdent)
-            .map { it.toOppfolgingstilfelleDTO() }
+            .map { it.toOppfolgingstilfelle() }
     }
 }

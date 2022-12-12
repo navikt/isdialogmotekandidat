@@ -40,7 +40,7 @@ class UnntakService(
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
                 dialogmotekandidatEndring = newDialogmotekandidatEndring,
-                tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.start,
+                tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
                 unntak = unntak,
             )
             connection.commit()

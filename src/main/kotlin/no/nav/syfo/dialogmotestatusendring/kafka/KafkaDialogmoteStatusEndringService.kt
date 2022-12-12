@@ -90,7 +90,7 @@ class KafkaDialogmoteStatusEndringService(
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
                 dialogmotekandidatEndring = newDialogmotekandidatEndring,
-                tilfelleStart = latestOppfolgingstilfelle?.start,
+                tilfelleStart = latestOppfolgingstilfelle?.tilfelleStart,
                 unntak = null,
             )
             COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_CREATED_KANDIDATENDRING.increment()

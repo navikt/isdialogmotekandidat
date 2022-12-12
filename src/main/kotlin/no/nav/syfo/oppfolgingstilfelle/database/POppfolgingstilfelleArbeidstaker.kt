@@ -1,8 +1,8 @@
 package no.nav.syfo.oppfolgingstilfelle.database
 
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
+import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -34,9 +34,10 @@ fun POppfolgingstilfelleArbeidstaker.toOppfolgingstilfelleArbeidstaker() = Oppfo
     referanseTilfelleBitInntruffet = this.referanseTilfelleBitInntruffet,
 )
 
-fun POppfolgingstilfelleArbeidstaker.toOppfolgingstilfelleDTO() = OppfolgingstilfelleDTO(
+fun POppfolgingstilfelleArbeidstaker.toOppfolgingstilfelle() = Oppfolgingstilfelle(
+    personIdent = personIdent,
+    tilfelleStart = tilfelleStart,
+    tilfelleEnd = tilfelleEnd,
     arbeidstakerAtTilfelleEnd = true,
-    start = tilfelleStart,
-    end = tilfelleEnd,
     virksomhetsnummerList = emptyList(),
 )

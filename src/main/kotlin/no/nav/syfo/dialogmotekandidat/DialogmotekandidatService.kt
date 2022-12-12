@@ -1,7 +1,6 @@
 package no.nav.syfo.dialogmotekandidat
 
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.syfo.dialogmotekandidat.database.*
 import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
@@ -10,12 +9,11 @@ import no.nav.syfo.dialogmotekandidat.metric.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_
 import no.nav.syfo.dialogmotestatusendring.database.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.*
+import no.nav.syfo.oppfolgingstilfelle.domain.isDialogmotekandidat
 import no.nav.syfo.unntak.domain.Unntak
-import no.nav.syfo.util.isAfterOrEqual
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
@@ -43,7 +41,7 @@ class DialogmotekandidatService(
     suspend fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
     ) {
-        val oppfolgingstilfelleForDate = getOppfolgingstilfelleForDate(
+        val oppfolgingstilfelleOnStoppunktDate = getOppfolgingstilfelleForDate(
             personIdent = dialogmotekandidatStoppunkt.personIdent,
             date = dialogmotekandidatStoppunkt.stoppunktPlanlagt,
         )
@@ -56,9 +54,8 @@ class DialogmotekandidatService(
                 personIdent = dialogmotekandidatStoppunkt.personIdent
             )
             val status = if (
-                oppfolgingstilfelleForDate != null &&
-                isDialogmotekandidat(
-                    oppfolgingstilfelle = oppfolgingstilfelleForDate,
+                oppfolgingstilfelleOnStoppunktDate != null &&
+                oppfolgingstilfelleOnStoppunktDate.isDialogmotekandidat(
                     dialogmotekandidatEndringList = dialogmotekandidatEndringList,
                     latestDialogmoteFerdigstilt = latestDialogmoteFerdigstilt,
                 )
@@ -77,7 +74,7 @@ class DialogmotekandidatService(
                 createDialogmotekandidatEndring(
                     connection = connection,
                     dialogmotekandidatEndring = newDialogmotekandidatEndring,
-                    tilfelleStart = oppfolgingstilfelleForDate?.start,
+                    tilfelleStart = oppfolgingstilfelleOnStoppunktDate?.tilfelleStart,
                     unntak = null,
                 )
                 COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING.increment()
@@ -88,22 +85,6 @@ class DialogmotekandidatService(
 
             connection.commit()
         }
-    }
-
-    private fun isDialogmotekandidat(
-        oppfolgingstilfelle: OppfolgingstilfelleDTO,
-        dialogmotekandidatEndringList: List<DialogmotekandidatEndring>,
-        latestDialogmoteFerdigstilt: OffsetDateTime?,
-    ) = isDialogmotekandidatTilfelle(oppfolgingstilfelle) &&
-        (latestDialogmoteFerdigstilt == null || latestDialogmoteFerdigstilt.toLocalDate().isBefore(oppfolgingstilfelle.start)) &&
-        dialogmotekandidatEndringList.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(oppfolgingstilfelle.start)
-
-    fun isDialogmotekandidatTilfelle(
-        oppfolgingstilfelle: OppfolgingstilfelleDTO
-    ): Boolean {
-        val tilfelleStart = oppfolgingstilfelle.start
-        val tilfelleEnd = oppfolgingstilfelle.end
-        return tilfelleEnd.isAfterOrEqual(DialogmotekandidatStoppunkt.stoppunktPlanlagtDato(tilfelleStart, tilfelleEnd))
     }
 
     fun createDialogmotekandidatEndring(
