@@ -47,7 +47,6 @@ fun testEnvironment(
             clientId = "dev-gcp.teamsykefravr.isoppfolgingstilfelle",
         ),
     ),
-    readFromIsoppfolgingstilfelleEnabled = false,
 )
 
 fun testAppState() = ApplicationState(

@@ -2,6 +2,7 @@ package no.nav.syfo.oppfolgingstilfelle
 
 import no.nav.syfo.dialogmotekandidat.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
+import no.nav.syfo.oppfolgingstilfelle.domain.isDialogmotekandidat
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.defaultZoneOffset
@@ -11,7 +12,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.*
 
-class OppfolgingstilfelleArbeidstakerSpek : Spek({
+class OppfolgingstilfelleSpek : Spek({
     describe("isDialogmotekandidat") {
 
         val personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER

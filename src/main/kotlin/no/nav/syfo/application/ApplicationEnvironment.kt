@@ -36,7 +36,6 @@ data class Environment(
         aivenRegistryUser = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
         aivenRegistryPassword = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
     ),
-    val readFromIsoppfolgingstilfelleEnabled: Boolean = getEnvVar("TOGGLE_READ_FROM_ISOPPFOLGINGSTILFELLE_ENABLED").toBoolean(),
     val clients: ClientsEnvironment = ClientsEnvironment(
         syfotilgangskontroll = ClientEnvironment(
             baseUrl = getEnvVar("SYFOTILGANGSKONTROLL_URL"),

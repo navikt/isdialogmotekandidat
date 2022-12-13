@@ -8,7 +8,6 @@ import io.mockk.mockk
 import no.nav.syfo.dialogmotekandidat.api.*
 import no.nav.syfo.dialogmotekandidat.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
-import no.nav.syfo.oppfolgingstilfelle.database.createOppfolgingstilfelleArbeidstaker
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.*
@@ -67,9 +66,6 @@ class DialogmotekandidatApiSpek : Spek({
                             arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
                             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                         )
-                        database.connection.use {
-                            it.createOppfolgingstilfelleArbeidstaker(true, oppfolgingstilfelleArbeidstaker)
-                        }
                         val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
                             personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
                         )
@@ -100,9 +96,6 @@ class DialogmotekandidatApiSpek : Spek({
                             arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
                             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                         )
-                        database.connection.use {
-                            it.createOppfolgingstilfelleArbeidstaker(true, oppfolgingstilfelleArbeidstaker)
-                        }
                         val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
                             personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
                         ).copy(

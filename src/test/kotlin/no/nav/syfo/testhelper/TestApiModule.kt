@@ -20,9 +20,7 @@ fun Application.testApiModule(
         clientEnvironment = externalMockEnvironment.environment.clients.oppfolgingstilfelle,
     )
     val oppfolgingstilfelleService = OppfolgingstilfelleService(
-        database = externalMockEnvironment.database,
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-        readFromIsoppfolgingstilfelleEnabled = externalMockEnvironment.environment.readFromIsoppfolgingstilfelleEnabled,
     )
     val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = oppfolgingstilfelleService,

@@ -63,8 +63,6 @@ spec:
   env:
     - name: KTOR_ENV
       value: "production"
-    - name: TOGGLE_READ_FROM_ISOPPFOLGINGSTILFELLE_ENABLED
-      value: "false"
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "prod-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL

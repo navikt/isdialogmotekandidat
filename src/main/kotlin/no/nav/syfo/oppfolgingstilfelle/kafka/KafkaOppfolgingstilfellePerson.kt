@@ -1,12 +1,11 @@
 package no.nav.syfo.oppfolgingstilfelle.kafka
 
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
-import no.nav.syfo.util.nowUTC
+import no.nav.syfo.domain.Virksomhetsnummer
+import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
 import no.nav.syfo.util.tomorrow
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.*
 
 data class KafkaOppfolgingstilfellePerson(
     val uuid: String,
@@ -24,39 +23,27 @@ data class KafkaOppfolgingstilfelle(
     val virksomhetsnummerList: List<String>,
 )
 
-fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstaker(
+fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelle(
     latestTilfelle: KafkaOppfolgingstilfelle,
-) = OppfolgingstilfelleArbeidstaker(
-    uuid = UUID.fromString(this.uuid),
-    createdAt = nowUTC(),
+) = Oppfolgingstilfelle(
     personIdent = PersonIdentNumber(this.personIdentNumber),
-    tilfelleGenerert = this.createdAt,
     tilfelleStart = latestTilfelle.start,
     tilfelleEnd = latestTilfelle.end,
-    referanseTilfelleBitUuid = UUID.fromString(this.referanseTilfelleBitUuid),
-    referanseTilfelleBitInntruffet = this.referanseTilfelleBitInntruffet,
+    arbeidstakerAtTilfelleEnd = latestTilfelle.arbeidstakerAtTilfelleEnd,
+    virksomhetsnummerList = latestTilfelle.virksomhetsnummerList.map { Virksomhetsnummer(it) },
 )
 
-fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelleArbeidstaker(): OppfolgingstilfelleArbeidstaker? =
+fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle(): Oppfolgingstilfelle? =
     this.oppfolgingstilfellerWithoutFutureTilfeller().maxByOrNull {
         it.start
     }?.let { latestKafkaOppfolgingstilfelle ->
         if (latestKafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
-            this.toOppfolgingstilfelleArbeidstaker(
+            this.toOppfolgingstilfelle(
                 latestTilfelle = latestKafkaOppfolgingstilfelle
             )
         } else {
             null
         }
-    }
-
-fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleArbeidstakerList() =
-    this.oppfolgingstilfellerWithoutFutureTilfeller().filter { kafkaOppfolgingstilfelle ->
-        kafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd
-    }.map { oppfolgingstilfelle ->
-        this.toOppfolgingstilfelleArbeidstaker(
-            latestTilfelle = oppfolgingstilfelle,
-        )
     }
 
 fun KafkaOppfolgingstilfellePerson.oppfolgingstilfellerWithoutFutureTilfeller() =

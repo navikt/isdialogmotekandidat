@@ -14,9 +14,7 @@ import no.nav.syfo.dialogmotestatusendring.database.createDialogmoteStatus
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
-import no.nav.syfo.oppfolgingstilfelle.database.createOppfolgingstilfelleArbeidstaker
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.defaultZoneOffset
@@ -48,9 +46,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
             clientEnvironment = externalMockEnvironment.environment.clients.oppfolgingstilfelle,
         )
         val oppfolgingstilfelleService = OppfolgingstilfelleService(
-            database = externalMockEnvironment.database,
             oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-            readFromIsoppfolgingstilfelleEnabled = externalMockEnvironment.environment.readFromIsoppfolgingstilfelleEnabled,
         )
         val dialogmotekandidatService = DialogmotekandidatService(
             oppfolgingstilfelleService = oppfolgingstilfelleService,
@@ -68,10 +64,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
             coEvery {
                 kafkaProducer.send(any())
             } returns mockk<Future<RecordMetadata>>(relaxed = true)
-        }
-
-        fun createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker: OppfolgingstilfelleArbeidstaker) {
-            database.connection.createOppfolgingstilfelleArbeidstaker(true, oppfolgingstilfelleArbeidstaker)
         }
 
         fun createDialogmotekandidatStoppunkt(dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt) {
@@ -118,11 +110,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatThirdPersonIdent,
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1,
                 )
-                listOf(
-                    oppfolgingstilfelleKandidatEn,
-                    oppfolgingstilfelleIkkeKandidatTo,
-                    oppfolgingstilfelleKandidatTre
-                ).forEach { createOppfolgingstilfelle(it) }
 
                 val result = runBlocking { dialogmotekandidatStoppunktCronjob.runJob() }
                 result.failed shouldBeEqualTo 0
@@ -184,11 +171,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatThirdPersonIdent,
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1,
                 )
-                listOf(
-                    oppfolgingstilfelleKandidatEn,
-                    oppfolgingstilfelleIkkeKandidatTo,
-                    oppfolgingstilfelleKandidatTre
-                ).forEach { createOppfolgingstilfelle(it) }
 
                 val result = runBlocking { dialogmotekandidatStoppunktCronjob.runJob() }
                 result.failed shouldBeEqualTo 0
@@ -233,7 +215,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                 )
-                createOppfolgingstilfelle(oppfolgingstilfelleKandidatEn)
 
                 val result = runBlocking { dialogmotekandidatStoppunktCronjob.runJob() }
                 result.failed shouldBeEqualTo 0
@@ -290,7 +271,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                 )
-                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
 
                 val result = runBlocking { dialogmotekandidatStoppunktCronjob.runJob() }
 
@@ -333,7 +313,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                 )
-                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
 
                 val result = runBlocking { dialogmotekandidatStoppunktCronjob.runJob() }
 
@@ -374,7 +353,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                 )
-                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
 
                 val result = runBlocking { dialogmotekandidatStoppunktCronjob.runJob() }
 
@@ -415,7 +393,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                 )
-                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
 
                 val dialogmotekandidatEndringStoppunkt = generateDialogmotekandidatEndringStoppunkt(
                     personIdentNumber = kandidatFirstPersonIdent,
@@ -476,7 +453,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                 )
-                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
 
                 val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
                     personIdentNumber = kandidatFirstPersonIdent,
@@ -517,7 +493,6 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,
                     oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
                 )
-                createOppfolgingstilfelle(oppfolgingstilfelleArbeidstaker = oppfolgingstilfelleKandidatEn)
 
                 val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
                     personIdentNumber = kandidatFirstPersonIdent,
