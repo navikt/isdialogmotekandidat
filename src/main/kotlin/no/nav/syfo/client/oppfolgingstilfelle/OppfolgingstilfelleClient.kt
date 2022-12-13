@@ -6,6 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.client.ClientEnvironment
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.*
@@ -15,11 +16,10 @@ import java.util.UUID
 
 class OppfolgingstilfelleClient(
     private val azureAdClient: AzureAdClient,
-    private val isoppfolgingstilfelleClientId: String,
-    isoppfolgingstilfelleBaseUrl: String,
+    private val clientEnvironment: ClientEnvironment
 ) {
     private val personOppfolgingstilfelleSystemUrl: String =
-        "$isoppfolgingstilfelleBaseUrl$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH"
+        "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH"
 
     private val httpClient = httpClientDefault()
 
@@ -28,7 +28,7 @@ class OppfolgingstilfelleClient(
     ): OppfolgingstilfellePersonDTO? {
         val callId = UUID.randomUUID().toString()
         return try {
-            val token = azureAdClient.getSystemToken(isoppfolgingstilfelleClientId)
+            val token = azureAdClient.getSystemToken(clientEnvironment.clientId)
                 ?: throw RuntimeException("Could not get azuread access token")
             val response: HttpResponse = httpClient.get(personOppfolgingstilfelleSystemUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(token.accessToken))

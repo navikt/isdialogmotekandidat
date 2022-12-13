@@ -23,7 +23,7 @@ fun OppfolgingstilfelleArbeidstaker.isDialogmotekandidat(
 ) = this.isDialogmotekandidat() &&
     (latestDialogmoteFerdigstilt == null || latestDialogmoteFerdigstilt.toLocalDate().isBefore(this.tilfelleStart)) &&
     dialogmotekandidatEndringList.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
-        oppfolgingstilfelle = this,
+        tilfelleStart = this.tilfelleStart,
     )
 
 fun OppfolgingstilfelleArbeidstaker.isDialogmotekandidat(): Boolean {

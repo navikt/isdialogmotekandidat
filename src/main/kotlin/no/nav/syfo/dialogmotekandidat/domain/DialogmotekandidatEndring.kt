@@ -4,10 +4,10 @@ import no.nav.syfo.dialogmotekandidat.api.DialogmotekandidatDTO
 import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
 import no.nav.syfo.unntak.domain.Unntak
 import no.nav.syfo.util.nowUTC
 import no.nav.syfo.util.toLocalDateTimeOslo
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -79,7 +79,7 @@ fun DialogmotekandidatEndring?.toDialogmotekandidatDTO() = DialogmotekandidatDTO
 
 fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring(
     unntak: Unntak?,
-    oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker?,
+    tilfelleStart: LocalDate?,
 ) = KafkaDialogmotekandidatEndring(
     uuid = this.uuid.toString(),
     createdAt = this.createdAt,
@@ -87,14 +87,14 @@ fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring(
     kandidat = this.kandidat,
     arsak = this.arsak.name,
     unntakArsak = unntak?.arsak?.name,
-    tilfelleStart = oppfolgingstilfelle?.tilfelleStart,
+    tilfelleStart = tilfelleStart,
 )
 
 fun DialogmotekandidatEndring.isBeforeStartOfOppfolgingstilfelle(
-    oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker,
+    tilfelleStart: LocalDate,
 ): Boolean {
     val stoppunktKandidatAt = createdAt.toLocalDateTimeOslo().toLocalDate()
-    return stoppunktKandidatAt.isBefore(oppfolgingstilfelle.tilfelleStart)
+    return stoppunktKandidatAt.isBefore(tilfelleStart)
 }
 
 private fun DialogmotekandidatEndring?.ikkeKandidat(): Boolean = this == null || !this.kandidat
@@ -109,8 +109,8 @@ private fun List<DialogmotekandidatEndring>.latestStoppunktKandidat() =
     }.latest()
 
 fun List<DialogmotekandidatEndring>.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
-    oppfolgingstilfelle: OppfolgingstilfelleArbeidstaker,
+    tilfelleStart: LocalDate,
 ) = latestStoppunktKandidat()
     ?.isBeforeStartOfOppfolgingstilfelle(
-        oppfolgingstilfelle = oppfolgingstilfelle,
+        tilfelleStart = tilfelleStart,
     ) ?: true

@@ -1,5 +1,6 @@
 package no.nav.syfo.dialogmotestatusendring.kafka
 
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
@@ -40,20 +41,22 @@ class KafkaDialogmoteStatusEndringService(
             COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_TOMBSTONE.increment()
         }
 
-        database.connection.use { connection ->
-            validRecords.forEach { record ->
-                COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_READ.increment()
-                log.info("Received ${KDialogmoteStatusEndring::class.java.simpleName} with key=${record.key()}, ready to process.")
-                receiveKafkaDialogmoteStatusEndring(
-                    connection = connection,
-                    kafkaDialogmoteStatusEndring = record.value(),
-                )
+        runBlocking {
+            database.connection.use { connection ->
+                validRecords.forEach { record ->
+                    COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_READ.increment()
+                    log.info("Received ${KDialogmoteStatusEndring::class.java.simpleName} with key=${record.key()}, ready to process.")
+                    receiveKafkaDialogmoteStatusEndring(
+                        connection = connection,
+                        kafkaDialogmoteStatusEndring = record.value(),
+                    )
+                }
+                connection.commit()
             }
-            connection.commit()
         }
     }
 
-    private fun receiveKafkaDialogmoteStatusEndring(
+    private suspend fun receiveKafkaDialogmoteStatusEndring(
         connection: Connection,
         kafkaDialogmoteStatusEndring: KDialogmoteStatusEndring,
     ) {
@@ -79,7 +82,7 @@ class KafkaDialogmoteStatusEndringService(
             )
         ) {
             val latestOppfolgingstilfelle = dialogmotekandidatService.getLatestOppfolgingstilfelle(
-                personIdentNumber = dialogmoteStatusEndring.personIdentNumber,
+                personIdent = dialogmoteStatusEndring.personIdentNumber,
             )
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
                 personIdentNumber = dialogmoteStatusEndring.personIdentNumber,
@@ -87,7 +90,7 @@ class KafkaDialogmoteStatusEndringService(
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
                 dialogmotekandidatEndring = newDialogmotekandidatEndring,
-                oppfolgingstilfelle = latestOppfolgingstilfelle,
+                tilfelleStart = latestOppfolgingstilfelle?.tilfelleStart,
                 unntak = null,
             )
             COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_CREATED_KANDIDATENDRING.increment()

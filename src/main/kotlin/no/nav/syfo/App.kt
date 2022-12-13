@@ -10,6 +10,8 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.database.applicationDatabase
 import no.nav.syfo.application.database.databaseModule
+import no.nav.syfo.client.azuread.AzureAdClient
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.wellknown.getWellKnown
 import no.nav.syfo.cronjob.launchCronjobModule
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
@@ -53,9 +55,17 @@ fun main() {
             databaseModule(
                 databaseEnvironment = environment.database,
             )
-
+            val azureAdClient = AzureAdClient(
+                azureEnvironment = environment.azure
+            )
+            val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+                azureAdClient = azureAdClient,
+                clientEnvironment = environment.clients.oppfolgingstilfelle,
+            )
             val oppfolgingstilfelleService = OppfolgingstilfelleService(
-                database = applicationDatabase
+                database = applicationDatabase,
+                oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+                readFromIsoppfolgingstilfelleEnabled = environment.readFromIsoppfolgingstilfelleEnabled,
             )
             dialogmotekandidatService = DialogmotekandidatService(
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
@@ -69,6 +79,7 @@ fun main() {
                 wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatService = dialogmotekandidatService,
+                azureAdClient = azureAdClient,
             )
         }
     }

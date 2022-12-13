@@ -17,7 +17,7 @@ class DialogmotekandidatStoppunktCronjob(
         runJob()
     }
 
-    fun runJob(): CronjobResult {
+    suspend fun runJob(): CronjobResult {
         val result = CronjobResult()
 
         val dialogmotekandidatStoppunktList =

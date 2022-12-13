@@ -1,7 +1,8 @@
 package no.nav.syfo.client.oppfolgingstilfelle
 
-import no.nav.syfo.util.isAfterOrEqual
-import no.nav.syfo.util.isBeforeOrEqual
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Virksomhetsnummer
+import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
 import java.time.LocalDate
 
 data class OppfolgingstilfellePersonDTO(
@@ -16,10 +17,11 @@ data class OppfolgingstilfelleDTO(
     val virksomhetsnummerList: List<String>,
 )
 
-fun OppfolgingstilfellePersonDTO.findOppfolgingstilfelleByDate(date: LocalDate): OppfolgingstilfelleDTO? {
-    val oppfolgingstilfeller = this.oppfolgingstilfelleList.filter {
-        it.start.isBeforeOrEqual(date) && it.end.isAfterOrEqual(date)
-    }
-
-    return oppfolgingstilfeller.minByOrNull { it.start }
-}
+fun OppfolgingstilfelleDTO.toOppfolgingstilfelle(personIdent: PersonIdentNumber) =
+    Oppfolgingstilfelle(
+        personIdent = personIdent,
+        tilfelleStart = start,
+        tilfelleEnd = end,
+        arbeidstakerAtTilfelleEnd = arbeidstakerAtTilfelleEnd,
+        virksomhetsnummerList = virksomhetsnummerList.map { Virksomhetsnummer(it) },
+    )

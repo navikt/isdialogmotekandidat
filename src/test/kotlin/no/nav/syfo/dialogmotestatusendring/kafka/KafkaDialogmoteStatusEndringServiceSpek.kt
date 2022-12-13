@@ -2,6 +2,8 @@ package no.nav.syfo.dialogmotestatusendring.kafka
 
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.nav.syfo.client.azuread.AzureAdClient
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
@@ -35,8 +37,17 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
         val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
             kafkaProducerDialogmotekandidatEndring = kafkaProducer,
         )
+        val azureAdClient = AzureAdClient(
+            azureEnvironment = externalMockEnvironment.environment.azure,
+        )
+        val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
+            azureAdClient = azureAdClient,
+            clientEnvironment = externalMockEnvironment.environment.clients.oppfolgingstilfelle,
+        )
         val oppfolgingstilfelleService = OppfolgingstilfelleService(
-            database = database
+            database = externalMockEnvironment.database,
+            oppfolgingstilfelleClient = oppfolgingstilfelleClient,
+            readFromIsoppfolgingstilfelleEnabled = externalMockEnvironment.environment.readFromIsoppfolgingstilfelleEnabled,
         )
         val dialogmotekandidatService = DialogmotekandidatService(
             oppfolgingstilfelleService = oppfolgingstilfelleService,

@@ -20,7 +20,7 @@ class UnntakService(
     private val database: DatabaseInterface,
     private val dialogmotekandidatService: DialogmotekandidatService,
 ) {
-    fun createUnntak(unntak: Unntak) {
+    suspend fun createUnntak(unntak: Unntak) {
         database.connection.use { connection ->
             val ikkeKandidat =
                 connection.getDialogmotekandidatEndringListForPerson(personIdent = unntak.personIdent)
@@ -32,7 +32,7 @@ class UnntakService(
 
             connection.createUnntak(unntak = unntak)
             val latestOppfolgingstilfelleArbeidstaker = dialogmotekandidatService.getLatestOppfolgingstilfelle(
-                personIdentNumber = unntak.personIdent,
+                personIdent = unntak.personIdent,
             )
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.unntak(
                 personIdentNumber = unntak.personIdent,
@@ -40,7 +40,7 @@ class UnntakService(
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
                 dialogmotekandidatEndring = newDialogmotekandidatEndring,
-                oppfolgingstilfelle = latestOppfolgingstilfelleArbeidstaker,
+                tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
                 unntak = unntak,
             )
             connection.commit()

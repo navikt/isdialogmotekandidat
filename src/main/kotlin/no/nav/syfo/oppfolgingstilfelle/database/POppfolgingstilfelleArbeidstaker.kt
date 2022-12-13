@@ -2,6 +2,7 @@ package no.nav.syfo.oppfolgingstilfelle.database
 
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleArbeidstaker
+import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -31,4 +32,12 @@ fun POppfolgingstilfelleArbeidstaker.toOppfolgingstilfelleArbeidstaker() = Oppfo
     tilfelleEnd = this.tilfelleEnd,
     referanseTilfelleBitUuid = this.referanseTilfelleBitUUID,
     referanseTilfelleBitInntruffet = this.referanseTilfelleBitInntruffet,
+)
+
+fun POppfolgingstilfelleArbeidstaker.toOppfolgingstilfelle() = Oppfolgingstilfelle(
+    personIdent = personIdent,
+    tilfelleStart = tilfelleStart,
+    tilfelleEnd = tilfelleEnd,
+    arbeidstakerAtTilfelleEnd = true,
+    virksomhetsnummerList = emptyList(),
 )
