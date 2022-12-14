@@ -345,7 +345,7 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 val dialogmotekandidatEndringStoppunkt = generateDialogmotekandidatEndringStoppunkt(
                     personIdentNumber = kandidatFirstPersonIdent,
                 ).copy(
-                    createdAt = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS+ 1).atStartOfDay()
+                    createdAt = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1).atStartOfDay()
                         .atOffset(defaultZoneOffset)
                 )
                 database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndringStoppunkt)

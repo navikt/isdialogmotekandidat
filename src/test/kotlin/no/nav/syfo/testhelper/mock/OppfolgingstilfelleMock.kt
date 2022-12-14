@@ -33,7 +33,7 @@ class OppfolgingstilfelleMock : MockServer() {
                             listOf(
                                 OppfolgingstilfelleDTO(
                                     arbeidstakerAtTilfelleEnd = true,
-                                    start = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS-1),
+                                    start = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 1),
                                     end = LocalDate.now(),
                                     virksomhetsnummerList = listOf(VIRKSOMHETSNUMMER_DEFAULT.value)
                                 )
@@ -43,7 +43,7 @@ class OppfolgingstilfelleMock : MockServer() {
                             listOf(
                                 OppfolgingstilfelleDTO(
                                     arbeidstakerAtTilfelleEnd = true,
-                                    start = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS+1),
+                                    start = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1),
                                     end = LocalDate.now().minusDays(1),
                                     virksomhetsnummerList = listOf(VIRKSOMHETSNUMMER_DEFAULT.value)
                                 )
