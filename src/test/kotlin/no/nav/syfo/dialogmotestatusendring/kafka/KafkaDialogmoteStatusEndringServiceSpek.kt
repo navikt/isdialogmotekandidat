@@ -174,7 +174,6 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                     kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name
                     kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo false
                     kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo null
-                    kafkaDialogmoteKandidatEndring.tilfelleStart shouldBeEqualTo null
                 }
                 it("creates no new DialogmotekandidatEndring when latest endring for person is kandidat and created after ferdigstilling") {
                     database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndringCreatedAfterStatusEndring)

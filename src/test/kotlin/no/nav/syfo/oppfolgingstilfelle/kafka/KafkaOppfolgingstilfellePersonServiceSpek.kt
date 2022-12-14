@@ -68,13 +68,6 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
             "key1",
             kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
         )
-        val kafkaOppfolgingstilfellePersonDialogmotekandidatFirstRecordDuplicate = ConsumerRecord(
-            OPPFOLGINGSTILFELLE_PERSON_TOPIC,
-            partition,
-            1,
-            "key1",
-            kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
-        )
         val kafkaOppfolgingstilfellePersonNotDialogmotekandidat = generateKafkaOppfolgingstilfellePerson(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 1,
@@ -175,39 +168,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                     every { mockKafkaConsumerOppfolgingstilfellePerson.commitSync() } returns Unit
                 }
 
-                it("should create DialogmotekandidatStoppunkt exactly once if Dialogmotekandidat and not already created(skip duplicates)") {
-                    every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
-                        mapOf(
-                            oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
-                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirstRecord,
-                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirstRecordDuplicate,
-                            )
-                        )
-                    )
-
-                    kafkaSyketilfellebitService.pollAndProcessRecords(
-                        kafkaConsumerOppfolgingstilfellePerson = mockKafkaConsumerOppfolgingstilfellePerson,
-                    )
-
-                    verify(exactly = 1) {
-                        mockKafkaConsumerOppfolgingstilfellePerson.commitSync()
-                    }
-
-                    val dialogmotekandidatStoppunktList =
-                        database.getDialogmotekandidatStoppunktList(
-                            arbeidstakerPersonIdent = PersonIdentNumber(
-                                kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
-                            )
-                        ).toDialogmotekandidatStoppunktList()
-
-                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 1
-
-                    assertDialogmotekandidatStoppunktPlanlagt(
-                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first(),
-                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
-                    )
-                }
-                it("should create DialogmotekandidatStoppunkt exactly once if Dialogmotekandidat and not already created(ignore future tilfelle)") {
+                 it("should create DialogmotekandidatStoppunkt exactly once if Dialogmotekandidat and not already created(ignore future tilfelle)") {
                     every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
                         mapOf(
                             oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
