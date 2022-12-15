@@ -33,7 +33,11 @@ fun Route.registerUnntakApi(
                 val unntak = createUnntakDTO.toUnntak(
                     createdByIdent = call.getNAVIdent()
                 )
-                unntakService.createUnntak(unntak)
+                unntakService.createUnntak(
+                    unntak = unntak,
+                    veilederToken = getBearerHeader()!!,
+                    callId = getCallId(),
+                )
 
                 call.respond(HttpStatusCode.Created)
             }
@@ -60,6 +64,7 @@ fun Route.registerUnntakApi(
                 unntakService.getHackaton(
                     veilederIdent = call.getNAVIdent(),
                     veilederToken = call.getBearerHeader()!!,
+                    callId = call.getCallId(),
                 )
             )
         }
