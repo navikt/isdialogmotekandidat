@@ -26,7 +26,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
         dialogmotekandidatStoppunkt.shouldNotBeNull()
 
         val latestTilfelleStart =
-            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfellerWithoutFutureTilfeller().maxByOrNull {
+            kafkaOppfolgingstilfellePersonDialogmotekandidat.oppfolgingstilfelleList.maxByOrNull {
                 it.start
             }!!.start
         val stoppunktPlanlagtExpected = latestTilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
@@ -168,7 +168,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                     every { mockKafkaConsumerOppfolgingstilfellePerson.commitSync() } returns Unit
                 }
 
-                it("should create DialogmotekandidatStoppunkt exactly once if Dialogmotekandidat and not already created(ignore future tilfelle)") {
+                it("should create DialogmotekandidatStoppunkt for both current and future tilfelle") {
                     every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
                         mapOf(
                             oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
@@ -193,15 +193,19 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                             )
                         ).toDialogmotekandidatStoppunktList()
 
-                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 1
+                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 2
 
                     assertDialogmotekandidatStoppunktPlanlagt(
-                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first(),
+                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList[0],
+                        kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonFramtidig,
+                    )
+                    assertDialogmotekandidatStoppunktPlanlagt(
+                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList[1],
                         kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonDialogmotekandidatFirst,
                     )
                 }
 
-                it("should create DialogmotekandidatStoppunkt exactly once if Dialogmotekandidat and not already created(ignore future tilfelle in list)") {
+                it("should create DialogmotekandidatStoppunkt for both current and future tilfelle if included in same Kafka-record") {
                     every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
                         mapOf(
                             oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
@@ -225,12 +229,18 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                             )
                         ).toDialogmotekandidatStoppunktList()
 
-                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 1
+                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 2
 
                     assertDialogmotekandidatStoppunktPlanlagt(
-                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList.first(),
+                        dialogmotekandidatStoppunkt = dialogmotekandidatStoppunktList[0],
                         kafkaOppfolgingstilfellePersonDialogmotekandidat = kafkaOppfolgingstilfellePersonVanligOgFramtidig,
                     )
+                    val currentTilfelle = kafkaOppfolgingstilfellePersonVanligOgFramtidig.oppfolgingstilfelleList[0]
+                    val stoppunktForCurrentTilfelle = dialogmotekandidatStoppunktList[1]
+                    stoppunktForCurrentTilfelle.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
+                    stoppunktForCurrentTilfelle.processedAt.shouldBeNull()
+                    stoppunktForCurrentTilfelle.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT
+                    stoppunktForCurrentTilfelle.stoppunktPlanlagt shouldBeEqualTo currentTilfelle.start.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
                 }
 
                 it("should create 2 DialogmotekandidatStoppunkt, if polled 1 that is not Dialogmotekandidat and 2 that are Dialogmotekandidat") {

@@ -68,17 +68,28 @@ class KafkaOppfolgingstilfellePersonService(
         connection: Connection,
         kafkaOppfolgingstilfellePerson: KafkaOppfolgingstilfellePerson,
     ) {
-        if (kafkaOppfolgingstilfellePerson.oppfolgingstilfellerWithoutFutureTilfeller().isEmpty()) {
+        if (kafkaOppfolgingstilfellePerson.oppfolgingstilfelleList.isEmpty()) {
             log.warn("Skipped processing of record: No Oppfolgingstilfelle found in record.")
             COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_SKIPPED_NO_TILFELLE.increment()
             return
         }
 
         val latestOppfolgingstilfelle = kafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle()
+        createStoppunktIfKandidattilfelle(latestOppfolgingstilfelle, connection)
 
-        if (latestOppfolgingstilfelle?.isDialogmotekandidat() == true) {
+        val currentOppfolgingstilfelle = kafkaOppfolgingstilfellePerson.toCurrentOppfolgingstilfelle()
+        if (currentOppfolgingstilfelle != null && currentOppfolgingstilfelle != latestOppfolgingstilfelle) {
+            createStoppunktIfKandidattilfelle(currentOppfolgingstilfelle, connection)
+        }
+    }
+
+    private fun createStoppunktIfKandidattilfelle(
+        oppfolgingstilfelle: Oppfolgingstilfelle?,
+        connection: Connection,
+    ) {
+        if (oppfolgingstilfelle?.isDialogmotekandidat() == true) {
             val dialogmotekandidatStoppunkt =
-                latestOppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt()
+                oppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt()
             connection.createDialogmotekandidatStoppunkt(
                 commit = false,
                 dialogmotekandidatStoppunkt = dialogmotekandidatStoppunkt,
