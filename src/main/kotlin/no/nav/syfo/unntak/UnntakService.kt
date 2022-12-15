@@ -7,8 +7,6 @@ import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListF
 import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatEndringList
 import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.oppfolgingstilfelle.database.getOppfolgingstilfelleArbeidstakerList
-import no.nav.syfo.oppfolgingstilfelle.database.toOppfolgingstilfelleArbeidstakerList
 import no.nav.syfo.unntak.database.*
 import no.nav.syfo.unntak.database.domain.toUnntakList
 import no.nav.syfo.unntak.domain.Unntak
@@ -51,17 +49,16 @@ class UnntakService(
         return database.getUnntakList(personIdent = personIdent).toUnntakList()
     }
 
-    fun getHackaton(veilderIdent: String): List<HackatonResponse> {
+    suspend fun getHackaton(veilderIdent: String): List<HackatonResponse> {
         val forvFrisk = database.getUnntakForVeileder(veilderIdent).toUnntakList().filter { unntak ->
             unntak.arsak == UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER
         }
         return forvFrisk.mapNotNull { unntak ->
             val unntakDato = unntak.createdAt.toLocalDateTimeOslo().toLocalDate()
-            val tilfeller = database.getOppfolgingstilfelleArbeidstakerList(unntak.personIdent)
-                .toOppfolgingstilfelleArbeidstakerList()
-            val tilfelle = tilfeller.find { tilfelle ->
-                tilfelle.tilfelleStart.isBefore(unntakDato)
-            }
+            val tilfelle = dialogmotekandidatService.getOppfolgingstilfelleForDate(
+                personIdent = unntak.personIdent,
+                date = unntakDato,
+            )
             tilfelle?.let {
                 HackatonResponse(
                     unntakDato = unntakDato,

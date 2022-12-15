@@ -46,7 +46,7 @@ class OppfolgingstilfelleClient(
                 callIdArgument(callId),
             )
             COUNT_CALL_OPPFOLGINGSTILFELLE_PERSON_FAIL.increment()
-            null
+            throw responseException
         }
     }
 

@@ -63,9 +63,7 @@ fun main() {
                 clientEnvironment = environment.clients.oppfolgingstilfelle,
             )
             val oppfolgingstilfelleService = OppfolgingstilfelleService(
-                database = applicationDatabase,
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-                readFromIsoppfolgingstilfelleEnabled = environment.readFromIsoppfolgingstilfelleEnabled,
             )
             dialogmotekandidatService = DialogmotekandidatService(
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
