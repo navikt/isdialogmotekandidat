@@ -4,7 +4,7 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
 import java.time.LocalDate
 
-fun generateOppfolgingstilfelleArbeidstaker(
+fun generateOppfolgingstilfelle(
     arbeidstakerPersonIdent: PersonIdentNumber,
     oppfolgingstilfelleDurationInDays: Long,
     backdatedNumberOfDays: Long = 0,
