@@ -70,4 +70,4 @@ spec:
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
       value: "dev-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
-      value: "https://isoppfolgingstilfelle.dev.intern.nav.no"
+      value: "https://isoppfolgingstilfellex.dev.intern.nav.no"
