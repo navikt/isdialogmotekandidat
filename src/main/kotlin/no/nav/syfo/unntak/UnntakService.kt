@@ -49,8 +49,11 @@ class UnntakService(
         return database.getUnntakList(personIdent = personIdent).toUnntakList()
     }
 
-    suspend fun getHackaton(veilderIdent: String): List<HackatonResponse> {
-        val forvFrisk = database.getUnntakForVeileder(veilderIdent).toUnntakList().filter { unntak ->
+    suspend fun getHackaton(
+        veilederIdent: String,
+        veilederToken: String,
+    ): List<HackatonResponse> {
+        val forvFrisk = database.getUnntakForVeileder(veilederIdent).toUnntakList().filter { unntak ->
             unntak.arsak == UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER
         }
         return forvFrisk.mapNotNull { unntak ->
@@ -58,6 +61,7 @@ class UnntakService(
             val tilfelle = dialogmotekandidatService.getOppfolgingstilfelleForDate(
                 personIdent = unntak.personIdent,
                 date = unntakDato,
+                veilederToken = veilederToken,
             )
             tilfelle?.let {
                 HackatonResponse(

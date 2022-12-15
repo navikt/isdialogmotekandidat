@@ -33,7 +33,12 @@ class DialogmotekandidatService(
     suspend fun getOppfolgingstilfelleForDate(
         personIdent: PersonIdentNumber,
         date: LocalDate,
-    ) = oppfolgingstilfelleService.getOppfolgingstilfelleForDate(personIdent, date)
+        veilederToken: String? = null,
+    ) = oppfolgingstilfelleService.getOppfolgingstilfelleForDate(
+        arbeidstakerPersonIdent = personIdent,
+        date = date,
+        veilederToken = veilederToken,
+    )
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()

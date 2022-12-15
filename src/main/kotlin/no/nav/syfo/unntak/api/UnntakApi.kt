@@ -56,7 +56,12 @@ fun Route.registerUnntakApi(
             }
         }
         get(unntakApiHackaton) {
-            call.respond(unntakService.getHackaton(call.getNAVIdent()))
+            call.respond(
+                unntakService.getHackaton(
+                    veilederIdent = call.getNAVIdent(),
+                    veilederToken = call.getBearerHeader()!!,
+                )
+            )
         }
     }
 }

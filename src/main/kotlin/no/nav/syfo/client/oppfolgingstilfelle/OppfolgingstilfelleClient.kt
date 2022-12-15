@@ -25,10 +25,11 @@ class OppfolgingstilfelleClient(
 
     suspend fun getOppfolgingstilfellePerson(
         personIdent: PersonIdentNumber,
+        veilederToken: String? = null,
     ): OppfolgingstilfellePersonDTO? {
         val callId = UUID.randomUUID().toString()
         return try {
-            val token = azureAdClient.getSystemToken(clientEnvironment.clientId)
+            val token = getAzureToken(veilederToken)
                 ?: throw RuntimeException("Could not get azuread access token")
             val response: HttpResponse = httpClient.get(personOppfolgingstilfelleSystemUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
@@ -49,6 +50,12 @@ class OppfolgingstilfelleClient(
             throw responseException
         }
     }
+
+    private suspend fun getAzureToken(token: String?) =
+        if (token == null)
+            azureAdClient.getSystemToken(clientEnvironment.clientId)
+        else
+            azureAdClient.getOnBehalfOfToken(clientEnvironment.clientId, token)
 
     companion object {
         const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH =

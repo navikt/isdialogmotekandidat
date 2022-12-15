@@ -31,6 +31,7 @@ fun Route.registerDialogmotekandidatApi(
             ) {
                 val oppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                     arbeidstakerPersonIdent = personIdent,
+                    veilederToken = getBearerHeader(),
                 )
                 val latestKandidatEndring = dialogmotekandidatService.getLatestDialogmotekandidatEndring(
                     personIdent = personIdent
