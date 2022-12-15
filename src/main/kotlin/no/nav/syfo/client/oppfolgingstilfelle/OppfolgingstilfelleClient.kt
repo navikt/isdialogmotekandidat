@@ -30,7 +30,7 @@ class OppfolgingstilfelleClient(
         veilederToken: String? = null,
         callId: String?,
     ): OppfolgingstilfellePersonDTO? {
-        val callIdToUse = if (callId != null) callId else UUID.randomUUID().toString()
+        val callIdToUse = callId ?: UUID.randomUUID().toString()
         return try {
             val token = getAzureToken(veilederToken)
                 ?: throw RuntimeException("Could not get azuread access token")
