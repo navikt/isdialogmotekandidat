@@ -7,19 +7,21 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.unntak.UnntakService
-import no.nav.syfo.unntak.api.domain.CreateUnntakDTO
-import no.nav.syfo.unntak.api.domain.toUnntak
+import no.nav.syfo.unntak.api.domain.*
+import no.nav.syfo.unntak.domain.UnntakArsak
 import no.nav.syfo.unntak.domain.toUnntakDTOList
 import no.nav.syfo.util.*
 
 const val unntakApiBasePath = "/api/internad/v1/unntak"
 const val unntakApiPersonidentPath = "/personident"
-const val unntakApiHackaton = "/hackaton"
+const val unntakApiStatistikk = "/statistikk"
 
 fun Route.registerUnntakApi(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     unntakService: UnntakService,
+    oppfolgingstilfelleService: OppfolgingstilfelleService,
 ) {
     route(unntakApiBasePath) {
         post(unntakApiPersonidentPath) {
@@ -59,14 +61,28 @@ fun Route.registerUnntakApi(
                 call.respond(unntakDTOList)
             }
         }
-        get(unntakApiHackaton) {
-            call.respond(
-                unntakService.getHackaton(
-                    veilederIdent = call.getNAVIdent(),
-                    veilederToken = call.getBearerHeader()!!,
-                    callId = call.getCallId(),
+        get(unntakApiStatistikk) {
+            val unntakForventetFriskmelding = unntakService.getUnntakForVeileder(call.getNAVIdent()).filter { unntak ->
+                unntak.arsak == UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER
+            }
+            val unntakStatistikkDTOList = unntakForventetFriskmelding.mapNotNull {
+                val unntakDato = it.createdAt.toLocalDateTimeOslo().toLocalDate()
+                val tilfelleForUnntak = oppfolgingstilfelleService.getOppfolgingstilfelleForDate(
+                    arbeidstakerPersonIdent = it.personIdent,
+                    date = unntakDato,
+                    veilederToken = getBearerHeader()!!,
+                    callId = getCallId(),
                 )
-            )
+                tilfelleForUnntak?.let { tilfelle ->
+                    UnntakStatistikkDTO(
+                        unntakDato = unntakDato,
+                        tilfelleStart = tilfelle.tilfelleStart,
+                        tilfelleEnd = tilfelle.tilfelleEnd,
+                    )
+                }
+            }
+
+            call.respond(unntakStatistikkDTOList)
         }
     }
 }
