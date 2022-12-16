@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: check if built
         run: |
-          manifest=$(curl -X GET "https://ghcr.io/v2/${{ github.repository }}/isdialogmotekandidat/manifests/${{ github.event.inputs.gitCommit }}" -u "${{ GITHUB_REPOSITORY }}:${{ GITHUB_TOKEN }}" | jq '.')
+          manifest=$(curl -X GET "https://ghcr.io/v2/${{ github.repository }}/isdialogmotekandidat/manifests/${{ github.event.inputs.gitCommit }}" -u "x-access-token:${{ secrets.GITHUB_TOKEN }}" | jq '.')
           echo ${manifest}
           found=$(echo "$manifest" | grep "schemaVersion" || true)
           echo ${found}
