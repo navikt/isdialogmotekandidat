@@ -27,13 +27,26 @@ class DialogmotekandidatService(
     }.toDialogmotekandidatEndringList().firstOrNull()
 
     suspend fun getLatestOppfolgingstilfelle(
-        personIdent: PersonIdentNumber
-    ) = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(personIdent)
+        personIdent: PersonIdentNumber,
+        veilederToken: String? = null,
+        callId: String? = null,
+    ) = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
+        arbeidstakerPersonIdent = personIdent,
+        veilederToken = veilederToken,
+        callId = callId,
+    )
 
     suspend fun getOppfolgingstilfelleForDate(
         personIdent: PersonIdentNumber,
         date: LocalDate,
-    ) = oppfolgingstilfelleService.getOppfolgingstilfelleForDate(personIdent, date)
+        veilederToken: String? = null,
+        callId: String? = null,
+    ) = oppfolgingstilfelleService.getOppfolgingstilfelleForDate(
+        arbeidstakerPersonIdent = personIdent,
+        date = date,
+        veilederToken = veilederToken,
+        callId = callId,
+    )
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()

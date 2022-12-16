@@ -18,7 +18,11 @@ class UnntakService(
     private val database: DatabaseInterface,
     private val dialogmotekandidatService: DialogmotekandidatService,
 ) {
-    suspend fun createUnntak(unntak: Unntak) {
+    suspend fun createUnntak(
+        unntak: Unntak,
+        veilederToken: String,
+        callId: String,
+    ) {
         database.connection.use { connection ->
             val ikkeKandidat =
                 connection.getDialogmotekandidatEndringListForPerson(personIdent = unntak.personIdent)
@@ -31,6 +35,8 @@ class UnntakService(
             connection.createUnntak(unntak = unntak)
             val latestOppfolgingstilfelleArbeidstaker = dialogmotekandidatService.getLatestOppfolgingstilfelle(
                 personIdent = unntak.personIdent,
+                veilederToken = veilederToken,
+                callId = callId,
             )
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.unntak(
                 personIdentNumber = unntak.personIdent,
@@ -49,8 +55,12 @@ class UnntakService(
         return database.getUnntakList(personIdent = personIdent).toUnntakList()
     }
 
-    suspend fun getHackaton(veilderIdent: String): List<HackatonResponse> {
-        val forvFrisk = database.getUnntakForVeileder(veilderIdent).toUnntakList().filter { unntak ->
+    suspend fun getHackaton(
+        veilederIdent: String,
+        veilederToken: String,
+        callId: String,
+    ): List<HackatonResponse> {
+        val forvFrisk = database.getUnntakForVeileder(veilederIdent).toUnntakList().filter { unntak ->
             unntak.arsak == UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER
         }
         return forvFrisk.mapNotNull { unntak ->
@@ -58,6 +68,8 @@ class UnntakService(
             val tilfelle = dialogmotekandidatService.getOppfolgingstilfelleForDate(
                 personIdent = unntak.personIdent,
                 date = unntakDato,
+                veilederToken = veilederToken,
+                callId = callId,
             )
             tilfelle?.let {
                 HackatonResponse(
