@@ -10,9 +10,6 @@ import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.unntak.database.*
 import no.nav.syfo.unntak.database.domain.toUnntakList
 import no.nav.syfo.unntak.domain.Unntak
-import no.nav.syfo.unntak.domain.UnntakArsak
-import no.nav.syfo.util.toLocalDateTimeOslo
-import java.time.LocalDate
 
 class UnntakService(
     private val database: DatabaseInterface,
@@ -55,35 +52,6 @@ class UnntakService(
         return database.getUnntakList(personIdent = personIdent).toUnntakList()
     }
 
-    suspend fun getHackaton(
-        veilederIdent: String,
-        veilederToken: String,
-        callId: String,
-    ): List<HackatonResponse> {
-        val forvFrisk = database.getUnntakForVeileder(veilederIdent).toUnntakList().filter { unntak ->
-            unntak.arsak == UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER
-        }
-        return forvFrisk.mapNotNull { unntak ->
-            val unntakDato = unntak.createdAt.toLocalDateTimeOslo().toLocalDate()
-            val tilfelle = dialogmotekandidatService.getOppfolgingstilfelleForDate(
-                personIdent = unntak.personIdent,
-                date = unntakDato,
-                veilederToken = veilederToken,
-                callId = callId,
-            )
-            tilfelle?.let {
-                HackatonResponse(
-                    unntakDato = unntakDato,
-                    tilfelleStart = tilfelle.tilfelleStart,
-                    tilfelleEnd = tilfelle.tilfelleEnd,
-                )
-            }
-        }
-    }
+    fun getUnntakForVeileder(veilderIdent: String): List<Unntak> =
+        database.getUnntakForVeileder(veilederIdent = veilderIdent).toUnntakList()
 }
-
-data class HackatonResponse(
-    val unntakDato: LocalDate,
-    val tilfelleStart: LocalDate,
-    val tilfelleEnd: LocalDate,
-)

@@ -63,7 +63,8 @@ fun Application.apiModule(
             )
             registerUnntakApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-                unntakService = unntakService
+                unntakService = unntakService,
+                oppfolgingstilfelleService = oppfolgingstilfelleService,
             )
         }
     }
