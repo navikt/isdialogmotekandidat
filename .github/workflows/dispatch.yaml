@@ -10,7 +10,7 @@ on:
         default: ""
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/isdialogmotekandidat:${{ github.event.inputs.gitCommit }}
+  IMAGE: ghcr.io/${{ github.repository }}/isdialogmotekandidat:${{ github.event.inputs.gitCommit }}
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: check if built
         run: |
-          manifest=$(curl -X GET "https://docker.pkg.github.com/v2/navikt/isdialogmotekandidat/isdialogmotekandidat/manifests/${{ github.event.inputs.gitCommit }}" -u "$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}" | jq '.')
+          manifest=$(curl -X GET "https://ghcr.io/${{ github.repository }}/isdialogmotekandidat/manifests/${{ github.event.inputs.gitCommit }}" -u "$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}" | jq '.')
           echo ${manifest}
           found=$(echo "$manifest" | grep "schemaVersion" || true)
           echo ${found}
@@ -61,7 +61,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker build --tag ${IMAGE} .
-          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push ${IMAGE}
           echo ${IMAGE}
   deploy-dev:
