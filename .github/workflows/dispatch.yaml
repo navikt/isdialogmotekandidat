@@ -9,6 +9,9 @@ on:
         required: true
         default: ""
 
+env:
+  IMAGE: ghcr.io/${{ github.repository }}/isdialogmotekandidat:${{ github.event.inputs.gitCommit }}
+
 jobs:
   deploy-dev:
     name: Deploy to NAIS Dev-gcp
@@ -20,4 +23,3 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: .nais/naiserator-dev.yaml
-          IMAGE: ghcr.io/${{ github.repository }}/isdialogmotekandidat:${{ github.event.inputs.gitCommit }}
