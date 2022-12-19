@@ -3,7 +3,7 @@ package no.nav.syfo.oppfolgingstilfelle.kafka
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
-import no.nav.syfo.util.tomorrow
+import no.nav.syfo.util.*
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -24,29 +24,37 @@ data class KafkaOppfolgingstilfelle(
 )
 
 fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelle(
-    latestTilfelle: KafkaOppfolgingstilfelle,
+    tilfelle: KafkaOppfolgingstilfelle,
 ) = Oppfolgingstilfelle(
     personIdent = PersonIdentNumber(this.personIdentNumber),
-    tilfelleStart = latestTilfelle.start,
-    tilfelleEnd = latestTilfelle.end,
-    arbeidstakerAtTilfelleEnd = latestTilfelle.arbeidstakerAtTilfelleEnd,
-    virksomhetsnummerList = latestTilfelle.virksomhetsnummerList.map { Virksomhetsnummer(it) },
+    tilfelleStart = tilfelle.start,
+    tilfelleEnd = tilfelle.end,
+    arbeidstakerAtTilfelleEnd = tilfelle.arbeidstakerAtTilfelleEnd,
+    virksomhetsnummerList = tilfelle.virksomhetsnummerList.map { Virksomhetsnummer(it) },
 )
 
-fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle(): Oppfolgingstilfelle? =
-    this.oppfolgingstilfellerWithoutFutureTilfeller().maxByOrNull {
-        it.start
-    }?.let { latestKafkaOppfolgingstilfelle ->
-        if (latestKafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
-            this.toOppfolgingstilfelle(
-                latestTilfelle = latestKafkaOppfolgingstilfelle
-            )
-        } else {
-            null
+fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle() =
+    toOppfolgingstilfelleIfArbeidstaker(
+        kafkaOppfolgingstilfelle = this.oppfolgingstilfelleList.maxByOrNull {
+            it.start
         }
-    }
+    )
 
-fun KafkaOppfolgingstilfellePerson.oppfolgingstilfellerWithoutFutureTilfeller() =
-    this.oppfolgingstilfelleList.filter {
-        it.start.isBefore(tomorrow())
-    }
+fun KafkaOppfolgingstilfellePerson.toCurrentOppfolgingstilfelle(): Oppfolgingstilfelle? {
+    val today = LocalDate.now()
+    return toOppfolgingstilfelleIfArbeidstaker(
+        kafkaOppfolgingstilfelle = this.oppfolgingstilfelleList.firstOrNull {
+            it.start.isBeforeOrEqual(today) && it.end.isAfterOrEqual(today)
+        }
+    )
+}
+
+private fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleIfArbeidstaker(
+    kafkaOppfolgingstilfelle: KafkaOppfolgingstilfelle?,
+) = if (kafkaOppfolgingstilfelle?.arbeidstakerAtTilfelleEnd == true) {
+    this.toOppfolgingstilfelle(
+        tilfelle = kafkaOppfolgingstilfelle
+    )
+} else {
+    null
+}
