@@ -24,13 +24,13 @@ data class KafkaOppfolgingstilfelle(
 )
 
 fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelle(
-    selectedTilfelle: KafkaOppfolgingstilfelle,
+    tilfelle: KafkaOppfolgingstilfelle,
 ) = Oppfolgingstilfelle(
     personIdent = PersonIdentNumber(this.personIdentNumber),
-    tilfelleStart = selectedTilfelle.start,
-    tilfelleEnd = selectedTilfelle.end,
-    arbeidstakerAtTilfelleEnd = selectedTilfelle.arbeidstakerAtTilfelleEnd,
-    virksomhetsnummerList = selectedTilfelle.virksomhetsnummerList.map { Virksomhetsnummer(it) },
+    tilfelleStart = tilfelle.start,
+    tilfelleEnd = tilfelle.end,
+    arbeidstakerAtTilfelleEnd = tilfelle.arbeidstakerAtTilfelleEnd,
+    virksomhetsnummerList = tilfelle.virksomhetsnummerList.map { Virksomhetsnummer(it) },
 )
 
 fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle(): Oppfolgingstilfelle? =
@@ -39,7 +39,7 @@ fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle(): Oppfolgingstil
     }?.let { latestKafkaOppfolgingstilfelle ->
         if (latestKafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
             this.toOppfolgingstilfelle(
-                selectedTilfelle = latestKafkaOppfolgingstilfelle
+                tilfelle = latestKafkaOppfolgingstilfelle
             )
         } else {
             null
@@ -48,12 +48,12 @@ fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle(): Oppfolgingstil
 
 fun KafkaOppfolgingstilfellePerson.toCurrentOppfolgingstilfelle(): Oppfolgingstilfelle? {
     val today = LocalDate.now()
-    return this.oppfolgingstilfelleList.filter {
+    return this.oppfolgingstilfelleList.firstOrNull {
         it.start.isBeforeOrEqual(today) && it.end.isAfterOrEqual(today)
-    }.firstOrNull()?.let { currentKafkaOppfolgingstilfelle ->
+    }?.let { currentKafkaOppfolgingstilfelle ->
         if (currentKafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
             this.toOppfolgingstilfelle(
-                selectedTilfelle = currentKafkaOppfolgingstilfelle
+                tilfelle = currentKafkaOppfolgingstilfelle
             )
         } else {
             null
