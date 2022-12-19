@@ -33,30 +33,28 @@ fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelle(
     virksomhetsnummerList = tilfelle.virksomhetsnummerList.map { Virksomhetsnummer(it) },
 )
 
-fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle(): Oppfolgingstilfelle? =
-    this.oppfolgingstilfelleList.maxByOrNull {
-        it.start
-    }?.let { latestKafkaOppfolgingstilfelle ->
-        if (latestKafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
-            this.toOppfolgingstilfelle(
-                tilfelle = latestKafkaOppfolgingstilfelle
-            )
-        } else {
-            null
+fun KafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle() =
+    toOppfolgingstilfelleIfArbeidstaker(
+        kafkaOppfolgingstilfelle = this.oppfolgingstilfelleList.maxByOrNull {
+            it.start
         }
-    }
+    )
 
 fun KafkaOppfolgingstilfellePerson.toCurrentOppfolgingstilfelle(): Oppfolgingstilfelle? {
     val today = LocalDate.now()
-    return this.oppfolgingstilfelleList.firstOrNull {
-        it.start.isBeforeOrEqual(today) && it.end.isAfterOrEqual(today)
-    }?.let { currentKafkaOppfolgingstilfelle ->
-        if (currentKafkaOppfolgingstilfelle.arbeidstakerAtTilfelleEnd) {
-            this.toOppfolgingstilfelle(
-                tilfelle = currentKafkaOppfolgingstilfelle
-            )
-        } else {
-            null
+    return toOppfolgingstilfelleIfArbeidstaker(
+        kafkaOppfolgingstilfelle = this.oppfolgingstilfelleList.firstOrNull {
+            it.start.isBeforeOrEqual(today) && it.end.isAfterOrEqual(today)
         }
-    }
+    )
+}
+
+private fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelleIfArbeidstaker(
+    kafkaOppfolgingstilfelle: KafkaOppfolgingstilfelle?,
+) = if (kafkaOppfolgingstilfelle?.arbeidstakerAtTilfelleEnd == true) {
+    this.toOppfolgingstilfelle(
+        tilfelle = kafkaOppfolgingstilfelle
+    )
+} else {
+    null
 }
