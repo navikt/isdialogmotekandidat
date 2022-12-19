@@ -4,6 +4,7 @@ import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.isAfterOrEqual
+import no.nav.syfo.util.isBeforeOrEqual
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -35,3 +36,6 @@ fun Oppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt() =
         tilfelleStart = this.tilfelleStart,
         tilfelleEnd = this.tilfelleEnd,
     )
+
+fun List<Oppfolgingstilfelle>.tilfelleForDate(date: LocalDate) =
+    this.firstOrNull { it.tilfelleStart.isBeforeOrEqual(date) && it.tilfelleEnd.isAfterOrEqual(date) }

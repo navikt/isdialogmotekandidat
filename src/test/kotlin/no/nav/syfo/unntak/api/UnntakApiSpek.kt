@@ -15,6 +15,7 @@ import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
 import no.nav.syfo.unntak.api.domain.*
 import no.nav.syfo.unntak.database.createUnntak
 import no.nav.syfo.unntak.database.getUnntakList
+import no.nav.syfo.unntak.domain.UnntakStatistikk
 import no.nav.syfo.util.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
@@ -240,7 +241,8 @@ class UnntakApiSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val unntakStatistikkList = objectMapper.readValue<List<UnntakStatistikkDTO>>(response.content!!)
+                            val unntakStatistikkList =
+                                objectMapper.readValue<List<UnntakStatistikk>>(response.content!!)
                             unntakStatistikkList.size shouldBeEqualTo 1
 
                             val unntakStatistikk = unntakStatistikkList.first()

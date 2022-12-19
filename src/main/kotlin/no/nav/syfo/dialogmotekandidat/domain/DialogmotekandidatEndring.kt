@@ -5,8 +5,7 @@ import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.unntak.domain.Unntak
-import no.nav.syfo.util.nowUTC
-import no.nav.syfo.util.toLocalDateTimeOslo
+import no.nav.syfo.util.*
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -93,7 +92,7 @@ fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring(
 fun DialogmotekandidatEndring.isBeforeStartOfOppfolgingstilfelle(
     tilfelleStart: LocalDate,
 ): Boolean {
-    val stoppunktKandidatAt = createdAt.toLocalDateTimeOslo().toLocalDate()
+    val stoppunktKandidatAt = createdAt.toLocalDateOslo()
     return stoppunktKandidatAt.isBefore(tilfelleStart)
 }
 

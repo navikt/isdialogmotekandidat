@@ -10,7 +10,9 @@ fun OffsetDateTime.toLocalDateTimeOslo(): LocalDateTime = this.atZoneSameInstant
     ZoneId.of("Europe/Oslo")
 ).toLocalDateTime()
 
-fun tomorrow() = LocalDate.now().plusDays(1)
+fun OffsetDateTime.toLocalDateOslo(): LocalDate = this.toLocalDateTimeOslo().toLocalDate()
+
+fun tomorrow(): LocalDate = LocalDate.now().plusDays(1)
 
 fun LocalDate.isAfterOrEqual(another: LocalDate) = this.isAfter(another) || this == another
 
