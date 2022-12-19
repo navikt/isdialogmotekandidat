@@ -21,32 +21,10 @@ class DialogmotekandidatService(
     private val database: DatabaseInterface,
 ) {
     fun getLatestDialogmotekandidatEndring(
-        personIdent: PersonIdentNumber
+        personIdent: PersonIdentNumber,
     ) = database.connection.use { connection ->
         connection.getDialogmotekandidatEndringListForPerson(personIdent = personIdent)
     }.toDialogmotekandidatEndringList().firstOrNull()
-
-    suspend fun getLatestOppfolgingstilfelle(
-        personIdent: PersonIdentNumber,
-        veilederToken: String? = null,
-        callId: String? = null,
-    ) = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
-        arbeidstakerPersonIdent = personIdent,
-        veilederToken = veilederToken,
-        callId = callId,
-    )
-
-    suspend fun getOppfolgingstilfelleForDate(
-        personIdent: PersonIdentNumber,
-        date: LocalDate,
-        veilederToken: String? = null,
-        callId: String? = null,
-    ) = oppfolgingstilfelleService.getOppfolgingstilfelleForDate(
-        arbeidstakerPersonIdent = personIdent,
-        date = date,
-        veilederToken = veilederToken,
-        callId = callId,
-    )
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
@@ -54,8 +32,8 @@ class DialogmotekandidatService(
     suspend fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
     ) {
-        val oppfolgingstilfelleOnStoppunktDate = getOppfolgingstilfelleForDate(
-            personIdent = dialogmotekandidatStoppunkt.personIdent,
+        val oppfolgingstilfelleOnStoppunktDate = oppfolgingstilfelleService.getOppfolgingstilfelleForDate(
+            arbeidstakerPersonIdent = dialogmotekandidatStoppunkt.personIdent,
             date = dialogmotekandidatStoppunkt.stoppunktPlanlagt,
         )
 

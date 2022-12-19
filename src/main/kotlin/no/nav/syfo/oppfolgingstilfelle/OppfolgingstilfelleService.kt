@@ -3,6 +3,7 @@ package no.nav.syfo.oppfolgingstilfelle
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.oppfolgingstilfelle.toOppfolgingstilfelle
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.oppfolgingstilfelle.domain.tilfelleForDate
 import no.nav.syfo.util.*
 import java.time.LocalDate
 
@@ -28,9 +29,9 @@ class OppfolgingstilfelleService(
         arbeidstakerPersonIdent = arbeidstakerPersonIdent,
         veilederToken = veilederToken,
         callId = callId,
-    ).firstOrNull { it.tilfelleStart.isBeforeOrEqual(date) && it.tilfelleEnd.isAfterOrEqual(date) }
+    ).tilfelleForDate(date)
 
-    private suspend fun getAllOppfolgingstilfeller(
+    internal suspend fun getAllOppfolgingstilfeller(
         arbeidstakerPersonIdent: PersonIdentNumber,
         veilederToken: String? = null,
         callId: String? = null,

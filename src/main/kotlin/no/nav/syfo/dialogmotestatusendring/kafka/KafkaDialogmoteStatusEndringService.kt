@@ -11,6 +11,7 @@ import no.nav.syfo.dialogmotekandidat.domain.latest
 import no.nav.syfo.dialogmotestatusendring.database.createDialogmoteStatus
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
 import no.nav.syfo.dialogmotestatusendring.domain.isFerdigstilt
+import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
@@ -20,6 +21,7 @@ import java.time.Duration
 class KafkaDialogmoteStatusEndringService(
     private val database: DatabaseInterface,
     private val dialogmotekandidatService: DialogmotekandidatService,
+    private val oppfolgingstilfelleService: OppfolgingstilfelleService,
 ) {
     fun pollAndProcessRecords(
         kafkaConsumerDialogmoteStatusEndring: KafkaConsumer<String, KDialogmoteStatusEndring>,
@@ -81,8 +83,8 @@ class KafkaDialogmoteStatusEndringService(
                 ferdigstiltStatusEndring = dialogmoteStatusEndring
             )
         ) {
-            val latestOppfolgingstilfelle = dialogmotekandidatService.getLatestOppfolgingstilfelle(
-                personIdent = dialogmoteStatusEndring.personIdentNumber,
+            val latestOppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
+                arbeidstakerPersonIdent = dialogmoteStatusEndring.personIdentNumber,
             )
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
                 personIdentNumber = dialogmoteStatusEndring.personIdentNumber,

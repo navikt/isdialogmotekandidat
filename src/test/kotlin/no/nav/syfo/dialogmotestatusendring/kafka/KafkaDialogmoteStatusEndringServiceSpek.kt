@@ -56,6 +56,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
         val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(
             database = database,
             dialogmotekandidatService = dialogmotekandidatService,
+            oppfolgingstilfelleService = oppfolgingstilfelleService,
         )
 
         val partition = 0

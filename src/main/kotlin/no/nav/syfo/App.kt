@@ -44,6 +44,7 @@ fun main() {
         )
     )
     lateinit var dialogmotekandidatService: DialogmotekandidatService
+    lateinit var oppfolgingstilfelleService: OppfolgingstilfelleService
 
     val applicationEngineEnvironment = applicationEngineEnvironment {
         log = logger
@@ -62,7 +63,7 @@ fun main() {
                 azureAdClient = azureAdClient,
                 clientEnvironment = environment.clients.oppfolgingstilfelle,
             )
-            val oppfolgingstilfelleService = OppfolgingstilfelleService(
+            oppfolgingstilfelleService = OppfolgingstilfelleService(
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
             )
             dialogmotekandidatService = DialogmotekandidatService(
@@ -92,6 +93,7 @@ fun main() {
         val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(
             database = applicationDatabase,
             dialogmotekandidatService = dialogmotekandidatService,
+            oppfolgingstilfelleService = oppfolgingstilfelleService,
         )
 
         launchKafkaTaskOppfolgingstilfellePerson(

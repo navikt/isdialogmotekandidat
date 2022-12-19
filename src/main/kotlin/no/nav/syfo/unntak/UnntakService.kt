@@ -7,13 +7,19 @@ import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListF
 import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatEndringList
 import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
+import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
+import no.nav.syfo.oppfolgingstilfelle.domain.tilfelleForDate
 import no.nav.syfo.unntak.database.*
 import no.nav.syfo.unntak.database.domain.toUnntakList
-import no.nav.syfo.unntak.domain.Unntak
+import no.nav.syfo.unntak.domain.*
+import no.nav.syfo.util.toLocalDateOslo
+import java.util.concurrent.ConcurrentHashMap
 
 class UnntakService(
     private val database: DatabaseInterface,
     private val dialogmotekandidatService: DialogmotekandidatService,
+    private val oppfolgingstilfelleService: OppfolgingstilfelleService,
 ) {
     suspend fun createUnntak(
         unntak: Unntak,
@@ -30,8 +36,8 @@ class UnntakService(
             }
 
             connection.createUnntak(unntak = unntak)
-            val latestOppfolgingstilfelleArbeidstaker = dialogmotekandidatService.getLatestOppfolgingstilfelle(
-                personIdent = unntak.personIdent,
+            val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
+                arbeidstakerPersonIdent = unntak.personIdent,
                 veilederToken = veilederToken,
                 callId = callId,
             )
@@ -52,6 +58,37 @@ class UnntakService(
         return database.getUnntakList(personIdent = personIdent).toUnntakList()
     }
 
-    fun getUnntakForVeileder(veilderIdent: String): List<Unntak> =
+    suspend fun getUnntakStatistikk(
+        veilederIdent: String,
+        veilederToken: String,
+        callId: String,
+    ): List<UnntakStatistikk> {
+        val unntakForventetFriskmelding = getUnntakForVeileder(veilederIdent).filter { unntak ->
+            unntak.arsak == UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER
+        }
+        val personIdentOppfolgingstilfellerMap = ConcurrentHashMap<PersonIdentNumber, List<Oppfolgingstilfelle>>()
+
+        return unntakForventetFriskmelding.mapNotNull { unntak ->
+            val tilfellerForUnntakPerson = personIdentOppfolgingstilfellerMap.getOrPut(unntak.personIdent) {
+                oppfolgingstilfelleService.getAllOppfolgingstilfeller(
+                    arbeidstakerPersonIdent = unntak.personIdent,
+                    veilederToken = veilederToken,
+                    callId = callId,
+                )
+            }
+
+            val unntakDato = unntak.createdAt.toLocalDateOslo()
+            val tilfelleForUnntak = tilfellerForUnntakPerson.tilfelleForDate(unntakDato)
+            tilfelleForUnntak?.let { tilfelle ->
+                UnntakStatistikk(
+                    unntakDato = unntakDato,
+                    tilfelleStart = tilfelle.tilfelleStart,
+                    tilfelleEnd = tilfelle.tilfelleEnd,
+                )
+            }
+        }
+    }
+
+    private fun getUnntakForVeileder(veilderIdent: String): List<Unntak> =
         database.getUnntakForVeileder(veilederIdent = veilderIdent).toUnntakList()
 }

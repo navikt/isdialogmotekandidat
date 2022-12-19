@@ -46,7 +46,8 @@ fun Application.apiModule(
     )
     val unntakService = UnntakService(
         database = database,
-        dialogmotekandidatService = dialogmotekandidatService
+        dialogmotekandidatService = dialogmotekandidatService,
+        oppfolgingstilfelleService = oppfolgingstilfelleService,
     )
 
     routing {
@@ -64,7 +65,6 @@ fun Application.apiModule(
             registerUnntakApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 unntakService = unntakService,
-                oppfolgingstilfelleService = oppfolgingstilfelleService,
             )
         }
     }
