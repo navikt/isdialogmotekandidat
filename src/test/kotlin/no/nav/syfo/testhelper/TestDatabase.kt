@@ -32,9 +32,6 @@ class TestDatabase : DatabaseInterface {
 fun DatabaseInterface.dropData() {
     val queryList = listOf(
         """
-        DELETE FROM OPPFOLGINGSTILFELLE_ARBEIDSTAKER
-        """.trimIndent(),
-        """
         DELETE FROM DIALOGMOTEKANDIDAT_STOPPUNKT
         """.trimIndent(),
         """
