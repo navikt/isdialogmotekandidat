@@ -71,3 +71,5 @@ spec:
       value: "dev-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
       value: "https://isoppfolgingstilfelle.dev.intern.nav.no"
+    - name: TOGGLE_KAFKA_IDENTHENDELSE_CONSUMER_ENABLED
+      value: "false"
