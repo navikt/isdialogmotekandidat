@@ -26,7 +26,7 @@ class IdenthendelseService(
             if (activeIdent != null) {
                 val inactiveIdenter = identhendelse.getInactivePersonidenter()
                 val numberOfUpdatedIdenter = updateAllTables(activeIdent, inactiveIdenter)
-                log.info("Identhendelse: Updated $numberOfUpdatedIdenter personoppgaver based on Identhendelse from PDL")
+                log.info("Identhendelse: Updated $numberOfUpdatedIdenter rows based on Identhendelse from PDL")
                 COUNT_KAFKA_CONSUMER_PDL_AKTOR_UPDATES.increment(numberOfUpdatedIdenter.toDouble())
             } else {
                 log.warn("Mangler gyldig ident fra PDL")
@@ -39,24 +39,14 @@ class IdenthendelseService(
         val oldStoppunktList = inactiveIdenter.flatMap { database.getDialogmotekandidatStoppunktList(it) }
         val oldEndringList = inactiveIdenter.flatMap { database.connection.getDialogmotekandidatEndringListForPerson(it) }
         val oldUnntakList = inactiveIdenter.flatMap { database.getUnntakList(it) }
-        val oldStatusList = inactiveIdenter.flatMap { database.getDialogmoteStatusList(it) }
+        val oldStatusCount = inactiveIdenter.sumOf { database.getDialogmoteStatusCount(it) }
 
-        if (oldStoppunktList.isNotEmpty() || oldEndringList.isNotEmpty() || oldUnntakList.isNotEmpty() || oldStatusList.isNotEmpty()) {
+        if (oldStoppunktList.isNotEmpty() || oldEndringList.isNotEmpty() || oldUnntakList.isNotEmpty() || oldStatusCount > 0) {
             checkThatPdlIsUpdated(activeIdent)
-        } else {
-            return 0
-        }
-        if (oldStoppunktList.isNotEmpty()) {
             numberOfUpdatedIdenter += database.updateKandidatStoppunkt(activeIdent, oldStoppunktList)
-        }
-        if (oldEndringList.isNotEmpty()) {
             numberOfUpdatedIdenter += database.updateKandidatEndring(activeIdent, oldEndringList)
-        }
-        if (oldUnntakList.isNotEmpty()) {
             numberOfUpdatedIdenter += database.updateUnntak(activeIdent, oldUnntakList)
-        }
-        if (oldStatusList.isNotEmpty()) {
-            numberOfUpdatedIdenter += database.updateDialogmoteStatus(activeIdent, oldStatusList)
+            numberOfUpdatedIdenter += database.updateDialogmoteStatus(activeIdent, inactiveIdenter)
         }
 
         return numberOfUpdatedIdenter

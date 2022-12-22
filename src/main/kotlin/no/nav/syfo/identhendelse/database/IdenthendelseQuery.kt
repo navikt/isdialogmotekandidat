@@ -4,12 +4,8 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatStoppunkt
-import no.nav.syfo.dialogmotestatusendring.database.PDialogmoteStatus
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.unntak.database.domain.PUnntak
-import java.sql.ResultSet
-import java.time.OffsetDateTime
-import java.util.*
 
 const val queryUpdateKandidatStoppunkt =
     """
@@ -25,8 +21,7 @@ fun DatabaseInterface.updateKandidatStoppunkt(nyPersonident: PersonIdentNumber, 
             stoppunktWithOldIdent.forEach { stoppunkt ->
                 it.setString(1, nyPersonident.value)
                 it.setString(2, stoppunkt.personIdent.value)
-                it.executeUpdate()
-                updatedRows++
+                updatedRows += it.executeUpdate()
             }
         }
         connection.commit()
@@ -48,8 +43,7 @@ fun DatabaseInterface.updateKandidatEndring(nyPersonident: PersonIdentNumber, en
             endringWithOldIdent.forEach { endring ->
                 it.setString(1, nyPersonident.value)
                 it.setString(2, endring.personIdent.value)
-                it.executeUpdate()
-                updatedRows++
+                updatedRows += it.executeUpdate()
             }
         }
         connection.commit()
@@ -71,8 +65,7 @@ fun DatabaseInterface.updateUnntak(nyPersonident: PersonIdentNumber, unntakWithO
             unntakWithOldIdent.forEach { unntak ->
                 it.setString(1, nyPersonident.value)
                 it.setString(2, unntak.personIdent)
-                it.executeUpdate()
-                updatedRows++
+                updatedRows += it.executeUpdate()
             }
         }
         connection.commit()
@@ -80,22 +73,22 @@ fun DatabaseInterface.updateUnntak(nyPersonident: PersonIdentNumber, unntakWithO
     return updatedRows
 }
 
-const val queryGetDialogmoteStatus =
+const val queryGetDialogmoteStatusCount =
     """
-        SELECT *
+        SELECT COUNT(*)
         FROM DIALOGMOTESTATUS
         WHERE personident = ?
     """
 
-fun DatabaseInterface.getDialogmoteStatusList(
+fun DatabaseInterface.getDialogmoteStatusCount(
     personIdent: PersonIdentNumber,
-): List<PDialogmoteStatus> =
+): Int =
     this.connection.use { connection ->
-        connection.prepareStatement(queryGetDialogmoteStatus).use {
+        connection.prepareStatement(queryGetDialogmoteStatusCount).use {
             it.setString(1, personIdent.value)
-            it.executeQuery().toList { toPDialogmoteStatus() }
+            it.executeQuery().toList { getInt(1) }
         }
-    }
+    }.firstOrNull() ?: 0
 
 const val queryUpdateDialogmoteStatus =
     """
@@ -104,29 +97,17 @@ const val queryUpdateDialogmoteStatus =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateDialogmoteStatus(nyPersonident: PersonIdentNumber, dialogmoteStatusWithOldIdent: List<PDialogmoteStatus>): Int {
+fun DatabaseInterface.updateDialogmoteStatus(nyPersonident: PersonIdentNumber, oldIdentList: List<PersonIdentNumber>): Int {
     var updatedRows = 0
     this.connection.use { connection ->
         connection.prepareStatement(queryUpdateDialogmoteStatus).use {
-            dialogmoteStatusWithOldIdent.forEach { dialogmoteStatus ->
+            oldIdentList.forEach { oldPersonident ->
                 it.setString(1, nyPersonident.value)
-                it.setString(2, dialogmoteStatus.personIdent.value)
-                it.executeUpdate()
-                updatedRows++
+                it.setString(2, oldPersonident.value)
+                updatedRows += it.executeUpdate()
             }
         }
         connection.commit()
     }
     return updatedRows
-}
-
-fun ResultSet.toPDialogmoteStatus(): PDialogmoteStatus {
-    return PDialogmoteStatus(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        createdAt = getObject("created_at", OffsetDateTime::class.java),
-        personIdent = PersonIdentNumber(getString("personident")),
-        moteTidspunkt = getObject("mote_tidspunkt", OffsetDateTime::class.java),
-        ferdigstiltTidspunkt = getObject("ferdigstilt_tidspunkt", OffsetDateTime::class.java),
-    )
 }
