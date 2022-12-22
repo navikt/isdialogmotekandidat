@@ -83,8 +83,6 @@ object IdenthendelseServiceSpek : Spek({
                     newEndring.first().personIdent.value shouldBeEqualTo newIdent.value
                     newUnntak.first().personIdent shouldBeEqualTo newIdent.value
                     newStatus.first().personIdent.value shouldBeEqualTo newIdent.value
-
-                    pdlClient.cache.size shouldBeEqualTo 1
                 }
             }
 

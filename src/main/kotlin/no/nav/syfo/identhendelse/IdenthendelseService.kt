@@ -1,5 +1,6 @@
 package no.nav.syfo.identhendelse
 
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
@@ -35,54 +36,39 @@ class IdenthendelseService(
 
     private fun updateAllTables(activeIdent: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
         var numberOfUpdatedIdenter = 0
-        numberOfUpdatedIdenter += updateTableWhereOldIdent(
-            activeIdent = activeIdent,
-            inactiveIdenter = inactiveIdenter,
-            getFromDb = { database.getDialogmotekandidatStoppunktList(it) },
-            updateDb = { newIdent, oldEntries -> database.updateKandidatStoppunkt(newIdent, oldEntries) }
-        )
-        numberOfUpdatedIdenter += updateTableWhereOldIdent(
-            activeIdent = activeIdent,
-            inactiveIdenter = inactiveIdenter,
-            getFromDb = { database.connection.getDialogmotekandidatEndringListForPerson(it) },
-            updateDb = { newIdent, oldEntries -> database.updateKandidatEndring(newIdent, oldEntries) }
-        )
-        numberOfUpdatedIdenter += updateTableWhereOldIdent(
-            activeIdent = activeIdent,
-            inactiveIdenter = inactiveIdenter,
-            getFromDb = { database.getUnntakList(it) },
-            updateDb = { newIdent, oldEntries -> database.updateUnntak(newIdent, oldEntries) }
-        )
-        numberOfUpdatedIdenter += updateTableWhereOldIdent(
-            activeIdent = activeIdent,
-            inactiveIdenter = inactiveIdenter,
-            getFromDb = { database.getDialogmoteStatusList(it) },
-            updateDb = { newIdent, oldEntries -> database.updateDialogmoteStatus(newIdent, oldEntries) }
-        )
+        val oldStoppunktList = inactiveIdenter.flatMap { database.getDialogmotekandidatStoppunktList(it) }
+        val oldEndringList = inactiveIdenter.flatMap { database.connection.getDialogmotekandidatEndringListForPerson(it) }
+        val oldUnntakList = inactiveIdenter.flatMap { database.getUnntakList(it) }
+        val oldStatusList = inactiveIdenter.flatMap { database.getDialogmoteStatusList(it) }
+
+        if (oldStoppunktList.isNotEmpty() || oldEndringList.isNotEmpty() || oldUnntakList.isNotEmpty() || oldStatusList.isNotEmpty()) {
+            checkThatPdlIsUpdated(activeIdent)
+        } else {
+            return 0
+        }
+        if (oldStoppunktList.isNotEmpty()) {
+            numberOfUpdatedIdenter += database.updateKandidatStoppunkt(activeIdent, oldStoppunktList)
+        }
+        if (oldEndringList.isNotEmpty()) {
+            numberOfUpdatedIdenter += database.updateKandidatEndring(activeIdent, oldEndringList)
+        }
+        if (oldUnntakList.isNotEmpty()) {
+            numberOfUpdatedIdenter += database.updateUnntak(activeIdent, oldUnntakList)
+        }
+        if (oldStatusList.isNotEmpty()) {
+            numberOfUpdatedIdenter += database.updateDialogmoteStatus(activeIdent, oldStatusList)
+        }
 
         return numberOfUpdatedIdenter
     }
 
-    private fun <T> updateTableWhereOldIdent(
-        activeIdent: PersonIdentNumber,
-        inactiveIdenter: List<PersonIdentNumber>,
-        getFromDb: (PersonIdentNumber) -> List<T>,
-        updateDb: (PersonIdentNumber, List<T>) -> Int,
-    ): Int {
-        val oldIdentEntries = inactiveIdenter.flatMap { getFromDb(it) }
-        return if (oldIdentEntries.isNotEmpty()) {
-            checkThatPdlIsUpdated(activeIdent)
-            updateDb(activeIdent, oldIdentEntries)
-        } else {
-            0
-        }
-    }
-
     // Erfaringer fra andre team tilsier at vi burde dobbeltsjekke at ting har blitt oppdatert i PDL før vi gjør endringer
     private fun checkThatPdlIsUpdated(nyIdent: PersonIdentNumber) {
-        val pdlIdenter = pdlClient.getIdenter(nyIdent)?.hentIdenter
-        if (nyIdent.value != pdlIdenter?.aktivIdent || pdlIdenter.identer.any { it.ident == nyIdent.value && it.historisk }) {
-            throw IllegalStateException("Ny ident er ikke aktiv ident i PDL")
+        runBlocking {
+            val pdlIdenter = pdlClient.getPdlIdenter(nyIdent)?.hentIdenter
+            if (nyIdent.value != pdlIdenter?.aktivIdent || pdlIdenter.identer.any { it.ident == nyIdent.value && it.historisk }) {
+                throw IllegalStateException("Ny ident er ikke aktiv ident i PDL")
+            }
         }
     }
 }
