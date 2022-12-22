@@ -7,12 +7,11 @@ import no.nav.syfo.domain.PersonIdentNumber
 data class KafkaIdenthendelseDTO(
     val identifikatorer: List<Identifikator>,
 ) {
-    val folkeregisterIdenter = identifikatorer.filter { it.type == IdentType.FOLKEREGISTERIDENT }
+    val folkeregisterIdenter: List<Identifikator> = identifikatorer.filter { it.type == IdentType.FOLKEREGISTERIDENT }
 
     fun getActivePersonident(): PersonIdentNumber? = folkeregisterIdenter
         .find { it.gjeldende }
-        ?.idnummer
-        ?.let { PersonIdentNumber(it) }
+        ?.let { PersonIdentNumber(it.idnummer) }
 
     fun getInactivePersonidenter(): List<PersonIdentNumber> = folkeregisterIdenter
         .filter { !it.gjeldende }

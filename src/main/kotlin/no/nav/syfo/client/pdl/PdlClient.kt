@@ -4,6 +4,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.ClientEnvironment
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.httpClientDefault
@@ -11,14 +12,36 @@ import no.nav.syfo.client.pdl.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentHashMap
 
 class PdlClient(
     private val azureAdClient: AzureAdClient,
     private val pdlEnvironment: ClientEnvironment,
 ) {
     private val httpClient = httpClientDefault()
+    val cache = ConcurrentHashMap<PersonIdentNumber, PdlHentIdenter>()
 
-    suspend fun getPdlIdenter(
+    fun getIdenter(
+        personIdent: PersonIdentNumber,
+        callId: String? = null,
+    ): PdlHentIdenter? {
+        return if (cache.containsKey(personIdent)) {
+            cache[personIdent]
+        } else {
+            runBlocking {
+                getPdlIdenter(
+                    personIdent = personIdent,
+                    callId = callId,
+                ).also {
+                    if (it != null) {
+                        cache[personIdent] = it
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun getPdlIdenter(
         personIdent: PersonIdentNumber,
         callId: String? = null,
     ): PdlHentIdenter? {

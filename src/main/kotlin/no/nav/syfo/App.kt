@@ -20,6 +20,7 @@ import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.dialogmotekandidat.kafka.kafkaDialogmotekandidatEndringProducerConfig
 import no.nav.syfo.dialogmotestatusendring.kafka.KafkaDialogmoteStatusEndringService
 import no.nav.syfo.dialogmotestatusendring.kafka.launchKafkaTaskDialogmoteStatusEndring
+import no.nav.syfo.identhendelse.IdenthendelseService
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
 import no.nav.syfo.identhendelse.kafka.launchKafkaTaskIdenthendelse
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
@@ -115,7 +116,13 @@ fun main() {
         )
 
         if (environment.toggleKafkaConsumerIdenthendelseEnabled) {
-            val identhendelseConsumerService = IdenthendelseConsumerService()
+            val identhendelseService = IdenthendelseService(
+                database = applicationDatabase,
+                pdlClient = pdlClient,
+            )
+            val identhendelseConsumerService = IdenthendelseConsumerService(
+                identhendelseService = identhendelseService,
+            )
             launchKafkaTaskIdenthendelse(
                 applicationState = applicationState,
                 kafkaEnvironment = environment.kafka,
