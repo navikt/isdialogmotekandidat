@@ -47,6 +47,7 @@ fun testEnvironment(
             clientId = "dev-gcp.teamsykefravr.isoppfolgingstilfelle",
         ),
     ),
+    toggleKafkaConsumerIdenthendelseEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

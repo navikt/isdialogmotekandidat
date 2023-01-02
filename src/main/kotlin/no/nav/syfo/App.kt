@@ -19,6 +19,8 @@ import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.dialogmotekandidat.kafka.kafkaDialogmotekandidatEndringProducerConfig
 import no.nav.syfo.dialogmotestatusendring.kafka.KafkaDialogmoteStatusEndringService
 import no.nav.syfo.dialogmotestatusendring.kafka.launchKafkaTaskDialogmoteStatusEndring
+import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
+import no.nav.syfo.identhendelse.kafka.launchKafkaTaskIdenthendelse
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfellePersonService
 import no.nav.syfo.oppfolgingstilfelle.kafka.launchKafkaTaskOppfolgingstilfellePerson
@@ -106,6 +108,16 @@ fun main() {
             kafkaEnvironment = environment.kafka,
             kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
         )
+
+        if (environment.toggleKafkaConsumerIdenthendelseEnabled) {
+            val identhendelseConsumerService = IdenthendelseConsumerService()
+            launchKafkaTaskIdenthendelse(
+                applicationState = applicationState,
+                kafkaEnvironment = environment.kafka,
+                kafkaIdenthendelseConsumerService = identhendelseConsumerService,
+            )
+        }
+
         launchCronjobModule(
             applicationState = applicationState,
             environment = environment,

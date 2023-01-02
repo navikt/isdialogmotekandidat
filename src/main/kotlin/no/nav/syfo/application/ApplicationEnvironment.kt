@@ -46,6 +46,7 @@ data class Environment(
             clientId = getEnvVar("ISOPPFOLGINGSTILFELLE_CLIENT_ID"),
         ),
     ),
+    val toggleKafkaConsumerIdenthendelseEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_IDENTHENDELSE_CONSUMER_ENABLED").toBoolean(),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
