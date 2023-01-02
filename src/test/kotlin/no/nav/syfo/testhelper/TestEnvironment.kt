@@ -12,6 +12,7 @@ fun testEnvironment(
     azureOpenIdTokenEndpoint: String,
     syfoTilgangskontrollUrl: String,
     oppfolgingstilfelleUrl: String,
+    pdlUrl: String = "http://pdl",
 ) = Environment(
     database = DatabaseEnvironment(
         host = "localhost",
@@ -45,6 +46,10 @@ fun testEnvironment(
         oppfolgingstilfelle = ClientEnvironment(
             baseUrl = oppfolgingstilfelleUrl,
             clientId = "dev-gcp.teamsykefravr.isoppfolgingstilfelle",
+        ),
+        pdl = ClientEnvironment(
+            baseUrl = pdlUrl,
+            clientId = "pdlClientId",
         ),
     ),
     toggleKafkaConsumerIdenthendelseEnabled = true,

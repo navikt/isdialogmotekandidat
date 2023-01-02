@@ -45,6 +45,10 @@ data class Environment(
             baseUrl = getEnvVar("ISOPPFOLGINGSTILFELLE_URL"),
             clientId = getEnvVar("ISOPPFOLGINGSTILFELLE_CLIENT_ID"),
         ),
+        pdl = ClientEnvironment(
+            baseUrl = getEnvVar("PDL_URL"),
+            clientId = getEnvVar("PDL_CLIENT_ID"),
+        ),
     ),
     val toggleKafkaConsumerIdenthendelseEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_IDENTHENDELSE_CONSUMER_ENABLED").toBoolean(),
 )
