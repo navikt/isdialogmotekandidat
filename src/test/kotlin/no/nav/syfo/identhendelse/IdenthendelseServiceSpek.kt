@@ -6,13 +6,11 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.dialogmotekandidat.database.createDialogmotekandidatStoppunkt
-import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
-import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatStoppunktList
 import no.nav.syfo.dialogmotestatusendring.database.createDialogmoteStatus
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.identhendelse.database.getDialogmoteStatusCount
+import no.nav.syfo.identhendelse.database.getIdentOccurenceCount
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
@@ -20,7 +18,6 @@ import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.unntak.api.domain.toUnntak
 import no.nav.syfo.unntak.database.createUnntak
-import no.nav.syfo.unntak.database.getUnntakList
 import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -58,65 +55,41 @@ object IdenthendelseServiceSpek : Spek({
                 it("Skal oppdatere tabeller når person har fått ny ident") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTO(hasOldPersonident = true)
                     val newIdent = kafkaIdenthendelseDTO.getActivePersonident()!!
-                    val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
+                    val oldIdenter = kafkaIdenthendelseDTO.getInactivePersonidenter()
 
-                    populateDatabase(oldIdent, database)
+                    populateDatabase(oldIdenter.first(), database)
 
-                    val currentStoppunkt = database.getDialogmotekandidatStoppunktList(oldIdent)
-                    val currentEndring = database.connection.getDialogmotekandidatEndringListForPerson(oldIdent)
-                    val currentUnntak = database.getUnntakList(oldIdent)
-                    val currentStatusCount = database.getDialogmoteStatusCount(oldIdent)
-                    currentStoppunkt.size shouldBeEqualTo 1
-                    currentEndring.size shouldBeEqualTo 1
-                    currentUnntak.size shouldBeEqualTo 1
-                    currentStatusCount shouldBeEqualTo 1
+                    val oldIdentOccurrences = database.getIdentOccurenceCount(oldIdenter)
+                    oldIdentOccurrences shouldBeEqualTo 4
 
                     runBlocking {
                         identhendelseService.handleIdenthendelse(kafkaIdenthendelseDTO)
                     }
 
-                    val newStoppunkt = database.getDialogmotekandidatStoppunktList(newIdent)
-                    val newEndring = database.connection.getDialogmotekandidatEndringListForPerson(newIdent)
-                    val newUnntak = database.getUnntakList(newIdent)
-                    val newStatusCount = database.getDialogmoteStatusCount(newIdent)
-                    newStoppunkt.first().personIdent.value shouldBeEqualTo newIdent.value
-                    newEndring.first().personIdent.value shouldBeEqualTo newIdent.value
-                    newUnntak.first().personIdent shouldBeEqualTo newIdent.value
-                    newStatusCount shouldBeEqualTo 1
+                    val newIdentOccurrences = database.getIdentOccurenceCount(listOf(newIdent))
+                    newIdentOccurrences shouldBeEqualTo 4
                 }
 
                 it("Skal oppdatere tabeller der gammel ident forekommer når person har fått ny ident") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTO(hasOldPersonident = true)
                     val newIdent = kafkaIdenthendelseDTO.getActivePersonident()!!
-                    val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
+                    val oldIdenter = kafkaIdenthendelseDTO.getInactivePersonidenter()
 
                     populateDatabase(
-                        oldIdent = oldIdent,
+                        oldIdent = oldIdenter.first(),
                         database = database,
                         updateAll = false,
                     )
 
-                    val currentStoppunkt = database.getDialogmotekandidatStoppunktList(oldIdent)
-                    val currentEndring = database.connection.getDialogmotekandidatEndringListForPerson(oldIdent)
-                    val currentUnntak = database.getUnntakList(oldIdent)
-                    val currentStatusCount = database.getDialogmoteStatusCount(oldIdent)
-                    currentStoppunkt.size shouldBeEqualTo 1
-                    currentEndring.size shouldBeEqualTo 1
-                    currentUnntak.size shouldBeEqualTo 0
-                    currentStatusCount shouldBeEqualTo 0
+                    val oldIdentOccurrences = database.getIdentOccurenceCount(oldIdenter)
+                    oldIdentOccurrences shouldBeEqualTo 2
 
                     runBlocking {
                         identhendelseService.handleIdenthendelse(kafkaIdenthendelseDTO)
                     }
 
-                    val newStoppunkt = database.getDialogmotekandidatStoppunktList(newIdent)
-                    val newEndring = database.connection.getDialogmotekandidatEndringListForPerson(newIdent)
-                    val newUnntak = database.getUnntakList(newIdent)
-                    val newStatusCount = database.getDialogmoteStatusCount(newIdent)
-                    newStoppunkt.first().personIdent.value shouldBeEqualTo newIdent.value
-                    newEndring.first().personIdent.value shouldBeEqualTo newIdent.value
-                    newUnntak.size shouldBeEqualTo 0
-                    newStatusCount shouldBeEqualTo 0
+                    val newIdentOccurrences = database.getIdentOccurenceCount(listOf(newIdent))
+                    newIdentOccurrences shouldBeEqualTo 2
                 }
             }
 

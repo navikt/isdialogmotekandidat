@@ -2,10 +2,8 @@ package no.nav.syfo.identhendelse.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
-import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatStoppunkt
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.unntak.database.domain.PUnntak
+import java.sql.PreparedStatement
 
 const val queryUpdateKandidatStoppunkt =
     """
@@ -14,13 +12,13 @@ const val queryUpdateKandidatStoppunkt =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateKandidatStoppunkt(nyPersonident: PersonIdentNumber, stoppunktWithOldIdent: List<PDialogmotekandidatStoppunkt>): Int {
+fun DatabaseInterface.updateKandidatStoppunkt(nyPersonident: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
     var updatedRows = 0
     this.connection.use { connection ->
         connection.prepareStatement(queryUpdateKandidatStoppunkt).use {
-            stoppunktWithOldIdent.forEach { stoppunkt ->
+            inactiveIdenter.forEach { inactiveIdent ->
                 it.setString(1, nyPersonident.value)
-                it.setString(2, stoppunkt.personIdent.value)
+                it.setString(2, inactiveIdent.value)
                 updatedRows += it.executeUpdate()
             }
         }
@@ -36,13 +34,13 @@ const val queryUpdateKandidatEndring =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateKandidatEndring(nyPersonident: PersonIdentNumber, endringWithOldIdent: List<PDialogmotekandidatEndring>): Int {
+fun DatabaseInterface.updateKandidatEndring(nyPersonident: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
     var updatedRows = 0
     this.connection.use { connection ->
         connection.prepareStatement(queryUpdateKandidatEndring).use {
-            endringWithOldIdent.forEach { endring ->
+            inactiveIdenter.forEach { inactiveIdent ->
                 it.setString(1, nyPersonident.value)
-                it.setString(2, endring.personIdent.value)
+                it.setString(2, inactiveIdent.value)
                 updatedRows += it.executeUpdate()
             }
         }
@@ -58,13 +56,13 @@ const val queryUpdateUnntak =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateUnntak(nyPersonident: PersonIdentNumber, unntakWithOldIdent: List<PUnntak>): Int {
+fun DatabaseInterface.updateUnntak(nyPersonident: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
     var updatedRows = 0
     this.connection.use { connection ->
         connection.prepareStatement(queryUpdateUnntak).use {
-            unntakWithOldIdent.forEach { unntak ->
+            inactiveIdenter.forEach { inactiveIdent ->
                 it.setString(1, nyPersonident.value)
-                it.setString(2, unntak.personIdent)
+                it.setString(2, inactiveIdent.value)
                 updatedRows += it.executeUpdate()
             }
         }
@@ -72,23 +70,6 @@ fun DatabaseInterface.updateUnntak(nyPersonident: PersonIdentNumber, unntakWithO
     }
     return updatedRows
 }
-
-const val queryGetDialogmoteStatusCount =
-    """
-        SELECT COUNT(*)
-        FROM DIALOGMOTESTATUS
-        WHERE personident = ?
-    """
-
-fun DatabaseInterface.getDialogmoteStatusCount(
-    personIdent: PersonIdentNumber,
-): Int =
-    this.connection.use { connection ->
-        connection.prepareStatement(queryGetDialogmoteStatusCount).use {
-            it.setString(1, personIdent.value)
-            it.executeQuery().toList { getInt(1) }
-        }
-    }.firstOrNull() ?: 0
 
 const val queryUpdateDialogmoteStatus =
     """
@@ -111,3 +92,32 @@ fun DatabaseInterface.updateDialogmoteStatus(nyPersonident: PersonIdentNumber, o
     }
     return updatedRows
 }
+
+const val queryFindIdentOccurence =
+    """
+        SELECT COUNT(*)
+        FROM (
+            SELECT personident FROM DIALOGMOTESTATUS
+            UNION ALL
+            SELECT personident FROM DIALOGMOTEKANDIDAT_STOPPUNKT
+            UNION ALL
+            SELECT personident FROM DIALOGMOTEKANDIDAT_ENDRING
+            UNION ALL
+            SELECT personident FROM UNNTAK
+        ) identer
+        WHERE personident = ?
+    """
+
+fun DatabaseInterface.getIdentOccurenceCount(
+    identer: List<PersonIdentNumber>,
+): Int =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryFindIdentOccurence).use<PreparedStatement, Int> {
+            var occurences = 0
+            identer.forEach { ident ->
+                it.setString(1, ident.value)
+                occurences += it.executeQuery().toList { getInt(1) }.firstOrNull() ?: 0
+            }
+            return occurences
+        }
+    }
