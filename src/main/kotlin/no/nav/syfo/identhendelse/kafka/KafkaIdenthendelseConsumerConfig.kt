@@ -12,7 +12,7 @@ fun kafkaIdenthendelseConsumerConfig(
 ): Properties {
     return Properties().apply {
         putAll(commonKafkaAivenConsumerConfig(kafkaEnvironment))
-        this[ConsumerConfig.GROUP_ID_CONFIG] = "isdialogmotekandidat-v0"
+        this[ConsumerConfig.GROUP_ID_CONFIG] = "isdialogmotekandidat-v1"
         this[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = KafkaAvroDeserializer::class.java.canonicalName
         this[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
 
