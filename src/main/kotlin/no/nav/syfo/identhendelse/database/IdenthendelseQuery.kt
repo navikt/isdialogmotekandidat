@@ -3,6 +3,7 @@ package no.nav.syfo.identhendelse.database
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.domain.PersonIdentNumber
+import java.sql.Connection
 import java.sql.PreparedStatement
 
 const val queryUpdateKandidatStoppunkt =
@@ -12,17 +13,21 @@ const val queryUpdateKandidatStoppunkt =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateKandidatStoppunkt(nyPersonident: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
+fun Connection.updateKandidatStoppunkt(
+    nyPersonident: PersonIdentNumber,
+    inactiveIdenter: List<PersonIdentNumber>,
+    commit: Boolean = false,
+): Int {
     var updatedRows = 0
-    this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateKandidatStoppunkt).use {
-            inactiveIdenter.forEach { inactiveIdent ->
-                it.setString(1, nyPersonident.value)
-                it.setString(2, inactiveIdent.value)
-                updatedRows += it.executeUpdate()
-            }
+    this.prepareStatement(queryUpdateKandidatStoppunkt).use {
+        inactiveIdenter.forEach { inactiveIdent ->
+            it.setString(1, nyPersonident.value)
+            it.setString(2, inactiveIdent.value)
+            updatedRows += it.executeUpdate()
         }
-        connection.commit()
+    }
+    if (commit) {
+        this.commit()
     }
     return updatedRows
 }
@@ -34,17 +39,21 @@ const val queryUpdateKandidatEndring =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateKandidatEndring(nyPersonident: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
+fun Connection.updateKandidatEndring(
+    nyPersonident: PersonIdentNumber,
+    inactiveIdenter: List<PersonIdentNumber>,
+    commit: Boolean = false,
+): Int {
     var updatedRows = 0
-    this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateKandidatEndring).use {
-            inactiveIdenter.forEach { inactiveIdent ->
-                it.setString(1, nyPersonident.value)
-                it.setString(2, inactiveIdent.value)
-                updatedRows += it.executeUpdate()
-            }
+    this.prepareStatement(queryUpdateKandidatEndring).use {
+        inactiveIdenter.forEach { inactiveIdent ->
+            it.setString(1, nyPersonident.value)
+            it.setString(2, inactiveIdent.value)
+            updatedRows += it.executeUpdate()
         }
-        connection.commit()
+    }
+    if (commit) {
+        this.commit()
     }
     return updatedRows
 }
@@ -56,17 +65,21 @@ const val queryUpdateUnntak =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateUnntak(nyPersonident: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
+fun Connection.updateUnntak(
+    nyPersonident: PersonIdentNumber,
+    inactiveIdenter: List<PersonIdentNumber>,
+    commit: Boolean = false,
+): Int {
     var updatedRows = 0
-    this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateUnntak).use {
-            inactiveIdenter.forEach { inactiveIdent ->
-                it.setString(1, nyPersonident.value)
-                it.setString(2, inactiveIdent.value)
-                updatedRows += it.executeUpdate()
-            }
+    this.prepareStatement(queryUpdateUnntak).use {
+        inactiveIdenter.forEach { inactiveIdent ->
+            it.setString(1, nyPersonident.value)
+            it.setString(2, inactiveIdent.value)
+            updatedRows += it.executeUpdate()
         }
-        connection.commit()
+    }
+    if (commit) {
+        this.commit()
     }
     return updatedRows
 }
@@ -78,22 +91,26 @@ const val queryUpdateDialogmoteStatus =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.updateDialogmoteStatus(nyPersonident: PersonIdentNumber, oldIdentList: List<PersonIdentNumber>): Int {
+fun Connection.updateDialogmoteStatus(
+    nyPersonident: PersonIdentNumber,
+    inactiveIdenter: List<PersonIdentNumber>,
+    commit: Boolean = false,
+): Int {
     var updatedRows = 0
-    this.connection.use { connection ->
-        connection.prepareStatement(queryUpdateDialogmoteStatus).use {
-            oldIdentList.forEach { oldPersonident ->
-                it.setString(1, nyPersonident.value)
-                it.setString(2, oldPersonident.value)
-                updatedRows += it.executeUpdate()
-            }
+    this.prepareStatement(queryUpdateDialogmoteStatus).use {
+        inactiveIdenter.forEach { inactiveIdent ->
+            it.setString(1, nyPersonident.value)
+            it.setString(2, inactiveIdent.value)
+            updatedRows += it.executeUpdate()
         }
-        connection.commit()
+    }
+    if (commit) {
+        this.commit()
     }
     return updatedRows
 }
 
-const val queryFindIdentOccurence =
+const val queryGetIdentCount =
     """
         SELECT COUNT(*)
         FROM (
@@ -108,16 +125,16 @@ const val queryFindIdentOccurence =
         WHERE personident = ?
     """
 
-fun DatabaseInterface.getIdentOccurenceCount(
+fun DatabaseInterface.getIdentCount(
     identer: List<PersonIdentNumber>,
 ): Int =
     this.connection.use { connection ->
-        connection.prepareStatement(queryFindIdentOccurence).use<PreparedStatement, Int> {
-            var occurences = 0
+        connection.prepareStatement(queryGetIdentCount).use<PreparedStatement, Int> {
+            var count = 0
             identer.forEach { ident ->
                 it.setString(1, ident.value)
-                occurences += it.executeQuery().toList { getInt(1) }.firstOrNull() ?: 0
+                count += it.executeQuery().toList { getInt(1) }.firstOrNull() ?: 0
             }
-            return occurences
+            return count
         }
     }

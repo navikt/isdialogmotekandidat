@@ -10,7 +10,7 @@ import no.nav.syfo.dialogmotestatusendring.database.createDialogmoteStatus
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.identhendelse.database.getIdentOccurenceCount
+import no.nav.syfo.identhendelse.database.getIdentCount
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
@@ -52,25 +52,22 @@ object IdenthendelseServiceSpek : Spek({
             }
 
             describe("Happy path") {
-                it("Skal oppdatere tabeller når person har fått ny ident") {
+                it("Skal oppdatere gamle identer når person har fått ny ident") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTO(hasOldPersonident = true)
                     val newIdent = kafkaIdenthendelseDTO.getActivePersonident()!!
                     val oldIdenter = kafkaIdenthendelseDTO.getInactivePersonidenter()
 
                     populateDatabase(oldIdenter.first(), database)
 
-                    val oldIdentOccurrences = database.getIdentOccurenceCount(oldIdenter)
-                    oldIdentOccurrences shouldBeEqualTo 4
-
                     runBlocking {
                         identhendelseService.handleIdenthendelse(kafkaIdenthendelseDTO)
                     }
 
-                    val newIdentOccurrences = database.getIdentOccurenceCount(listOf(newIdent))
+                    val newIdentOccurrences = database.getIdentCount(listOf(newIdent))
                     newIdentOccurrences shouldBeEqualTo 4
                 }
 
-                it("Skal oppdatere tabeller der gammel ident forekommer når person har fått ny ident") {
+                it("Skal oppdatere gamle identer når person har fått ny ident, men kun antall tabeller som har en forekomst av gamle identer") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTO(hasOldPersonident = true)
                     val newIdent = kafkaIdenthendelseDTO.getActivePersonident()!!
                     val oldIdenter = kafkaIdenthendelseDTO.getInactivePersonidenter()
@@ -78,17 +75,14 @@ object IdenthendelseServiceSpek : Spek({
                     populateDatabase(
                         oldIdent = oldIdenter.first(),
                         database = database,
-                        updateAll = false,
+                        updateInAllTables = false,
                     )
-
-                    val oldIdentOccurrences = database.getIdentOccurenceCount(oldIdenter)
-                    oldIdentOccurrences shouldBeEqualTo 2
 
                     runBlocking {
                         identhendelseService.handleIdenthendelse(kafkaIdenthendelseDTO)
                     }
 
-                    val newIdentOccurrences = database.getIdentOccurenceCount(listOf(newIdent))
+                    val newIdentOccurrences = database.getIdentCount(listOf(newIdent))
                     newIdentOccurrences shouldBeEqualTo 2
                 }
             }
@@ -112,7 +106,7 @@ object IdenthendelseServiceSpek : Spek({
     }
 })
 
-fun populateDatabase(oldIdent: PersonIdentNumber, database: DatabaseInterface, updateAll: Boolean = true) {
+fun populateDatabase(oldIdent: PersonIdentNumber, database: DatabaseInterface, updateInAllTables: Boolean = true) {
     val stoppunkt = generateDialogmotekandidatStoppunktPlanlagt(oldIdent, LocalDate.now())
     val endring = generateDialogmotekandidatEndringStoppunkt(oldIdent)
 
@@ -122,7 +116,7 @@ fun populateDatabase(oldIdent: PersonIdentNumber, database: DatabaseInterface, u
     )
     database.createDialogmotekandidatEndring(endring)
 
-    if (updateAll) {
+    if (updateInAllTables) {
         val unntak = generateNewUnntakDTO(oldIdent).toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
         val moteTidspunkt = OffsetDateTime.now().minusDays(1)
         val kafkaDialogmoteStatusEndring = generateKDialogmoteStatusEndring(

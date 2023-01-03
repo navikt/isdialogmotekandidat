@@ -35,14 +35,17 @@ class IdenthendelseService(
 
     private fun updateAllTables(activeIdent: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
         var numberOfUpdatedIdenter = 0
-        val rowsWithInactiveIdenter = database.getIdentOccurenceCount(inactiveIdenter)
+        val rowsWithInactiveIdenter = database.getIdentCount(inactiveIdenter)
 
         if (rowsWithInactiveIdenter > 0) {
             checkThatPdlIsUpdated(activeIdent)
-            numberOfUpdatedIdenter += database.updateKandidatStoppunkt(activeIdent, inactiveIdenter)
-            numberOfUpdatedIdenter += database.updateKandidatEndring(activeIdent, inactiveIdenter)
-            numberOfUpdatedIdenter += database.updateUnntak(activeIdent, inactiveIdenter)
-            numberOfUpdatedIdenter += database.updateDialogmoteStatus(activeIdent, inactiveIdenter)
+            database.connection.use { connection ->
+                numberOfUpdatedIdenter += connection.updateKandidatStoppunkt(activeIdent, inactiveIdenter)
+                numberOfUpdatedIdenter += connection.updateKandidatEndring(activeIdent, inactiveIdenter)
+                numberOfUpdatedIdenter += connection.updateUnntak(activeIdent, inactiveIdenter)
+                numberOfUpdatedIdenter += connection.updateDialogmoteStatus(activeIdent, inactiveIdenter)
+                connection.commit()
+            }
         }
 
         return numberOfUpdatedIdenter
