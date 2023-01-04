@@ -29,7 +29,7 @@ class UnntakServiceSpek : Spek({
                 oppfolgingstilfelleService = oppfolgingstilfelleServiceMock,
             )
 
-            afterEachTest {
+            beforeEachTest {
                 database.dropData()
                 clearMocks(oppfolgingstilfelleServiceMock, dialogmotekandidatServiceMock)
             }

@@ -6,8 +6,11 @@ import no.nav.syfo.application.backgroundtask.launchBackgroundTask
 import no.nav.syfo.application.kafka.KafkaEnvironment
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 const val PDL_AKTOR_TOPIC = "pdl.aktor-v2"
+private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.identhendelse")
 
 fun launchKafkaTaskIdenthendelse(
     applicationState: ApplicationState,
@@ -17,6 +20,8 @@ fun launchKafkaTaskIdenthendelse(
     launchBackgroundTask(
         applicationState = applicationState
     ) {
+        log.info("Setting up kafka consumer for ${KafkaIdenthendelseDTO::class.java.simpleName}")
+
         val kafkaConfig = kafkaIdenthendelseConsumerConfig(kafkaEnvironment)
         val kafkaConsumer = KafkaConsumer<String, GenericRecord>(kafkaConfig)
 
