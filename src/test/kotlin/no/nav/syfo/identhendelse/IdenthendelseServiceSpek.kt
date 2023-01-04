@@ -67,7 +67,7 @@ object IdenthendelseServiceSpek : Spek({
                     newIdentOccurrences shouldBeEqualTo 4
                 }
 
-                it("Skal oppdatere gamle identer når person har fått ny ident, men kun antall tabeller som har en forekomst av gamle identer") {
+                it("Skal oppdatere gamle identer når person har fått ny ident, men kun tabeller som har en forekomst av gamle identer") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTO(hasOldPersonident = true)
                     val newIdent = kafkaIdenthendelseDTO.getActivePersonident()!!
                     val oldIdenter = kafkaIdenthendelseDTO.getInactivePersonidenter()

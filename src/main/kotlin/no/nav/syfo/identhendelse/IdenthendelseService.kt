@@ -28,16 +28,16 @@ class IdenthendelseService(
                     COUNT_KAFKA_CONSUMER_PDL_AKTOR_UPDATES.increment(numberOfUpdatedIdenter.toDouble())
                 }
             } else {
-                log.warn("Mangler gyldig ident fra PDL")
+                log.warn("Identhendelse ignored: Mangler aktiv ident i PDL")
             }
         }
     }
 
     private fun updateAllTables(activeIdent: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
         var numberOfUpdatedIdenter = 0
-        val rowsWithInactiveIdenter = database.getIdentCount(inactiveIdenter)
+        val inactiveIdenterCount = database.getIdentCount(inactiveIdenter)
 
-        if (rowsWithInactiveIdenter > 0) {
+        if (inactiveIdenterCount > 0) {
             checkThatPdlIsUpdated(activeIdent)
             database.connection.use { connection ->
                 numberOfUpdatedIdenter += connection.updateKandidatStoppunkt(activeIdent, inactiveIdenter)
