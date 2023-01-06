@@ -112,6 +112,12 @@ dependencies {
                 require("9.4.48.v20220622")
             }
         }
+        implementation("com.google.protobuf:protobuf-java") {
+            because("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded} -> https://cwe.mitre.org/data/definitions/400.html")
+            version {
+                require("3.21.7")
+            }
+        }
     }
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusJoseJwt}")
