@@ -14,6 +14,7 @@ data class Oppfolgingstilfelle(
     val tilfelleEnd: LocalDate,
     val arbeidstakerAtTilfelleEnd: Boolean,
     val virksomhetsnummerList: List<Virksomhetsnummer>,
+    val dodsdato: LocalDate?,
 )
 
 fun Oppfolgingstilfelle.isDialogmotekandidat(
@@ -27,7 +28,7 @@ fun Oppfolgingstilfelle.isDialogmotekandidat(
 
 fun Oppfolgingstilfelle.isDialogmotekandidat(): Boolean {
     val dialogmotekandidatStoppunktPlanlagt = DialogmotekandidatStoppunkt.stoppunktPlanlagtDato(tilfelleStart, tilfelleEnd)
-    return arbeidstakerAtTilfelleEnd && tilfelleEnd.isAfterOrEqual(dialogmotekandidatStoppunktPlanlagt)
+    return dodsdato == null && arbeidstakerAtTilfelleEnd && tilfelleEnd.isAfterOrEqual(dialogmotekandidatStoppunktPlanlagt)
 }
 
 fun Oppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt() =

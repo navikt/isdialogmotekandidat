@@ -37,7 +37,7 @@ class OppfolgingstilfelleMock : MockServer() {
                             arbeidstakerAtTilfelleEnd = true,
                             start = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS),
                             end = LocalDate.now(),
-                            virksomhetsnummerList = listOf(VIRKSOMHETSNUMMER_DEFAULT.value)
+                            virksomhetsnummerList = listOf(VIRKSOMHETSNUMMER_DEFAULT.value),
                         )
                     )
                 }
@@ -69,5 +69,6 @@ class OppfolgingstilfelleMock : MockServer() {
                 }
             },
             personIdent = personIdent!!,
+            dodsdato = if (personIdent == UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD.value) LocalDate.now() else null,
         )
 }

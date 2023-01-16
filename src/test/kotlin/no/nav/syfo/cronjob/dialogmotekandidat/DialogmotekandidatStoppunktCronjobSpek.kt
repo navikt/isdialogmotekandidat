@@ -174,6 +174,22 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
                 kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo null
                 kafkaDialogmoteKandidatEndring.tilfelleStart shouldBeEqualTo LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
             }
+            it("Update status of DialogmotekandidatStoppunkt, if planlagt is today and OppfolgingstilfelleArbeidstaker with dodsdato exists for person") {
+                val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
+                    arbeidstakerPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD,
+                    planlagt = LocalDate.now(),
+                )
+                createDialogmotekandidatStoppunkt(stoppunktPlanlagtIDag)
+
+                val result = runBlocking { dialogmotekandidatStoppunktCronjob.runJob() }
+                result.failed shouldBeEqualTo 0
+                result.updated shouldBeEqualTo 1
+                verify(exactly = 0) {
+                    kafkaProducer.send(any())
+                }
+                val stoppunktKandidatFirst = database.getDialogmotekandidatStoppunktList(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD).first()
+                stoppunktKandidatFirst.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name
+            }
             it("Update status of DialogmotekandidatStoppunkt and handles duplicate stoppunktPlanlagt") {
                 val stoppunktPlanlagtIDag = generateDialogmotekandidatStoppunktPlanlagt(
                     arbeidstakerPersonIdent = kandidatFirstPersonIdent,

@@ -14,4 +14,5 @@ fun generateOppfolgingstilfelle(
     tilfelleEnd = LocalDate.now().minusDays(backdatedNumberOfDays),
     arbeidstakerAtTilfelleEnd = true,
     virksomhetsnummerList = emptyList(),
+    dodsdato = null,
 )

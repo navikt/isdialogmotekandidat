@@ -16,6 +16,7 @@ fun generateKafkaOppfolgingstilfellePerson(
     start: LocalDate = LocalDate.now().minusDays(1),
     oppfolgingstilfelleDurationInDays: Long,
     virksomhetsnummer: Virksomhetsnummer = VIRKSOMHETSNUMMER_DEFAULT,
+    dodsdato: LocalDate? = null,
 ): KafkaOppfolgingstilfellePerson {
     return KafkaOppfolgingstilfellePerson(
         uuid = UUID.randomUUID().toString(),
@@ -33,5 +34,6 @@ fun generateKafkaOppfolgingstilfellePerson(
         ),
         referanseTilfelleBitUuid = UUID.randomUUID().toString(),
         referanseTilfelleBitInntruffet = nowUTC().minusDays(1),
+        dodsdato = dodsdato,
     )
 }
