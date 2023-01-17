@@ -8,6 +8,7 @@ import no.nav.syfo.dialogmotekandidat.domain.*
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD
 import no.nav.syfo.testhelper.generator.generateKafkaOppfolgingstilfellePerson
 import org.amshove.kluent.*
 import org.apache.kafka.clients.consumer.*
@@ -394,6 +395,47 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                         database.getDialogmotekandidatStoppunktList(
                             arbeidstakerPersonIdent = PersonIdentNumber(
                                 kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
+                            )
+                        ).toDialogmotekandidatStoppunktList()
+
+                    dialogmotekandidatStoppunktList.size shouldBeEqualTo 0
+                }
+                it("should not create DialogmotekandidatStoppunkt, if polled 1 that is Dialogmotekandidat with dodsdato != null ") {
+                    val kafkaOppfolgingstilfellePersonDialogmotekandidatWithDodsdato =
+                        generateKafkaOppfolgingstilfellePerson(
+                            arbeidstakerAtTilfelleEnd = true,
+                            personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER_DOD,
+                            oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
+                            dodsdato = LocalDate.now(),
+                        )
+                    val kafkaOppfolgingstilfellePersonDialogmotekandidatWithDodsdatoRecord =
+                        ConsumerRecord(
+                            OPPFOLGINGSTILFELLE_PERSON_TOPIC,
+                            partition,
+                            4,
+                            "key4",
+                            kafkaOppfolgingstilfellePersonDialogmotekandidatWithDodsdato,
+                        )
+
+                    every { mockKafkaConsumerOppfolgingstilfellePerson.poll(any<Duration>()) } returns ConsumerRecords(
+                        mapOf(
+                            oppfolgingstilfelleArbeidstakerTopicPartition to listOf(
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatWithDodsdatoRecord,
+                            )
+                        )
+                    )
+
+                    kafkaSyketilfellebitService.pollAndProcessRecords(
+                        kafkaConsumerOppfolgingstilfellePerson = mockKafkaConsumerOppfolgingstilfellePerson,
+                    )
+
+                    verify(exactly = 1) {
+                        mockKafkaConsumerOppfolgingstilfellePerson.commitSync()
+                    }
+                    val dialogmotekandidatStoppunktList =
+                        database.getDialogmotekandidatStoppunktList(
+                            arbeidstakerPersonIdent = PersonIdentNumber(
+                                kafkaOppfolgingstilfellePersonDialogmotekandidatWithDodsdato.personIdentNumber
                             )
                         ).toDialogmotekandidatStoppunktList()
 

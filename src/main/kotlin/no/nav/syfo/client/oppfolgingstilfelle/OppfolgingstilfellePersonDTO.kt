@@ -8,6 +8,7 @@ import java.time.LocalDate
 data class OppfolgingstilfellePersonDTO(
     val oppfolgingstilfelleList: List<OppfolgingstilfelleDTO>,
     val personIdent: String,
+    val dodsdato: LocalDate? = null,
 )
 
 data class OppfolgingstilfelleDTO(
@@ -17,11 +18,14 @@ data class OppfolgingstilfelleDTO(
     val virksomhetsnummerList: List<String>,
 )
 
-fun OppfolgingstilfelleDTO.toOppfolgingstilfelle(personIdent: PersonIdentNumber) =
-    Oppfolgingstilfelle(
-        personIdent = personIdent,
-        tilfelleStart = start,
-        tilfelleEnd = end,
-        arbeidstakerAtTilfelleEnd = arbeidstakerAtTilfelleEnd,
-        virksomhetsnummerList = virksomhetsnummerList.map { Virksomhetsnummer(it) },
-    )
+fun OppfolgingstilfelleDTO.toOppfolgingstilfelle(
+    personIdent: PersonIdentNumber,
+    dodsdato: LocalDate?,
+) = Oppfolgingstilfelle(
+    personIdent = personIdent,
+    tilfelleStart = start,
+    tilfelleEnd = end,
+    arbeidstakerAtTilfelleEnd = arbeidstakerAtTilfelleEnd,
+    virksomhetsnummerList = virksomhetsnummerList.map { Virksomhetsnummer(it) },
+    dodsdato = dodsdato,
+)
