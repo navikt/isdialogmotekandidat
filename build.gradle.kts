@@ -6,27 +6,27 @@ group = "no.nav.syfo"
 version = "0.0.1"
 
 object Versions {
-    const val confluent = "7.2.1"
-    const val flyway = "8.5.13"
+    const val confluent = "7.3.1"
+    const val flyway = "9.14.0"
     const val hikari = "5.0.1"
     const val isdialogmoteSchema = "1.0.5"
-    const val jackson = "2.13.4"
-    const val kafka = "3.2.3"
-    const val kafkaEmbedded = "3.2.1"
-    const val kluent = "1.68"
-    const val ktor = "2.1.3"
-    const val logback = "1.2.11"
+    const val jacksonDataType = "2.14.2"
+    const val kafka = "3.3.2"
+    const val kafkaEmbedded = "3.2.2"
+    const val kluent = "1.72"
+    const val ktor = "2.2.2"
+    const val logback = "1.4.5"
     const val logstashEncoder = "7.2"
-    const val micrometerRegistry = "1.9.4"
-    const val nimbusJoseJwt = "9.25.3"
-    const val mockk = "1.12.4"
-    const val postgres = "42.5.0"
+    const val micrometerRegistry = "1.10.3"
+    const val nimbusJoseJwt = "9.30"
+    const val mockk = "1.13.4"
+    const val postgres = "42.5.1"
     val postgresEmbedded = if (Os.isFamily(Os.FAMILY_MAC)) "1.0.0" else "0.13.4"
     const val scala = "2.13.9"
-    const val spek = "2.0.18"
+    const val spek = "2.0.19"
 }
 plugins {
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.8.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
 }
@@ -69,7 +69,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:${Versions.micrometerRegistry}")
 
     // (De-)serialization
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jackson}")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jacksonDataType}")
 
     // Database
     implementation("org.postgresql:postgresql:${Versions.postgres}")
