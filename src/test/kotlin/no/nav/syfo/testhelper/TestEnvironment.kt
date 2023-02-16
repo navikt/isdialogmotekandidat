@@ -52,7 +52,6 @@ fun testEnvironment(
             clientId = "pdlClientId",
         ),
     ),
-    toggleKafkaConsumerIdenthendelseEnabled = true,
 )
 
 fun testAppState() = ApplicationState(

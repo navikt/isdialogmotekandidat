@@ -115,20 +115,18 @@ fun main() {
             kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
         )
 
-        if (environment.toggleKafkaConsumerIdenthendelseEnabled) {
-            val identhendelseService = IdenthendelseService(
-                database = applicationDatabase,
-                pdlClient = pdlClient,
-            )
-            val identhendelseConsumerService = IdenthendelseConsumerService(
-                identhendelseService = identhendelseService,
-            )
-            launchKafkaTaskIdenthendelse(
-                applicationState = applicationState,
-                kafkaEnvironment = environment.kafka,
-                kafkaIdenthendelseConsumerService = identhendelseConsumerService,
-            )
-        }
+        val identhendelseService = IdenthendelseService(
+            database = applicationDatabase,
+            pdlClient = pdlClient,
+        )
+        val identhendelseConsumerService = IdenthendelseConsumerService(
+            identhendelseService = identhendelseService,
+        )
+        launchKafkaTaskIdenthendelse(
+            applicationState = applicationState,
+            kafkaEnvironment = environment.kafka,
+            kafkaIdenthendelseConsumerService = identhendelseConsumerService,
+        )
 
         launchCronjobModule(
             applicationState = applicationState,
