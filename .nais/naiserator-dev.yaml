@@ -40,6 +40,7 @@ spec:
       memory: 384Mi
   ingresses:
     - "https://isdialogmotekandidat.dev.intern.nav.no"
+    - "https://isdialogmotekandidat.intern.dev.nav.no"
   accessPolicy:
     inbound:
       rules:
