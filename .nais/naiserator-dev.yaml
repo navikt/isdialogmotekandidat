@@ -39,7 +39,6 @@ spec:
       cpu: 100m
       memory: 384Mi
   ingresses:
-    - "https://isdialogmotekandidat.dev.intern.nav.no"
     - "https://isdialogmotekandidat.intern.dev.nav.no"
   accessPolicy:
     inbound:
@@ -72,7 +71,7 @@ spec:
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
       value: "dev-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
-      value: "https://isoppfolgingstilfelle.dev.intern.nav.no"
+      value: "https://isoppfolgingstilfelle.intern.dev.nav.no"
     - name: PDL_CLIENT_ID
       value: "dev-fss.pdl.pdl-api"
     - name: PDL_URL
