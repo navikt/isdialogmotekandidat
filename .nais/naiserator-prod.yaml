@@ -52,8 +52,6 @@ spec:
         - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
       rules:
         - application: isoppfolgingstilfelle
-          namespace: teamsykefravr
-          cluster: prod-gcp
   gcp:
     sqlInstances:
       - type: POSTGRES_14
@@ -79,7 +77,7 @@ spec:
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
       value: "prod-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
-      value: "https://isoppfolgingstilfelle.intern.nav.no"
+      value: "http://isoppfolgingstilfelle"
     - name: PDL_CLIENT_ID
       value: "prod-fss.pdl.pdl-api"
     - name: PDL_URL
