@@ -52,6 +52,8 @@ spec:
         - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
       rules:
         - application: isoppfolgingstilfelle
+          namespace: teamsykefravr
+          cluster: prod-gcp
   gcp:
     sqlInstances:
       - type: POSTGRES_14
