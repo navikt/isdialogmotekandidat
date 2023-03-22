@@ -46,6 +46,12 @@ spec:
         - application: syfomodiaperson
           namespace: teamsykefravr
           cluster: prod-fss
+    outbound:
+      external:
+        - host: "pdl-api.prod-fss-pub.nais.io"
+        - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
+      rules:
+        - application: isoppfolgingstilfelle
   gcp:
     sqlInstances:
       - type: POSTGRES_14
