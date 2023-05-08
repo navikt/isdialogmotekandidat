@@ -59,20 +59,17 @@ class UnntakService(
     }
 
     suspend fun getUnntakStatistikk(
-        veilederIdent: String,
-        veilederToken: String,
+        unntakList: List<Unntak>,
+        token: String,
         callId: String,
     ): List<UnntakStatistikk> {
-        val unntakForventetFriskmelding = getUnntakForVeileder(veilederIdent).filter { unntak ->
-            unntak.arsak == UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER
-        }
         val personIdentOppfolgingstilfellerMap = ConcurrentHashMap<PersonIdentNumber, List<Oppfolgingstilfelle>>()
 
-        return unntakForventetFriskmelding.mapNotNull { unntak ->
+        return unntakList.mapNotNull { unntak ->
             val tilfellerForUnntakPerson = personIdentOppfolgingstilfellerMap.getOrPut(unntak.personIdent) {
                 oppfolgingstilfelleService.getAllOppfolgingstilfeller(
                     arbeidstakerPersonIdent = unntak.personIdent,
-                    veilederToken = veilederToken,
+                    veilederToken = token,
                     callId = callId,
                 )
             }
@@ -89,6 +86,6 @@ class UnntakService(
         }
     }
 
-    private fun getUnntakForVeileder(veilderIdent: String): List<Unntak> =
+    internal fun getUnntakForVeileder(veilderIdent: String): List<Unntak> =
         database.getUnntakForVeileder(veilederIdent = veilderIdent).toUnntakList()
 }

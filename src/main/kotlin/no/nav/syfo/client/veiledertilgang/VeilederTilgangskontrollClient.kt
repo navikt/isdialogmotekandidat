@@ -19,6 +19,7 @@ class VeilederTilgangskontrollClient(
 ) {
     private val httpClient = httpClientDefault()
     private val tilgangskontrollPersonUrl = "${clientEnvironment.baseUrl}$TILGANGSKONTROLL_PERSON_PATH"
+    private val tilgangskontrollPersonListUrl = "${clientEnvironment.baseUrl}$TILGANGSKONTROLL_PERSON_LIST_PATH"
 
     suspend fun hasAccess(
         callId: String,
@@ -43,27 +44,75 @@ class VeilederTilgangskontrollClient(
             if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.increment()
             } else {
-                handleUnexpectedResponseException(e.response, callId)
+                handleUnexpectedResponseException(response = e.response, resource = resourcePerson, callId = callId)
             }
             false
         }
     }
 
+    suspend fun hasAccessToPersonList(
+        personIdentList: List<PersonIdentNumber>,
+        token: String,
+        callId: String,
+    ): List<PersonIdentNumber> {
+        val onBehalfOfToken = azureAdClient.getOnBehalfOfToken(
+            scopeClientId = clientEnvironment.clientId,
+            token = token,
+        )?.accessToken ?: throw RuntimeException("Failed to request access to PersonList: Failed to get OBO token")
+
+        return try {
+            val response: HttpResponse = httpClient.post(tilgangskontrollPersonListUrl) {
+                header(HttpHeaders.Authorization, bearerHeader(token = onBehalfOfToken))
+                header(NAV_CALL_ID_HEADER, value = callId)
+                accept(ContentType.Application.Json)
+                contentType(ContentType.Application.Json)
+                setBody(personIdentList.map { it.value })
+            }
+            COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS.increment()
+            response.body<List<String>>().map { personIdent -> PersonIdentNumber(personIdent) }
+        } catch (e: ResponseException) {
+            if (e.response.status == HttpStatusCode.Forbidden) {
+                COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN.increment()
+            } else {
+                handleUnexpectedResponseException(response = e.response, resource = resourcePersonList, callId = callId)
+            }
+            emptyList()
+        }
+    }
+
     private fun handleUnexpectedResponseException(
         response: HttpResponse,
+        resource: String,
         callId: String,
     ) {
         log.error(
-            "Error while requesting access to person from syfo-tilgangskontroll with {}, {}",
+            "Error while requesting access to $resource from syfo-tilgangskontroll with {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
-            StructuredArguments.keyValue("callId", callId)
+            callIdArgument(callId)
         )
-        COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL.increment()
+        incrementFailCounter(resource)
+    }
+
+    private fun incrementFailCounter(resource: String) {
+        when (resource) {
+            resourcePerson -> {
+                COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL.increment()
+            }
+
+            resourcePersonList -> {
+                COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL.increment()
+            }
+        }
     }
 
     companion object {
         private val log = LoggerFactory.getLogger(VeilederTilgangskontrollClient::class.java)
 
-        const val TILGANGSKONTROLL_PERSON_PATH = "/syfo-tilgangskontroll/api/tilgang/navident/person"
+        private const val resourcePerson = "PERSON"
+        private const val resourcePersonList = "PERSONLIST"
+
+        private const val TILGANGSKONTROLL_COMMON_PATH = "/syfo-tilgangskontroll/api/tilgang/navident"
+        const val TILGANGSKONTROLL_PERSON_PATH = "$TILGANGSKONTROLL_COMMON_PATH/person"
+        const val TILGANGSKONTROLL_PERSON_LIST_PATH = "$TILGANGSKONTROLL_COMMON_PATH/brukere"
     }
 }
