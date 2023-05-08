@@ -37,7 +37,6 @@ class OppfolgingstilfelleService(
         veilederToken: String? = null,
         callId: String? = null,
     ): List<Oppfolgingstilfelle> {
-
         val oppfolgingstilfellePerson = oppfolgingstilfelleClient.getOppfolgingstilfellePerson(
             personIdent = arbeidstakerPersonIdent,
             veilederToken = veilederToken,
