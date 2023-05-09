@@ -260,6 +260,28 @@ class UnntakApiSpek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                         }
                     }
+                    it("returns empty unntaksstatistikk if no access to person with unntak") {
+                        val unntak =
+                            generateNewUnntakDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS).toUnntak(
+                                createdByIdent = UserConstants.VEILEDER_IDENT
+                            )
+                        database.connection.use {
+                            it.createUnntak(unntak)
+                            it.commit()
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlUnntakStatistikk) {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val unntakStatistikkList =
+                                objectMapper.readValue<List<UnntakStatistikk>>(response.content!!)
+                            unntakStatistikkList.size shouldBeEqualTo 0
+                        }
+                    }
                 }
             }
         }

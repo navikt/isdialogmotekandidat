@@ -4,12 +4,10 @@ import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
-import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
 import no.nav.syfo.unntak.api.domain.toUnntak
-import no.nav.syfo.unntak.database.createUnntak
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -34,25 +32,24 @@ class UnntakServiceSpek : Spek({
                 clearMocks(oppfolgingstilfelleServiceMock, dialogmotekandidatServiceMock)
             }
 
-            fun createUnntak(personIdentNumber: PersonIdentNumber) {
-                val newUnntakDTO = generateNewUnntakDTO(personIdent = personIdentNumber)
-                val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
-                database.connection.use {
-                    it.createUnntak(unntak)
-                    it.commit()
-                }
-            }
-
             describe("getUnntakStatistikk") {
                 it("Gets oppfolgingstilfeller once for each person with unntak") {
-                    createUnntak(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
-                    createUnntak(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_NOT_KANDIDAT)
-                    createUnntak(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+                    val unntakList = listOf(
+                        generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toUnntak(
+                            createdByIdent = UserConstants.VEILEDER_IDENT
+                        ),
+                        generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_NOT_KANDIDAT).toUnntak(
+                            createdByIdent = UserConstants.VEILEDER_IDENT
+                        ),
+                        generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toUnntak(
+                            createdByIdent = UserConstants.VEILEDER_IDENT
+                        )
+                    )
 
                     runBlocking {
                         unntakService.getUnntakStatistikk(
-                            veilederIdent = UserConstants.VEILEDER_IDENT,
-                            veilederToken = "asda",
+                            unntakList = unntakList,
+                            token = "asda",
                             callId = "andsa"
                         )
                     }

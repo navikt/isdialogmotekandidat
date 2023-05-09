@@ -9,7 +9,7 @@ import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.unntak.UnntakService
 import no.nav.syfo.unntak.api.domain.*
-import no.nav.syfo.unntak.domain.toUnntakDTOList
+import no.nav.syfo.unntak.domain.*
 import no.nav.syfo.util.*
 
 const val unntakApiBasePath = "/api/internad/v1/unntak"
@@ -59,10 +59,24 @@ fun Route.registerUnntakApi(
             }
         }
         get(unntakApiStatistikk) {
+            val token = getBearerHeader()!!
+            val callId = getCallId()
+            val veilderIdent = call.getNAVIdent()
+
+            val unntakForventetFriskmelding = unntakService.getUnntakForVeileder(veilderIdent = veilderIdent)
+                .filter { unntak -> unntak.arsak == UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER }
+            val personListWithVeilederAccess = veilederTilgangskontrollClient.hasAccessToPersonList(
+                personIdentList = unntakForventetFriskmelding.map { it.personIdent },
+                token = token,
+                callId = callId,
+            )
+            val unntakForventetFriskmeldingWithVeilederAccess =
+                unntakForventetFriskmelding.filter { unntak -> personListWithVeilederAccess.contains(unntak.personIdent) }
+
             val unntakStatistikkList = unntakService.getUnntakStatistikk(
-                veilederIdent = call.getNAVIdent(),
-                veilederToken = getBearerHeader()!!,
-                callId = getCallId(),
+                unntakList = unntakForventetFriskmeldingWithVeilederAccess,
+                token = token,
+                callId = callId,
             )
             call.respond(unntakStatistikkList)
         }
