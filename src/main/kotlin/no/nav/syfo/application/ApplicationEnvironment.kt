@@ -50,6 +50,7 @@ data class Environment(
             clientId = getEnvVar("PDL_CLIENT_ID"),
         ),
     ),
+    val stoppunktCronjobDelay: Long = getEnvVar("STOPPUNKT_CRONJOB_DELAY").toLong(),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

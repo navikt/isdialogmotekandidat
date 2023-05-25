@@ -20,7 +20,8 @@ fun launchCronjobModule(
         leaderPodClient = leaderPodClient
     )
     val dialogmotekandidatStoppunktCronjob = DialogmotekandidatStoppunktCronjob(
-        dialogmotekandidatService = dialogmotekandidatService
+        dialogmotekandidatService = dialogmotekandidatService,
+        intervalDelayMinutes = environment.stoppunktCronjobDelay,
     )
 
     launchBackgroundTask(
