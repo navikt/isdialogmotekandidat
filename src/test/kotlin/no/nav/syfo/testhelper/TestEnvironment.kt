@@ -52,6 +52,7 @@ fun testEnvironment(
             clientId = "pdlClientId",
         ),
     ),
+    stoppunktCronjobDelay = 60L * 4,
 )
 
 fun testAppState() = ApplicationState(

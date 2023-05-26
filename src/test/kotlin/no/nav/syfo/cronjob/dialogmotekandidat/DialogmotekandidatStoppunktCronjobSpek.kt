@@ -53,7 +53,8 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
             database = database,
         )
         val dialogmotekandidatStoppunktCronjob = DialogmotekandidatStoppunktCronjob(
-            dialogmotekandidatService = dialogmotekandidatService
+            dialogmotekandidatService = dialogmotekandidatService,
+            externalMockEnvironment.environment.stoppunktCronjobDelay,
         )
 
         beforeEachTest {
