@@ -1,6 +1,7 @@
 package no.nav.syfo.client.veiledertilgang
 
 import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.Timer
 import no.nav.syfo.application.metric.METRICS_NS
 import no.nav.syfo.application.metric.METRICS_REGISTRY
 
@@ -32,4 +33,10 @@ val COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL: Counter = Counter.builder(CALL_TIL
     .register(METRICS_REGISTRY)
 val COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN: Counter = Counter.builder(CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN)
     .description("Counts the number of forbidden calls to syfo-tilgangskontroll - persons")
+    .register(METRICS_REGISTRY)
+
+const val CALL_TILGANGSKONTROLL_PERSONS_TIMER = "${CALL_TILGANGSKONTROLL_PERSONS_BASE}_timer"
+val HISTOGRAM_CALL_TILGANGSKONTROLL_PERSONS_TIMER: Timer = Timer
+    .builder(CALL_TILGANGSKONTROLL_PERSONS_TIMER)
+    .description("Timer for calls to tilgangskontroll persons")
     .register(METRICS_REGISTRY)

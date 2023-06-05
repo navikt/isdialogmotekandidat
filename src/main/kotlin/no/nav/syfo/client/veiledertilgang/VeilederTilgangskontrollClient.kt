@@ -12,6 +12,7 @@ import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.util.*
 import org.slf4j.LoggerFactory
+import java.time.Duration
 
 class VeilederTilgangskontrollClient(
     private val azureAdClient: AzureAdClient,
@@ -60,6 +61,7 @@ class VeilederTilgangskontrollClient(
             token = token,
         )?.accessToken ?: throw RuntimeException("Failed to request access to PersonList: Failed to get OBO token")
 
+        val starttime = System.currentTimeMillis()
         return try {
             val response: HttpResponse = httpClient.post(tilgangskontrollPersonListUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(token = onBehalfOfToken))
@@ -77,6 +79,9 @@ class VeilederTilgangskontrollClient(
                 handleUnexpectedResponseException(response = e.response, resource = resourcePersonList, callId = callId)
             }
             emptyList()
+        } finally {
+            val duration = Duration.ofMillis(System.currentTimeMillis() - starttime)
+            HISTOGRAM_CALL_TILGANGSKONTROLL_PERSONS_TIMER.record(duration)
         }
     }
 
