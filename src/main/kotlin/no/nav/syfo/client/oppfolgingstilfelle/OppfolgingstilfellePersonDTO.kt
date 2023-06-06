@@ -3,6 +3,8 @@ package no.nav.syfo.client.oppfolgingstilfelle
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
+import no.nav.syfo.util.isBeforeOrEqual
+import no.nav.syfo.util.tomorrow
 import java.time.LocalDate
 
 data class OppfolgingstilfellePersonDTO(
@@ -29,3 +31,13 @@ fun OppfolgingstilfelleDTO.toOppfolgingstilfelle(
     virksomhetsnummerList = virksomhetsnummerList.map { Virksomhetsnummer(it) },
     dodsdato = dodsdato,
 )
+
+fun OppfolgingstilfellePersonDTO?.toOppfolgingstilfelleList(personIdent: PersonIdentNumber): List<Oppfolgingstilfelle> {
+    return this?.oppfolgingstilfelleList?.filter { it.start.isBeforeOrEqual(tomorrow()) }
+        ?.map {
+            it.toOppfolgingstilfelle(
+                personIdent = personIdent,
+                dodsdato = this.dodsdato,
+            )
+        } ?: emptyList()
+}

@@ -16,7 +16,6 @@ import no.nav.syfo.unntak.database.domain.toUnntakList
 import no.nav.syfo.unntak.domain.*
 import no.nav.syfo.util.toLocalDateOslo
 import java.time.Duration
-import java.util.concurrent.ConcurrentHashMap
 
 class UnntakService(
     private val database: DatabaseInterface,
@@ -90,20 +89,15 @@ class UnntakService(
         token: String,
         callId: String,
     ): Map<Unntak, Oppfolgingstilfelle?> {
-        val personIdentOppfolgingstilfellerMap = ConcurrentHashMap<PersonIdentNumber, List<Oppfolgingstilfelle>>()
+        val personIdentOppfolgingstilfellerMap = oppfolgingstilfelleService.getAllOppfolgingstilfellerForPersons(
+            personIdents = unntakList.map { it.personIdent }.distinct(),
+            veilederToken = token,
+            callId = callId,
+        )
 
         return unntakList.associateWith { unntak ->
-            val tilfellerForUnntakPerson = personIdentOppfolgingstilfellerMap.getOrPut(unntak.personIdent) {
-                oppfolgingstilfelleService.getAllOppfolgingstilfeller(
-                    arbeidstakerPersonIdent = unntak.personIdent,
-                    veilederToken = token,
-                    callId = callId,
-                )
-            }
-
             val unntakDato = unntak.createdAt.toLocalDateOslo()
-            val tilfelleForUnntak = tilfellerForUnntakPerson.tilfelleForDate(unntakDato)
-            tilfelleForUnntak
+            personIdentOppfolgingstilfellerMap[unntak.personIdent]?.tilfelleForDate(unntakDato)
         }
     }
 

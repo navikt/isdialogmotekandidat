@@ -33,7 +33,7 @@ class UnntakServiceSpek : Spek({
             }
 
             describe("getUnntakStatistikk") {
-                it("Gets oppfolgingstilfeller once for each person with unntak") {
+                it("Gets oppfolgingstilfeller for all persons with unntak") {
                     val unntakList = listOf(
                         generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toUnntak(
                             createdByIdent = UserConstants.VEILEDER_IDENT
@@ -54,9 +54,12 @@ class UnntakServiceSpek : Spek({
                         )
                     }
 
-                    coVerify(exactly = 2) {
-                        oppfolgingstilfelleServiceMock.getAllOppfolgingstilfeller(
-                            any(),
+                    coVerify(exactly = 1) {
+                        oppfolgingstilfelleServiceMock.getAllOppfolgingstilfellerForPersons(
+                            listOf(
+                                UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                                UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_NOT_KANDIDAT
+                            ),
                             any(),
                             any()
                         )
