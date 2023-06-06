@@ -1,14 +1,17 @@
 package no.nav.syfo.testhelper.mock
 
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH
+import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSONS_PATH
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSON_PATH
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
 import no.nav.syfo.dialogmotekandidat.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.testhelper.UserConstants
+import no.nav.syfo.testhelper.UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_DEFAULT
 import no.nav.syfo.util.personIdentHeader
 import java.time.LocalDate
@@ -25,6 +28,13 @@ class OppfolgingstilfelleMock : MockServer() {
             call.respond(
                 oppfolgingstilfellePersonDTO(personIdentHeader())
             )
+        }
+        post(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSONS_PATH) {
+            val personidenter = call.receive<List<String>>()
+            val oppfolgingstilfellePersonDTOS = personidenter
+                .filter { it != PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value }
+                .map { oppfolgingstilfellePersonDTO(it) }
+            call.respond(oppfolgingstilfellePersonDTOS)
         }
     }
 

@@ -22,6 +22,8 @@ class OppfolgingstilfelleClient(
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH"
     private val personOppfolgingstilfelleVeilederUrl: String =
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSON_PATH"
+    private val personsOppfolgingstilfelleVeilederUrl: String =
+        "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSONS_PATH"
 
     private val httpClient = httpClientDefault()
 
@@ -55,6 +57,35 @@ class OppfolgingstilfelleClient(
         }
     }
 
+    suspend fun getOppfolgingstilfellePersons(
+        personIdents: List<PersonIdentNumber>,
+        veilederToken: String,
+        callId: String,
+    ): List<OppfolgingstilfellePersonDTO> {
+        return try {
+            val token = azureAdClient.getOnBehalfOfToken(clientEnvironment.clientId, veilederToken)
+                ?: throw RuntimeException("Could not get azuread access token")
+            val response: HttpResponse = httpClient.post(personsOppfolgingstilfelleVeilederUrl) {
+                header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
+                header(NAV_CALL_ID_HEADER, callId)
+                accept(ContentType.Application.Json)
+                contentType(ContentType.Application.Json)
+                setBody(personIdents.map { it.value })
+            }
+            response.body<List<OppfolgingstilfellePersonDTO>>().also {
+                COUNT_CALL_OPPFOLGINGSTILFELLE_PERSONS_SUCCESS.increment()
+            }
+        } catch (responseException: ResponseException) {
+            log.error(
+                "Error while requesting OppfolgingstilfellePerson for persons from Isoppfolgingstilfelle with {}, {}",
+                StructuredArguments.keyValue("statusCode", responseException.response.status.value),
+                callIdArgument(callId),
+            )
+            COUNT_CALL_OPPFOLGINGSTILFELLE_PERSONS_FAIL.increment()
+            throw responseException
+        }
+    }
+
     private suspend fun getAzureToken(token: String?) =
         if (token == null)
             azureAdClient.getSystemToken(clientEnvironment.clientId)
@@ -71,8 +102,13 @@ class OppfolgingstilfelleClient(
         const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH =
             "/api/system/v1/oppfolgingstilfelle/personident"
 
+        private const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_COMMON_PATH =
+            "/api/internad/v1/oppfolgingstilfelle"
+
         const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSON_PATH =
-            "/api/internad/v1/oppfolgingstilfelle/personident"
+            "$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_COMMON_PATH/personident"
+        const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSONS_PATH =
+            "$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_COMMON_PATH/persons"
 
         private val log = LoggerFactory.getLogger(OppfolgingstilfelleClient::class.java)
     }

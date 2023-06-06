@@ -1,11 +1,10 @@
 package no.nav.syfo.oppfolgingstilfelle
 
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.client.oppfolgingstilfelle.toOppfolgingstilfelle
+import no.nav.syfo.client.oppfolgingstilfelle.toOppfolgingstilfelleList
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
 import no.nav.syfo.oppfolgingstilfelle.domain.tilfelleForDate
-import no.nav.syfo.util.*
 import java.time.LocalDate
 
 class OppfolgingstilfelleService(
@@ -32,7 +31,7 @@ class OppfolgingstilfelleService(
         callId = callId,
     ).tilfelleForDate(date)
 
-    internal suspend fun getAllOppfolgingstilfeller(
+    private suspend fun getAllOppfolgingstilfeller(
         arbeidstakerPersonIdent: PersonIdentNumber,
         veilederToken: String? = null,
         callId: String? = null,
@@ -42,12 +41,26 @@ class OppfolgingstilfelleService(
             veilederToken = veilederToken,
             callId = callId,
         )
-        return oppfolgingstilfellePerson?.oppfolgingstilfelleList?.filter { it.start.isBeforeOrEqual(tomorrow()) }
-            ?.map {
-                it.toOppfolgingstilfelle(
-                    personIdent = arbeidstakerPersonIdent,
-                    dodsdato = oppfolgingstilfellePerson.dodsdato,
-                )
-            } ?: emptyList()
+
+        return oppfolgingstilfellePerson.toOppfolgingstilfelleList(arbeidstakerPersonIdent)
+    }
+
+    internal suspend fun getAllOppfolgingstilfellerForPersons(
+        personIdents: List<PersonIdentNumber>,
+        veilederToken: String,
+        callId: String,
+    ): Map<PersonIdentNumber, List<Oppfolgingstilfelle>> {
+        val oppfolgingstilfellePersons = oppfolgingstilfelleClient.getOppfolgingstilfellePersons(
+            personIdents = personIdents,
+            veilederToken = veilederToken,
+            callId = callId,
+        )
+
+        return oppfolgingstilfellePersons.associate {
+            val personIdent = PersonIdentNumber(it.personIdent)
+            personIdent to it.toOppfolgingstilfelleList(
+                personIdent
+            )
+        }
     }
 }
