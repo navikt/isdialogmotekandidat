@@ -32,12 +32,12 @@ fun OppfolgingstilfelleDTO.toOppfolgingstilfelle(
     dodsdato = dodsdato,
 )
 
-fun OppfolgingstilfellePersonDTO?.toOppfolgingstilfelleList(personIdent: PersonIdentNumber): List<Oppfolgingstilfelle> {
-    return this?.oppfolgingstilfelleList?.filter { it.start.isBeforeOrEqual(tomorrow()) }
+fun OppfolgingstilfellePersonDTO?.toOppfolgingstilfelleList(personIdent: PersonIdentNumber): List<Oppfolgingstilfelle> =
+    this?.oppfolgingstilfelleList
+        ?.filter { it.start.isBeforeOrEqual(tomorrow()) }
         ?.map {
             it.toOppfolgingstilfelle(
                 personIdent = personIdent,
                 dodsdato = this.dodsdato,
             )
         } ?: emptyList()
-}
