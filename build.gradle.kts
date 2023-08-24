@@ -25,7 +25,7 @@ object Versions {
     const val spek = "2.0.19"
 }
 plugins {
-    kotlin("jvm") version "1.9.0"
+    kotlin("jvm") version "1.9.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.4.0"
 }
