@@ -6,19 +6,18 @@ version = "0.0.1"
 
 object Versions {
     const val confluent = "7.4.0"
-    const val flyway = "9.14.0"
+    const val flyway = "9.22.0"
     const val hikari = "5.0.1"
     const val isdialogmoteSchema = "1.0.5"
     const val jacksonDataType = "2.15.2"
-    const val kafka = "3.3.2"
-    const val kafkaEmbedded = "3.2.3"
+    const val kafka = "3.5.1"
     const val kluent = "1.73"
-    const val ktor = "2.3.1"
+    const val ktor = "2.3.4"
     const val logback = "1.4.7"
     const val logstashEncoder = "7.2"
-    const val micrometerRegistry = "1.11.0"
+    const val micrometerRegistry = "1.11.3"
     const val nimbusJoseJwt = "9.31"
-    const val mockk = "1.13.5"
+    const val mockk = "1.13.7"
     const val postgres = "42.5.1"
     val postgresEmbedded = if (Os.isFamily(Os.FAMILY_MAC)) "1.0.0" else "0.13.4"
     const val scala = "2.13.11"
@@ -89,7 +88,6 @@ dependencies {
     implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}", excludeLog4j)
     implementation("io.confluent:kafka-schema-registry:${Versions.confluent}", excludeLog4j)
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
-    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbedded}", excludeLog4j)
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusJoseJwt}")
     testImplementation("io.ktor:ktor-server-tests:${Versions.ktor}")

@@ -8,7 +8,6 @@ import no.nav.syfo.client.ClientsEnvironment
 import no.nav.syfo.client.azuread.AzureEnvironment
 
 fun testEnvironment(
-    kafkaBootstrapServers: String,
     azureOpenIdTokenEndpoint: String,
     syfoTilgangskontrollUrl: String,
     oppfolgingstilfelleUrl: String,
@@ -29,7 +28,7 @@ fun testEnvironment(
     ),
     electorPath = "/tmp",
     kafka = KafkaEnvironment(
-        aivenBootstrapServers = kafkaBootstrapServers,
+        aivenBootstrapServers = "kafkaBootstrapServers",
         aivenCredstorePassword = "credstorepassord",
         aivenKeystoreLocation = "keystore",
         aivenSecurityProtocol = "SSL",
