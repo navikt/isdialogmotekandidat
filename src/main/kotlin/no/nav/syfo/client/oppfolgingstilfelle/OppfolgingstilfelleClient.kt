@@ -1,5 +1,6 @@
 package no.nav.syfo.client.oppfolgingstilfelle
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -16,7 +17,8 @@ import java.util.UUID
 
 class OppfolgingstilfelleClient(
     private val azureAdClient: AzureAdClient,
-    private val clientEnvironment: ClientEnvironment
+    private val clientEnvironment: ClientEnvironment,
+    private val httpClient: HttpClient = httpClientDefault(),
 ) {
     private val personOppfolgingstilfelleSystemUrl: String =
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH"
@@ -24,8 +26,6 @@ class OppfolgingstilfelleClient(
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSON_PATH"
     private val personsOppfolgingstilfelleVeilederUrl: String =
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSONS_PATH"
-
-    private val httpClient = httpClientDefault()
 
     suspend fun getOppfolgingstilfellePerson(
         personIdent: PersonIdentNumber,

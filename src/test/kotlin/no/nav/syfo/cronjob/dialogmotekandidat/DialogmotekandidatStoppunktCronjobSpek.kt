@@ -39,10 +39,12 @@ class DialogmotekandidatStoppunktCronjobSpek : Spek({
         )
         val azureAdClient = AzureAdClient(
             azureEnvironment = externalMockEnvironment.environment.azure,
+            httpClient = externalMockEnvironment.mockHttpClient,
         )
         val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
             azureAdClient = azureAdClient,
             clientEnvironment = externalMockEnvironment.environment.clients.oppfolgingstilfelle,
+            httpClient = externalMockEnvironment.mockHttpClient,
         )
         val oppfolgingstilfelleService = OppfolgingstilfelleService(
             oppfolgingstilfelleClient = oppfolgingstilfelleClient,
