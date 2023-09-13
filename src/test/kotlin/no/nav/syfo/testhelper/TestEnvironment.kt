@@ -7,12 +7,7 @@ import no.nav.syfo.client.ClientEnvironment
 import no.nav.syfo.client.ClientsEnvironment
 import no.nav.syfo.client.azuread.AzureEnvironment
 
-fun testEnvironment(
-    azureOpenIdTokenEndpoint: String,
-    syfoTilgangskontrollUrl: String,
-    oppfolgingstilfelleUrl: String,
-    pdlUrl: String = "http://pdl",
-) = Environment(
+fun testEnvironment() = Environment(
     database = DatabaseEnvironment(
         host = "localhost",
         port = "5432",
@@ -24,7 +19,7 @@ fun testEnvironment(
         appClientId = "isdialogmotekandidat-client-id",
         appClientSecret = "isdialogmotekandidat-secret",
         appWellKnownUrl = "wellknown",
-        openidConfigTokenEndpoint = azureOpenIdTokenEndpoint,
+        openidConfigTokenEndpoint = "azureOpenIdTokenEndpoint",
     ),
     electorPath = "/tmp",
     kafka = KafkaEnvironment(
@@ -39,15 +34,15 @@ fun testEnvironment(
     ),
     clients = ClientsEnvironment(
         syfotilgangskontroll = ClientEnvironment(
-            baseUrl = syfoTilgangskontrollUrl,
+            baseUrl = "syfoTilgangskontrollUrl",
             clientId = "dev-fss.teamsykefravr.syfotilgangskontroll",
         ),
         oppfolgingstilfelle = ClientEnvironment(
-            baseUrl = oppfolgingstilfelleUrl,
+            baseUrl = "oppfolgingstilfelleUrl",
             clientId = "dev-gcp.teamsykefravr.isoppfolgingstilfelle",
         ),
         pdl = ClientEnvironment(
-            baseUrl = pdlUrl,
+            baseUrl = "pdlUrl",
             clientId = "pdlClientId",
         ),
     ),

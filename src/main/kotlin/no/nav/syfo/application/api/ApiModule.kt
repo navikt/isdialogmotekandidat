@@ -8,7 +8,6 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.auth.*
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.metric.registerMetricApi
-import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.client.wellknown.WellKnown
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
@@ -22,9 +21,9 @@ fun Application.apiModule(
     database: DatabaseInterface,
     environment: Environment,
     wellKnownInternalAzureAD: WellKnown,
-    azureAdClient: AzureAdClient,
     oppfolgingstilfelleService: OppfolgingstilfelleService,
     dialogmotekandidatService: DialogmotekandidatService,
+    veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
 ) {
     installMetrics()
     installCallId()
@@ -40,10 +39,6 @@ fun Application.apiModule(
     )
     installStatusPages()
 
-    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
-        azureAdClient = azureAdClient,
-        clientEnvironment = environment.clients.syfotilgangskontroll
-    )
     val unntakService = UnntakService(
         database = database,
         dialogmotekandidatService = dialogmotekandidatService,

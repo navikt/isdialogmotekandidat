@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
@@ -14,10 +15,12 @@ fun Application.testApiModule(
 ) {
     val azureAdClient = AzureAdClient(
         azureEnvironment = externalMockEnvironment.environment.azure,
+        httpClient = externalMockEnvironment.mockHttpClient,
     )
     val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
         azureAdClient = azureAdClient,
         clientEnvironment = externalMockEnvironment.environment.clients.oppfolgingstilfelle,
+        httpClient = externalMockEnvironment.mockHttpClient,
     )
     val oppfolgingstilfelleService = OppfolgingstilfelleService(
         oppfolgingstilfelleClient = oppfolgingstilfelleClient,
@@ -34,6 +37,10 @@ fun Application.testApiModule(
         wellKnownInternalAzureAD = externalMockEnvironment.wellKnownInternalAzureAD,
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatService = dialogmotekandidatService,
-        azureAdClient = azureAdClient,
+        veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
+            azureAdClient = azureAdClient,
+            clientEnvironment = externalMockEnvironment.environment.clients.syfotilgangskontroll,
+            httpClient = externalMockEnvironment.mockHttpClient,
+        ),
     )
 }

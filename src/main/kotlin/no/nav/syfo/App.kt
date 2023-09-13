@@ -13,6 +13,7 @@ import no.nav.syfo.application.database.databaseModule
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.client.wellknown.getWellKnown
 import no.nav.syfo.cronjob.launchCronjobModule
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
@@ -41,6 +42,10 @@ fun main() {
     )
     val azureAdClient = AzureAdClient(
         azureEnvironment = environment.azure
+    )
+    val veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
+        azureAdClient = azureAdClient,
+        clientEnvironment = environment.clients.syfotilgangskontroll
     )
     val pdlClient = PdlClient(
         azureAdClient = azureAdClient,
@@ -86,7 +91,7 @@ fun main() {
                 wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatService = dialogmotekandidatService,
-                azureAdClient = azureAdClient,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             )
         }
     }
