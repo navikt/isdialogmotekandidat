@@ -14,6 +14,7 @@ enum class DialogmotekandidatEndringArsak {
     STOPPUNKT,
     DIALOGMOTE_FERDIGSTILT,
     UNNTAK,
+    LUKKET, // TODO: Konsumenter må støtte denne
 }
 
 data class DialogmotekandidatEndring private constructor(
@@ -55,6 +56,14 @@ data class DialogmotekandidatEndring private constructor(
             personIdentNumber = personIdentNumber,
             kandidat = false,
             arsak = DialogmotekandidatEndringArsak.UNNTAK
+        )
+
+        fun lukket(
+            personIdentNumber: PersonIdentNumber,
+        ) = create(
+            personIdentNumber = personIdentNumber,
+            kandidat = false,
+            arsak = DialogmotekandidatEndringArsak.LUKKET
         )
 
         private fun create(

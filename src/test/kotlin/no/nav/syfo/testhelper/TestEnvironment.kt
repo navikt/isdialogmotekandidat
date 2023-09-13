@@ -6,6 +6,7 @@ import no.nav.syfo.application.kafka.KafkaEnvironment
 import no.nav.syfo.client.ClientEnvironment
 import no.nav.syfo.client.ClientsEnvironment
 import no.nav.syfo.client.azuread.AzureEnvironment
+import java.time.LocalDate
 
 fun testEnvironment() = Environment(
     database = DatabaseEnvironment(
@@ -47,6 +48,8 @@ fun testEnvironment() = Environment(
         ),
     ),
     stoppunktCronjobDelay = 60L * 4,
+    outdatedCronjobEnabled = true,
+    outdatedCutoff = LocalDate.now().minusYears(1),
 )
 
 fun testAppState() = ApplicationState(

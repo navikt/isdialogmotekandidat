@@ -1,12 +1,17 @@
 package no.nav.syfo.dialogmotekandidat.database
 
+import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.NoElementInsertedException
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.Instant
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.util.*
 
 const val queryCreateDialogmotekandidatEndring =
@@ -54,6 +59,23 @@ fun Connection.getDialogmotekandidatEndringListForPerson(
     it.executeQuery().toList { toPDialogmotekandidatEndringList() }
 }
 
+const val queryFindOutdatedDialogmotekandidater =
+    """
+        select * from dialogmotekandidat_endring d
+        where d.created_at = (select max(d2.created_at) from dialogmotekandidat_endring d2 where d2.personident = d.personident group by d.personident)
+        and d.created_at < ? and d.kandidat 
+        LIMIT 100;
+    """
+
+fun DatabaseInterface.findOutdatedDialogmotekandidater(
+    cutoff: LocalDateTime,
+): List<PDialogmotekandidatEndring> = this.connection.use { connection ->
+    connection.prepareStatement(queryFindOutdatedDialogmotekandidater).use {
+        it.setTimestamp(1, Timestamp.from(cutoff.toInstantOslo()))
+        it.executeQuery().toList { toPDialogmotekandidatEndringList() }
+    }
+}
+
 fun ResultSet.toPDialogmotekandidatEndringList() =
     PDialogmotekandidatEndring(
         id = getInt("id"),
@@ -63,3 +85,7 @@ fun ResultSet.toPDialogmotekandidatEndringList() =
         kandidat = getBoolean("kandidat"),
         arsak = getString("arsak"),
     )
+
+fun LocalDateTime.toInstantOslo(): Instant = toInstant(
+    ZoneId.of("Europe/Oslo").rules.getOffset(this)
+)
