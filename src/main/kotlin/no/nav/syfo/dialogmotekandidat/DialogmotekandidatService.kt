@@ -14,6 +14,7 @@ import no.nav.syfo.unntak.domain.Unntak
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
@@ -28,6 +29,8 @@ class DialogmotekandidatService(
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
+
+    fun getOutdatedDialogmotekandidater(cutoff: LocalDateTime) = database.findOutdatedDialogmotekandidater(cutoff).toDialogmotekandidatEndringList()
 
     suspend fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
@@ -76,6 +79,20 @@ class DialogmotekandidatService(
 
             connection.commit()
         }
+    }
+
+    fun createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
+        database.connection.use { connection ->
+            connection.createDialogmotekandidatEndring(
+                dialogmotekandidatEndring = dialogmotekandidatEndring
+            )
+            connection.commit()
+        }
+        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
+            dialogmotekandidatEndring = dialogmotekandidatEndring,
+            tilfelleStart = null,
+            unntak = null,
+        )
     }
 
     fun createDialogmotekandidatEndring(

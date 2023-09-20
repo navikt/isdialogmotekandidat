@@ -6,6 +6,7 @@ import no.nav.syfo.application.kafka.KafkaEnvironment
 import no.nav.syfo.client.ClientEnvironment
 import no.nav.syfo.client.ClientsEnvironment
 import no.nav.syfo.client.azuread.AzureEnvironment
+import java.time.LocalDate
 
 const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISDIALOGMOTEKANDIDAT_ISDIALOGMOTEKANDIDAT_DB"
 
@@ -51,6 +52,8 @@ data class Environment(
         ),
     ),
     val stoppunktCronjobDelay: Long = getEnvVar("STOPPUNKT_CRONJOB_DELAY").toLong(),
+    val outdatedCronjobEnabled: Boolean = getEnvVar("OUTDATED_DIALOGMOTEKANDIDAT_CRONJOB_ENABLED").toBoolean(),
+    val outdatedCutoff: LocalDate = LocalDate.parse(getEnvVar("OUTDATED_DIALOGMOTEKANDIDAT_CUTOFF")),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
