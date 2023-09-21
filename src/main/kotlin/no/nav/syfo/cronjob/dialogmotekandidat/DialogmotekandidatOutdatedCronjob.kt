@@ -1,5 +1,6 @@
 package no.nav.syfo.cronjob.dialogmotekandidat
 
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.cronjob.Cronjob
 import no.nav.syfo.cronjob.CronjobResult
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
@@ -34,6 +35,11 @@ class DialogmotekandidatOutdatedCronjob(
             }
         }
 
+        log.info(
+            "Completed dialogmote-kandidat-outdated job with result: {}, {}",
+            StructuredArguments.keyValue("failed", result.failed),
+            StructuredArguments.keyValue("updated", result.updated),
+        )
         return result
     }
 
