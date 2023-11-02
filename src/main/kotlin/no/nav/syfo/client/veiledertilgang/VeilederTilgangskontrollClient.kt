@@ -41,7 +41,7 @@ class VeilederTilgangskontrollClient(
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.increment()
-            tilgang.body<Tilgang>().harTilgang
+            tilgang.body<Tilgang>().erGodkjent
         } catch (e: ResponseException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.increment()
@@ -117,7 +117,7 @@ class VeilederTilgangskontrollClient(
         private const val resourcePerson = "PERSON"
         private const val resourcePersonList = "PERSONLIST"
 
-        private const val TILGANGSKONTROLL_COMMON_PATH = "/syfo-tilgangskontroll/api/tilgang/navident"
+        private const val TILGANGSKONTROLL_COMMON_PATH = "/api/tilgang/navident"
         const val TILGANGSKONTROLL_PERSON_PATH = "$TILGANGSKONTROLL_COMMON_PATH/person"
         const val TILGANGSKONTROLL_PERSON_LIST_PATH = "$TILGANGSKONTROLL_COMMON_PATH/brukere"
     }

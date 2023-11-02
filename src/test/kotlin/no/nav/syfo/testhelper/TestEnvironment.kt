@@ -34,9 +34,9 @@ fun testEnvironment() = Environment(
         aivenRegistryPassword = "registrypassword",
     ),
     clients = ClientsEnvironment(
-        syfotilgangskontroll = ClientEnvironment(
-            baseUrl = "syfoTilgangskontrollUrl",
-            clientId = "dev-fss.teamsykefravr.syfotilgangskontroll",
+        istilgangskontroll = ClientEnvironment(
+            baseUrl = "isTilgangskontrollUrl",
+            clientId = "dev-gcp.teamsykefravr.istilgangskontroll",
         ),
         oppfolgingstilfelle = ClientEnvironment(
             baseUrl = "oppfolgingstilfelleUrl",

@@ -50,7 +50,7 @@ spec:
         - host: "pdl-api.prod-fss-pub.nais.io"
       rules:
         - application: isoppfolgingstilfelle
-        - application: syfo-tilgangskontroll
+        - application: istilgangskontroll
   gcp:
     sqlInstances:
       - type: POSTGRES_14
@@ -69,10 +69,10 @@ spec:
   env:
     - name: KTOR_ENV
       value: "production"
-    - name: SYFOTILGANGSKONTROLL_CLIENT_ID
-      value: "prod-gcp.teamsykefravr.syfo-tilgangskontroll"
-    - name: SYFOTILGANGSKONTROLL_URL
-      value: "http://syfo-tilgangskontroll"
+    - name: ISTILGANGSKONTROLL_CLIENT_ID
+      value: "prod-gcp.teamsykefravr.istilgangskontroll"
+    - name: ISTILGANGSKONTROLL_URL
+      value: "http://istilgangskontroll"
     - name: ISOPPFOLGINGSTILFELLE_CLIENT_ID
       value: "prod-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL

@@ -39,7 +39,7 @@ fun Application.testApiModule(
         dialogmotekandidatService = dialogmotekandidatService,
         veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
             azureAdClient = azureAdClient,
-            clientEnvironment = externalMockEnvironment.environment.clients.syfotilgangskontroll,
+            clientEnvironment = externalMockEnvironment.environment.clients.istilgangskontroll,
             httpClient = externalMockEnvironment.mockHttpClient,
         ),
     )
