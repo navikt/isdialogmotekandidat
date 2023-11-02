@@ -7,7 +7,7 @@ import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient.Compani
 import no.nav.syfo.testhelper.UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 
-suspend fun MockRequestHandleScope.syfoTilgangskontrollResponse(request: HttpRequestData): HttpResponseData {
+suspend fun MockRequestHandleScope.isTilgangskontrollResponse(request: HttpRequestData): HttpResponseData {
     val requestUrl = request.url.encodedPath
     return if (requestUrl.endsWith(TILGANGSKONTROLL_PERSON_LIST_PATH)) {
         val personidenter = request.receiveBody<List<String>>()
@@ -16,8 +16,8 @@ suspend fun MockRequestHandleScope.syfoTilgangskontrollResponse(request: HttpReq
         respond(personIdenterWithAccess)
     } else {
         when (request.headers[NAV_PERSONIDENT_HEADER]) {
-            PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value -> respond(Tilgang(harTilgang = false))
-            else -> respond(Tilgang(harTilgang = true))
+            PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value -> respond(Tilgang(erGodkjent = false))
+            else -> respond(Tilgang(erGodkjent = true))
         }
     }
 }
