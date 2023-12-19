@@ -5,28 +5,28 @@ group = "no.nav.syfo"
 version = "0.0.1"
 
 object Versions {
-    const val confluent = "7.4.0"
-    const val flyway = "9.22.0"
+    const val confluent = "7.5.1"
+    const val flyway = "9.22.3"
     const val hikari = "5.0.1"
     const val isdialogmoteSchema = "1.0.5"
-    const val jacksonDataType = "2.15.2"
-    const val kafka = "3.5.1"
+    const val jacksonDataType = "2.16.0"
+    const val kafka = "3.6.0"
     const val kluent = "1.73"
-    const val ktor = "2.3.4"
-    const val logback = "1.4.7"
-    const val logstashEncoder = "7.2"
-    const val micrometerRegistry = "1.11.3"
-    const val nimbusJoseJwt = "9.31"
-    const val mockk = "1.13.7"
-    const val postgres = "42.5.1"
+    const val ktor = "2.3.7"
+    const val logback = "1.4.14"
+    const val logstashEncoder = "7.4"
+    const val micrometerRegistry = "1.12.0"
+    const val nimbusJoseJwt = "9.37.2"
+    const val mockk = "1.13.8"
+    const val postgres = "42.6.0"
     val postgresEmbedded = if (Os.isFamily(Os.FAMILY_MAC)) "1.0.0" else "0.13.4"
-    const val scala = "2.13.11"
+    const val scala = "2.13.12"
     const val spek = "2.0.19"
 }
 plugins {
-    kotlin("jvm") version "1.9.0"
+    kotlin("jvm") version "1.9.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.jlleitschuh.gradle.ktlint") version "11.4.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
 }
 
 val githubUser: String by project
@@ -80,13 +80,38 @@ dependencies {
         exclude(group = "log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}", excludeLog4j)
-    implementation("org.scala-lang:scala-library") {
-        version {
-            strictly(Versions.scala)
+    constraints {
+        implementation("org.apache.zookeeper:zookeeper") {
+            because("org.apache.kafka:kafka_2.13:${Versions.kafka} -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
+            version {
+                require("3.8.3")
+            }
+        }
+        implementation("org.scala-lang:scala-library") {
+            because("org.apache.kafka:kafka_2.13:${Versions.kafka} -> https://www.cve.org/CVERecord?id=CVE-2022-36944")
+            version {
+                require(Versions.scala)
+            }
         }
     }
     implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}", excludeLog4j)
+    constraints {
+        implementation("org.apache.avro:avro") {
+            because("io.confluent:kafka-avro-serializer:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
+            version {
+                require("1.11.3")
+            }
+        }
+    }
     implementation("io.confluent:kafka-schema-registry:${Versions.confluent}", excludeLog4j)
+    constraints {
+        implementation("org.json:json") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
+            version {
+                require("20231013")
+            }
+        }
+    }
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:${Versions.isdialogmoteSchema}")
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusJoseJwt}")
