@@ -84,7 +84,7 @@ dependencies {
         implementation("org.apache.zookeeper:zookeeper") {
             because("org.apache.kafka:kafka_2.13:${Versions.kafka} -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
             version {
-                require("3.7.2")
+                require("3.8.3")
             }
         }
         implementation("org.scala-lang:scala-library") {
