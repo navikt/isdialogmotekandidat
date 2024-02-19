@@ -7,12 +7,14 @@ import io.ktor.server.testing.*
 import io.mockk.mockk
 import no.nav.syfo.dialogmotekandidat.api.*
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.oppfolgingstilfelle.toOffsetDatetime
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.*
 import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -60,9 +62,60 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                     }
 
-                    it("returns kandidat=true for person that is Stoppunkt-Kandidat") {
+                    it("returns kandidat=false for person that was generated as Stoppunkt-Kandidat today") {
                         val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
                             personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        )
+                        database.createDialogmotekandidatEndring(
+                            dialogmotekandidatEndring = dialogmotekandidatEndring,
+                        )
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlKandidatPersonIdent) {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmotekandidatDTO =
+                                objectMapper.readValue<DialogmotekandidatDTO>(response.content!!)
+
+                            dialogmotekandidatDTO.kandidat.shouldBeFalse()
+                            dialogmotekandidatDTO.kandidatAt.shouldBeNull()
+                        }
+                    }
+
+                    it("returns kandidat=false for person that was generated as Stoppunkt-Kandidat 6 days ago") {
+                        val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
+                            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        ).copy(
+                            createdAt = LocalDate.now().minusDays(6).toOffsetDatetime(),
+                        )
+                        database.createDialogmotekandidatEndring(
+                            dialogmotekandidatEndring = dialogmotekandidatEndring,
+                        )
+
+                        with(
+                            handleRequest(HttpMethod.Get, urlKandidatPersonIdent) {
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+
+                            val dialogmotekandidatDTO =
+                                objectMapper.readValue<DialogmotekandidatDTO>(response.content!!)
+
+                            dialogmotekandidatDTO.kandidat.shouldBeFalse()
+                            dialogmotekandidatDTO.kandidatAt.shouldBeNull()
+                        }
+                    }
+                    it("returns kandidat=true for person that was generated as Stoppunkt-Kandidat 7 days ago") {
+                        val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
+                            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        ).copy(
+                            createdAt = LocalDate.now().minusDays(7).toOffsetDatetime(),
                         )
                         database.createDialogmotekandidatEndring(
                             dialogmotekandidatEndring = dialogmotekandidatEndring,
@@ -86,6 +139,7 @@ class DialogmotekandidatApiSpek : Spek({
                                 .toEpochMilli()
                         }
                     }
+
                     it("returns kandidat=false for person that is Stoppunkt-Kandidat but not in current oppfolgingstilfelle") {
                         val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
                             personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,

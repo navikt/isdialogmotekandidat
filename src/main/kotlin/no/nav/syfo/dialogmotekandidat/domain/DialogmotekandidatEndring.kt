@@ -14,7 +14,7 @@ enum class DialogmotekandidatEndringArsak {
     STOPPUNKT,
     DIALOGMOTE_FERDIGSTILT,
     UNNTAK,
-    LUKKET, // TODO: Konsumenter må støtte denne
+    LUKKET,
 }
 
 data class DialogmotekandidatEndring private constructor(
