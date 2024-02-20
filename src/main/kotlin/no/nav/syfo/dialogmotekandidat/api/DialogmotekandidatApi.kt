@@ -9,6 +9,7 @@ import no.nav.syfo.dialogmotekandidat.domain.toDialogmotekandidatDTO
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.util.*
+import java.time.LocalDate
 
 const val kandidatApiBasePath = "/api/internad/v1/kandidat"
 const val kandidatApiPersonidentPath = "/personident"
@@ -39,10 +40,10 @@ fun Route.registerDialogmotekandidatApi(
                 )
                 val kandidatDate = latestKandidatEndring?.createdAt?.toLocalDate()
                 val oppfolgingstilfelleStart = oppfolgingstilfelle?.tilfelleStart
+                val kandidatInOppfolgingstilfelle = oppfolgingstilfelleStart != null && kandidatDate != null && kandidatDate.isAfterOrEqual(oppfolgingstilfelleStart)
+                val sevenDaysPassedSinceKandidat = kandidatDate != null && kandidatDate.isBeforeOrEqual(LocalDate.now().minusDays(7))
 
-                val kandidatDTO = if (kandidatDate != null && oppfolgingstilfelleStart != null &&
-                    kandidatDate.isAfterOrEqual(oppfolgingstilfelleStart)
-                ) {
+                val kandidatDTO = if (kandidatInOppfolgingstilfelle && sevenDaysPassedSinceKandidat) {
                     latestKandidatEndring.toDialogmotekandidatDTO()
                 } else {
                     DialogmotekandidatDTO(
