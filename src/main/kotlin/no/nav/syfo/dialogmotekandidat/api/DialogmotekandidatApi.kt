@@ -40,11 +40,10 @@ fun Route.registerDialogmotekandidatApi(
                 )
                 val kandidatDate = latestKandidatEndring?.createdAt?.toLocalDate()
                 val oppfolgingstilfelleStart = oppfolgingstilfelle?.tilfelleStart
+                val kandidatInOppfolgingstilfelle = oppfolgingstilfelleStart != null && kandidatDate != null && kandidatDate.isAfterOrEqual(oppfolgingstilfelleStart)
+                val sevenDaysPassedSinceKandidat = kandidatDate != null && kandidatDate.isBeforeOrEqual(LocalDate.now().minusDays(7))
 
-                val kandidatDTO = if (kandidatDate != null && oppfolgingstilfelleStart != null &&
-                    kandidatDate.isAfterOrEqual(oppfolgingstilfelleStart) &&
-                    kandidatDate.isBeforeOrEqual(LocalDate.now().minusDays(7))
-                ) {
+                val kandidatDTO = if (kandidatInOppfolgingstilfelle && sevenDaysPassedSinceKandidat) {
                     latestKandidatEndring.toDialogmotekandidatDTO()
                 } else {
                     DialogmotekandidatDTO(
