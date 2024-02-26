@@ -114,8 +114,8 @@ class DialogmotekandidatService(
         )
     }
 
-    fun getDialogmotekandidatEndring(uuid: UUID): DialogmotekandidatEndring {
-        return dialogmotekandidatRepository.getDialogmotekandidatEndring(uuid = uuid).toDialogmotekandidatEndring()
+    fun getDialogmotekandidatEndring(uuid: UUID): DialogmotekandidatEndring? {
+        return dialogmotekandidatRepository.getDialogmotekandidatEndring(uuid = uuid)?.toDialogmotekandidatEndring()
     }
 
     companion object {

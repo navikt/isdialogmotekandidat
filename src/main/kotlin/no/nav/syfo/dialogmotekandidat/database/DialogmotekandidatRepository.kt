@@ -9,13 +9,13 @@ import java.util.*
 
 class DialogmotekandidatRepository(private val database: DatabaseInterface) {
 
-    fun getDialogmotekandidatEndring(uuid: UUID): PDialogmotekandidatEndring =
+    fun getDialogmotekandidatEndring(uuid: UUID): PDialogmotekandidatEndring? =
         database.connection.use { connection ->
             connection.prepareStatement(GET_DIALOGMOTEENDRING_QUERY).use {
                 it.setString(1, uuid.toString())
                 it.executeQuery().toList { toPDialogmotekandidatEndringList() }
             }
-        }.first()
+        }.firstOrNull()
 
     companion object {
         private const val GET_DIALOGMOTEENDRING_QUERY =

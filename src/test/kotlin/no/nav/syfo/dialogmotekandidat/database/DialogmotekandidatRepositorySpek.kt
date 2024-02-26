@@ -26,14 +26,17 @@ class DialogmotekandidatRepositorySpek : Spek({
 
             describe("Successfully gets a dialogmotekandidatendring") {
                 val dialogmoteKandidatEndring = generateDialogmotekandidatEndringStoppunkt(kandidatPersonIdent)
-                database.connection.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmoteKandidatEndring)
+                database.connection.use { connection ->
+                    connection.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmoteKandidatEndring)
+                    connection.commit()
+                }
 
                 val insertedDialogmotekandidatEndring =
                     dialogmotekandidatRepository.getDialogmotekandidatEndring(dialogmoteKandidatEndring.uuid)
-                insertedDialogmotekandidatEndring.personIdent shouldBeEqualTo dialogmoteKandidatEndring.personIdentNumber
-                insertedDialogmotekandidatEndring.uuid shouldBeEqualTo dialogmoteKandidatEndring.uuid
-                insertedDialogmotekandidatEndring.arsak shouldBeEqualTo dialogmoteKandidatEndring.arsak
-                insertedDialogmotekandidatEndring.kandidat shouldBeEqualTo dialogmoteKandidatEndring.kandidat
+                insertedDialogmotekandidatEndring?.personIdent shouldBeEqualTo dialogmoteKandidatEndring.personIdentNumber
+                insertedDialogmotekandidatEndring?.uuid shouldBeEqualTo dialogmoteKandidatEndring.uuid
+                insertedDialogmotekandidatEndring?.arsak shouldBeEqualTo dialogmoteKandidatEndring.arsak.toString()
+                insertedDialogmotekandidatEndring?.kandidat shouldBeEqualTo dialogmoteKandidatEndring.kandidat
             }
         }
     }
