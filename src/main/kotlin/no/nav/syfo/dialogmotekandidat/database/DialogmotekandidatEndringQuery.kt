@@ -6,13 +6,10 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
 import java.sql.Connection
-import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.util.*
 
 const val queryCreateDialogmotekandidatEndring =
     """
@@ -75,16 +72,6 @@ fun DatabaseInterface.findOutdatedDialogmotekandidater(
         it.executeQuery().toList { toPDialogmotekandidatEndringList() }
     }
 }
-
-fun ResultSet.toPDialogmotekandidatEndringList() =
-    PDialogmotekandidatEndring(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        createdAt = getObject("created_at", OffsetDateTime::class.java),
-        personIdent = PersonIdentNumber(getString("personident")),
-        kandidat = getBoolean("kandidat"),
-        arsak = getString("arsak"),
-    )
 
 fun LocalDateTime.toInstantOslo(): Instant = toInstant(
     ZoneId.of("Europe/Oslo").rules.getOffset(this)

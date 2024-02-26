@@ -17,6 +17,7 @@ import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.client.wellknown.getWellKnown
 import no.nav.syfo.cronjob.launchCronjobModule
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
+import no.nav.syfo.dialogmotekandidat.database.DialogmotekandidatRepository
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.dialogmotekandidat.kafka.kafkaDialogmotekandidatEndringProducerConfig
 import no.nav.syfo.dialogmotestatusendring.kafka.KafkaDialogmoteStatusEndringService
@@ -83,6 +84,7 @@ fun main() {
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
                 database = applicationDatabase,
+                dialogmotekandidatRepository = DialogmotekandidatRepository(applicationDatabase)
             )
             apiModule(
                 applicationState = applicationState,

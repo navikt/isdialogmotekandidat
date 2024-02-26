@@ -15,11 +15,13 @@ import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
     private val dialogmotekandidatEndringProducer: DialogmotekandidatEndringProducer,
     private val database: DatabaseInterface,
+    private val dialogmotekandidatRepository: DialogmotekandidatRepository,
 ) {
     fun getLatestDialogmotekandidatEndring(
         personIdent: PersonIdentNumber,
@@ -30,7 +32,8 @@ class DialogmotekandidatService(
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
 
-    fun getOutdatedDialogmotekandidater(cutoff: LocalDateTime) = database.findOutdatedDialogmotekandidater(cutoff).toDialogmotekandidatEndringList()
+    fun getOutdatedDialogmotekandidater(cutoff: LocalDateTime) =
+        database.findOutdatedDialogmotekandidater(cutoff).toDialogmotekandidatEndringList()
 
     suspend fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
@@ -109,6 +112,10 @@ class DialogmotekandidatService(
             tilfelleStart = tilfelleStart,
             unntak = unntak,
         )
+    }
+
+    fun getDialogmotekandidatEndring(uuid: UUID): DialogmotekandidatEndring {
+        return dialogmotekandidatRepository.getDialogmotekandidatEndring(uuid = uuid).toDialogmotekandidatEndring()
     }
 
     companion object {

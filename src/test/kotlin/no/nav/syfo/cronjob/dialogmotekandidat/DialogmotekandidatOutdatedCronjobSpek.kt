@@ -3,6 +3,7 @@ package no.nav.syfo.cronjob.dialogmotekandidat
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
+import no.nav.syfo.dialogmotekandidat.database.DialogmotekandidatRepository
 import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
@@ -36,6 +37,7 @@ class DialogmotekandidatOutdatedCronjobSpek : Spek({
             oppfolgingstilfelleService = mockk(),
             dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
             database = database,
+            dialogmotekandidatRepository = DialogmotekandidatRepository(database),
         )
         val dialogmotekandidatOutdatedCronjob = DialogmotekandidatOutdatedCronjob(
             outdatedDialogmotekandidatCutoff = cutoff,
@@ -82,15 +84,18 @@ class DialogmotekandidatOutdatedCronjobSpek : Spek({
                 val kandidatBeforeCutoff = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(
                     createdAt = cutoff.minusDays(1).toOffsetDatetime()
                 )
-                val otherKandidatBeforeCutoff = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_OLD_KANDIDAT).copy(
-                    createdAt = cutoff.minusDays(100).toOffsetDatetime()
-                )
-                val notKandidatBeforeCutoff = generateDialogmotekandidatEndringFerdigstilt(UserConstants.ARBEIDSTAKER_2_PERSONIDENTNUMBER).copy(
-                    createdAt = cutoff.minusDays(50).toOffsetDatetime()
-                )
-                val kandidatAfterCutoff = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_3_PERSONIDENTNUMBER).copy(
-                    createdAt = cutoff.plusDays(1).toOffsetDatetime()
-                )
+                val otherKandidatBeforeCutoff =
+                    generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_OLD_KANDIDAT).copy(
+                        createdAt = cutoff.minusDays(100).toOffsetDatetime()
+                    )
+                val notKandidatBeforeCutoff =
+                    generateDialogmotekandidatEndringFerdigstilt(UserConstants.ARBEIDSTAKER_2_PERSONIDENTNUMBER).copy(
+                        createdAt = cutoff.minusDays(50).toOffsetDatetime()
+                    )
+                val kandidatAfterCutoff =
+                    generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_3_PERSONIDENTNUMBER).copy(
+                        createdAt = cutoff.plusDays(1).toOffsetDatetime()
+                    )
                 listOf(
                     kandidatBeforeCutoff,
                     otherKandidatBeforeCutoff,
