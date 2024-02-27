@@ -6,6 +6,7 @@ import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
+import no.nav.syfo.dialogmotekandidat.database.DialogmotekandidatRepository
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
@@ -53,6 +54,7 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
             oppfolgingstilfelleService = oppfolgingstilfelleService,
             dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
             database = database,
+            dialogmotekandidatRepository = DialogmotekandidatRepository(database),
         )
 
         val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(
@@ -159,9 +161,10 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         kafkaProducer.send(capture(producerRecordSlot))
                     }
 
-                    val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
-                        personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                    )
+                    val latestDialogmoteFerdigstiltTidspunkt =
+                        database.connection.getLatestDialogmoteFerdigstiltForPerson(
+                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        )
                     latestDialogmoteFerdigstiltTidspunkt!!.toLocalDate() shouldBeEqualTo statusEndringTidspunkt.toLocalDate()
 
                     val latestDialogmotekandidatEndring =
@@ -192,9 +195,10 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                         kafkaProducer.send(any())
                     }
 
-                    val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
-                        personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                    )
+                    val latestDialogmoteFerdigstiltTidspunkt =
+                        database.connection.getLatestDialogmoteFerdigstiltForPerson(
+                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        )
                     latestDialogmoteFerdigstiltTidspunkt!!.toLocalDate() shouldBeEqualTo statusEndringTidspunkt.toLocalDate()
 
                     val latestDialogmotekandidatEndring =
@@ -215,9 +219,10 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                     verify(exactly = 0) {
                         kafkaProducer.send(any())
                     }
-                    val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
-                        personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                    )
+                    val latestDialogmoteFerdigstiltTidspunkt =
+                        database.connection.getLatestDialogmoteFerdigstiltForPerson(
+                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        )
                     latestDialogmoteFerdigstiltTidspunkt!!.toLocalDate() shouldBeEqualTo statusEndringTidspunkt.toLocalDate()
                 }
             }
@@ -245,9 +250,10 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                     verify(exactly = 0) {
                         kafkaProducer.send(any())
                     }
-                    val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
-                        personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                    )
+                    val latestDialogmoteFerdigstiltTidspunkt =
+                        database.connection.getLatestDialogmoteFerdigstiltForPerson(
+                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        )
                     latestDialogmoteFerdigstiltTidspunkt shouldBe null
                 }
                 it("creates no new DialogmotekandidatEndring when latest endring for person is kandidat and created after innkalt") {
@@ -263,9 +269,10 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                     verify(exactly = 0) {
                         kafkaProducer.send(any())
                     }
-                    val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
-                        personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                    )
+                    val latestDialogmoteFerdigstiltTidspunkt =
+                        database.connection.getLatestDialogmoteFerdigstiltForPerson(
+                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        )
                     latestDialogmoteFerdigstiltTidspunkt shouldBe null
                 }
                 it("creates no new DialogmotekandidatEndring when no latest endring for person") {
@@ -279,9 +286,10 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                     verify(exactly = 0) {
                         kafkaProducer.send(any())
                     }
-                    val latestDialogmoteFerdigstiltTidspunkt = database.connection.getLatestDialogmoteFerdigstiltForPerson(
-                        personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                    )
+                    val latestDialogmoteFerdigstiltTidspunkt =
+                        database.connection.getLatestDialogmoteFerdigstiltForPerson(
+                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        )
                     latestDialogmoteFerdigstiltTidspunkt shouldBe null
                 }
             }

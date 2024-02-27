@@ -6,6 +6,7 @@ import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
+import no.nav.syfo.dialogmotekandidat.database.DialogmotekandidatRepository
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 
@@ -29,6 +30,7 @@ fun Application.testApiModule(
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         database = externalMockEnvironment.database,
+        dialogmotekandidatRepository = DialogmotekandidatRepository(externalMockEnvironment.database),
     )
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,

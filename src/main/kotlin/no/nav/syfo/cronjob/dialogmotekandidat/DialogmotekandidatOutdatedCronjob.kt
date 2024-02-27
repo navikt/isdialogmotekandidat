@@ -7,13 +7,14 @@ import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import java.util.*
 
 class DialogmotekandidatOutdatedCronjob(
     private val outdatedDialogmotekandidatCutoff: LocalDate,
     private val dialogmotekandidatService: DialogmotekandidatService,
 ) : Cronjob {
     override val initialDelayMinutes: Long = 4
-    override val intervalDelayMinutes: Long = 10
+    override val intervalDelayMinutes: Long = 60 * 12
 
     override suspend fun run() {
         runJob()
@@ -24,7 +25,10 @@ class DialogmotekandidatOutdatedCronjob(
 
         val cutoff = outdatedDialogmotekandidatCutoff.atStartOfDay()
         val outdatedDialogmotekandidater = dialogmotekandidatService.getOutdatedDialogmotekandidater(cutoff)
-        outdatedDialogmotekandidater.forEach {
+        val withGivenUuids = uuids.mapNotNull { dialogmotekandidatService.getDialogmotekandidatEndring(it) }
+        val dialogmotekandidaterToBeRemoved = outdatedDialogmotekandidater + withGivenUuids
+
+        dialogmotekandidaterToBeRemoved.forEach {
             try {
                 val dialogmotekandidatLukket = DialogmotekandidatEndring.lukket(it.personIdentNumber)
                 dialogmotekandidatService.createDialogmotekandidatEndring(dialogmotekandidatLukket)
@@ -45,5 +49,7 @@ class DialogmotekandidatOutdatedCronjob(
 
     companion object {
         private val log = LoggerFactory.getLogger(DialogmotekandidatOutdatedCronjob::class.java)
+
+        private val uuids = listOf(UUID.fromString("51081a43-0370-481a-83f9-442ac476897d"))
     }
 }
