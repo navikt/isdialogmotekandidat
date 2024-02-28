@@ -7,9 +7,10 @@ version = "0.0.1"
 object Versions {
     const val confluent = "7.5.1"
     const val flyway = "9.22.3"
-    const val hikari = "5.0.1"
+    const val hikari = "5.1.0"
     const val isdialogmoteSchema = "1.0.5"
     const val jacksonDataType = "2.16.1"
+    const val jetty = "9.4.54.v20240208"
     const val kafka = "3.6.1"
     const val kluent = "1.73"
     const val ktor = "2.3.8"
@@ -18,7 +19,7 @@ object Versions {
     const val micrometerRegistry = "1.12.2"
     const val nimbusJoseJwt = "9.37.3"
     const val mockk = "1.13.9"
-    const val postgres = "42.6.0"
+    const val postgres = "42.7.2"
     val postgresEmbedded = if (Os.isFamily(Os.FAMILY_MAC)) "1.0.0" else "0.13.4"
     const val scala = "2.13.12"
     const val spek = "2.0.19"
@@ -26,7 +27,7 @@ object Versions {
 plugins {
     kotlin("jvm") version "1.9.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
+    id("org.jlleitschuh.gradle.ktlint") version "11.6.0"
 }
 
 val githubUser: String by project
@@ -102,6 +103,12 @@ dependencies {
                 require("1.11.3")
             }
         }
+        implementation("org.apache.commons:commons-compress") {
+            because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
+            version {
+                require("1.26.0")
+            }
+        }
     }
     implementation("io.confluent:kafka-schema-registry:${Versions.confluent}", excludeLog4j)
     constraints {
@@ -109,6 +116,30 @@ dependencies {
             because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
             version {
                 require("20231013")
+            }
+        }
+        implementation("org.eclipse.jetty:jetty-server") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(Versions.jetty)
+            }
+        }
+        implementation("org.eclipse.jetty:jetty-xml") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(Versions.jetty)
+            }
+        }
+        implementation("org.eclipse.jetty:jetty-servlets") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(Versions.jetty)
+            }
+        }
+        implementation("org.eclipse.jetty.http2:http2-server") {
+            because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(Versions.jetty)
             }
         }
     }
