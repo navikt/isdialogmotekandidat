@@ -44,7 +44,7 @@ class PdlClient(
         val response: HttpResponse = httpClient.post(pdlEnvironment.baseUrl) {
             header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            header(TEMA_HEADER, ALLE_TEMA_HEADERVERDI)
+            header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
             header(NAV_CALL_ID_HEADER, callId)
             header(IDENTER_HEADER, IDENTER_HEADER)
             setBody(request)
@@ -80,6 +80,11 @@ class PdlClient(
 
     companion object {
         const val IDENTER_HEADER = "identer"
+
+        // Se behandlingskatalog https://behandlingskatalog.intern.nav.no/
+        // Behandling: Sykefraværsoppfølging: Dialogmøte
+        private const val BEHANDLINGSNUMMER_HEADER_KEY = "behandlingsnummer"
+        private const val BEHANDLINGSNUMMER_HEADER_VALUE = "B380"
         private val logger = LoggerFactory.getLogger(PdlClient::class.java)
     }
 }
