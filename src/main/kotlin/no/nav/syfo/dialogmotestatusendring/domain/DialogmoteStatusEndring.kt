@@ -36,5 +36,3 @@ data class DialogmoteStatusEndring private constructor(
         )
     }
 }
-
-fun DialogmoteStatusEndring.isFerdigstilt() = this.type == DialogmoteStatusEndringType.FERDIGSTILT

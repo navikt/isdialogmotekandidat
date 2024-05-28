@@ -13,6 +13,7 @@ import java.util.*
 enum class DialogmotekandidatEndringArsak {
     STOPPUNKT,
     DIALOGMOTE_FERDIGSTILT,
+    DIALOGMOTE_LUKKET,
     UNNTAK,
     LUKKET,
 }
@@ -48,6 +49,14 @@ data class DialogmotekandidatEndring private constructor(
             personIdentNumber = personIdentNumber,
             kandidat = false,
             arsak = DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT
+        )
+
+        fun lukketDialogmote(
+            personIdentNumber: PersonIdentNumber,
+        ) = create(
+            personIdentNumber = personIdentNumber,
+            kandidat = false,
+            arsak = DialogmotekandidatEndringArsak.DIALOGMOTE_LUKKET
         )
 
         fun unntak(
