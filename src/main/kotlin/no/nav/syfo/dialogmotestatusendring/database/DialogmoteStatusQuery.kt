@@ -16,8 +16,9 @@ const val queryCreateDialogmoteStatus =
         created_at,
         personident,
         mote_tidspunkt,
-        ferdigstilt_tidspunkt
-    ) values (DEFAULT, ?, ?, ?, ?, ?)
+        status_tidspunkt,
+        status_type
+    ) values (DEFAULT, ?, ?, ?, ?, ?, ?)
     RETURNING id
     """
 
@@ -30,7 +31,8 @@ fun Connection.createDialogmoteStatus(
         it.setObject(2, dialogmoteStatusEndring.createdAt)
         it.setString(3, dialogmoteStatusEndring.personIdentNumber.value)
         it.setObject(4, dialogmoteStatusEndring.moteTidspunkt)
-        it.setObject(5, dialogmoteStatusEndring.ferdigstiltTidspunkt)
+        it.setObject(5, dialogmoteStatusEndring.statusTidspunkt)
+        it.setString(6, dialogmoteStatusEndring.type.name)
         it.executeQuery().toList { getInt("id") }
     }
 
@@ -44,10 +46,10 @@ fun Connection.createDialogmoteStatus(
 
 const val queryGetLatestDialogmoteFerdigstiltForPerson =
     """
-        SELECT ferdigstilt_tidspunkt 
+        SELECT status_tidspunkt 
         FROM DIALOGMOTESTATUS
-        WHERE personident = ?
-        ORDER BY ferdigstilt_tidspunkt DESC;
+        WHERE personident = ? AND status_type = 'FERDIGSTILT'
+        ORDER BY status_tidspunkt DESC;
     """
 
 fun Connection.getLatestDialogmoteFerdigstiltForPerson(

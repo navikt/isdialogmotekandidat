@@ -18,7 +18,7 @@ data class DialogmoteStatusEndring private constructor(
     val type: DialogmoteStatusEndringType,
     val createdAt: OffsetDateTime,
     val moteTidspunkt: OffsetDateTime,
-    val ferdigstiltTidspunkt: OffsetDateTime,
+    val statusTidspunkt: OffsetDateTime,
 ) {
     companion object {
         fun create(kafkaDialogmoteStatusEndring: KDialogmoteStatusEndring) = DialogmoteStatusEndring(
@@ -29,7 +29,7 @@ data class DialogmoteStatusEndring private constructor(
                 kafkaDialogmoteStatusEndring.getDialogmoteTidspunkt(),
                 ZoneOffset.UTC,
             ),
-            ferdigstiltTidspunkt = OffsetDateTime.ofInstant(
+            statusTidspunkt = OffsetDateTime.ofInstant(
                 kafkaDialogmoteStatusEndring.getStatusEndringTidspunkt(),
                 ZoneOffset.UTC,
             ),
