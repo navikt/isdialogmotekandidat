@@ -94,6 +94,12 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
             moteTidspunkt = moteTidspunkt,
             endringsTidspunkt = statusEndringTidspunkt,
         )
+        val kDialogmoteStatusEndringLukket = generateKDialogmoteStatusEndring(
+            personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+            statusEndringType = DialogmoteStatusEndringType.LUKKET,
+            moteTidspunkt = moteTidspunkt,
+            endringsTidspunkt = statusEndringTidspunkt,
+        )
         val dialogmotekandidatEndringCreatedAfterStatusEndring = generateDialogmotekandidatEndringStoppunkt(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
         ).copy(
@@ -120,6 +126,13 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
             3,
             "key3",
             kDialogmoteStatusEndringFerdigstilt
+        )
+        val kDialogmoteStatusEndringLukketRecord = ConsumerRecord(
+            DIALOGMOTE_STATUS_ENDRING_TOPIC,
+            partition,
+            4,
+            "key4",
+            kDialogmoteStatusEndringLukket
         )
         val mockKafkaConsumerDialogmoteStatusEndring = mockk<KafkaConsumer<String, KDialogmoteStatusEndring>>()
 
@@ -224,6 +237,83 @@ class KafkaDialogmoteStatusEndringServiceSpek : Spek({
                             personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER,
                         )
                     latestDialogmoteFerdigstiltTidspunkt!!.toLocalDate() shouldBeEqualTo statusEndringTidspunkt.toLocalDate()
+                }
+            }
+            describe("receive DialogmoteStatusEndring Lukket") {
+                beforeEachTest {
+                    every { mockKafkaConsumerDialogmoteStatusEndring.poll(any<Duration>()) } returns ConsumerRecords(
+                        mapOf(
+                            dialogmoteStatusEndringTopicPartition to listOf(
+                                kDialogmoteStatusEndringInnkaltRecord,
+                                kDialogmoteStatusEndringLukketRecord,
+                            )
+                        )
+                    )
+                }
+
+                it("creates new DialogmotekandidatEndring(not kandidat) when latest endring for person is kandidat and created before lukket") {
+                    database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndringCreatedBeforeStatusEndring)
+
+                    kafkaDialogmoteStatusEndringService.pollAndProcessRecords(
+                        kafkaConsumerDialogmoteStatusEndring = mockKafkaConsumerDialogmoteStatusEndring
+                    )
+
+                    verify(exactly = 1) {
+                        mockKafkaConsumerDialogmoteStatusEndring.commitSync()
+                    }
+                    val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+                    verify(exactly = 1) {
+                        kafkaProducer.send(capture(producerRecordSlot))
+                    }
+
+                    val latestDialogmotekandidatEndring =
+                        database.connection.getDialogmotekandidatEndringListForPerson(
+                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER
+                        ).firstOrNull()
+
+                    latestDialogmotekandidatEndring!!.kandidat shouldBeEqualTo false
+                    latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_LUKKET.name
+
+                    val kafkaDialogmoteKandidatEndring = producerRecordSlot.captured.value()
+                    kafkaDialogmoteKandidatEndring.personIdentNumber shouldBeEqualTo ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                    kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.DIALOGMOTE_LUKKET.name
+                    kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo false
+                    kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo null
+                }
+                it("creates no new DialogmotekandidatEndring when latest endring for person is kandidat and created after lukket") {
+                    database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndringCreatedAfterStatusEndring)
+
+                    kafkaDialogmoteStatusEndringService.pollAndProcessRecords(
+                        kafkaConsumerDialogmoteStatusEndring = mockKafkaConsumerDialogmoteStatusEndring
+                    )
+
+                    verify(exactly = 1) {
+                        mockKafkaConsumerDialogmoteStatusEndring.commitSync()
+                    }
+                    verify(exactly = 0) {
+                        kafkaProducer.send(any())
+                    }
+
+                    val latestDialogmotekandidatEndring =
+                        database.connection.getDialogmotekandidatEndringListForPerson(
+                            personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER
+                        ).firstOrNull()
+
+                    latestDialogmotekandidatEndring!!.uuid shouldBeEqualTo dialogmotekandidatEndringCreatedAfterStatusEndring.uuid
+                }
+                it("creates no new DialogmotekandidatEndring when no latest endring for person") {
+                    kafkaDialogmoteStatusEndringService.pollAndProcessRecords(
+                        kafkaConsumerDialogmoteStatusEndring = mockKafkaConsumerDialogmoteStatusEndring
+                    )
+
+                    verify(exactly = 1) {
+                        mockKafkaConsumerDialogmoteStatusEndring.commitSync()
+                    }
+                    verify(exactly = 0) {
+                        kafkaProducer.send(any())
+                    }
+
+                    database.connection.getDialogmotekandidatEndringListForPerson(personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER).shouldBeEmpty()
                 }
             }
             describe("receive DialogmoteStatusEndring not Ferdigstilt (Innkalt)") {

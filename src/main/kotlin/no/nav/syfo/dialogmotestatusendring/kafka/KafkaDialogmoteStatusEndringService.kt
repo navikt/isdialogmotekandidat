@@ -10,7 +10,7 @@ import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
 import no.nav.syfo.dialogmotekandidat.domain.latest
 import no.nav.syfo.dialogmotestatusendring.database.createDialogmoteStatus
 import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndring
-import no.nav.syfo.dialogmotestatusendring.domain.isFerdigstilt
+import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -63,9 +63,9 @@ class KafkaDialogmoteStatusEndringService(
         kafkaDialogmoteStatusEndring: KDialogmoteStatusEndring,
     ) {
         val dialogmoteStatusEndring = DialogmoteStatusEndring.create(kafkaDialogmoteStatusEndring)
-        if (!dialogmoteStatusEndring.isFerdigstilt()) {
-            COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_SKIPPED_NOT_FERDIGSTILT.increment()
-            log.info("Skipped processing of ${KDialogmoteStatusEndring::class.java.simpleName} record, not Ferdigstilt status-endring")
+        if (!dialogmoteStatusEndring.isRelevant()) {
+            COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_SKIPPED_NOT_RELEVANT.increment()
+            log.info("Skipped processing of ${KDialogmoteStatusEndring::class.java.simpleName} record, not relevant status-endring")
             return
         }
 
@@ -78,17 +78,12 @@ class KafkaDialogmoteStatusEndringService(
                 .toDialogmotekandidatEndringList()
                 .latest()
 
-        if (shouldCreateDialogmotekandidatEndring(
-                latestDialogmotekandidatEndring = latestDialogmotekandidatEndring,
-                ferdigstiltStatusEndring = dialogmoteStatusEndring
-            )
-        ) {
+        val isStatusendringAfterKandidat = latestDialogmotekandidatEndring?.kandidat == true && dialogmoteStatusEndring.createdAt.isAfter(latestDialogmotekandidatEndring.createdAt)
+        if (isStatusendringAfterKandidat) {
             val latestOppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                 arbeidstakerPersonIdent = dialogmoteStatusEndring.personIdentNumber,
             )
-            val newDialogmotekandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
-                personIdentNumber = dialogmoteStatusEndring.personIdentNumber,
-            )
+            val newDialogmotekandidatEndring = dialogmoteStatusEndring.toDialogmotekandidatEndring()
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
                 dialogmotekandidatEndring = newDialogmotekandidatEndring,
@@ -102,14 +97,18 @@ class KafkaDialogmoteStatusEndringService(
         }
     }
 
-    private fun shouldCreateDialogmotekandidatEndring(
-        latestDialogmotekandidatEndring: DialogmotekandidatEndring?,
-        ferdigstiltStatusEndring: DialogmoteStatusEndring,
-    ): Boolean {
-        return latestDialogmotekandidatEndring?.kandidat == true && ferdigstiltStatusEndring.createdAt.isAfter(
-            latestDialogmotekandidatEndring.createdAt
-        )
-    }
+    private fun DialogmoteStatusEndring.toDialogmotekandidatEndring() =
+        when (this.type) {
+            DialogmoteStatusEndringType.FERDIGSTILT -> DialogmotekandidatEndring.ferdigstiltDialogmote(
+                personIdentNumber = this.personIdentNumber,
+            )
+            DialogmoteStatusEndringType.LUKKET -> DialogmotekandidatEndring.lukketDialogmote(
+                personIdentNumber = this.personIdentNumber,
+            )
+            else -> throw IllegalArgumentException("Cannot create DialogmotekandidatEndring for ${this.type}")
+        }
+
+    private fun DialogmoteStatusEndring.isRelevant() = this.type == DialogmoteStatusEndringType.FERDIGSTILT || this.type == DialogmoteStatusEndringType.LUKKET
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaDialogmoteStatusEndringService::class.java)
