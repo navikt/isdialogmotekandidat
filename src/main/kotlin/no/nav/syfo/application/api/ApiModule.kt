@@ -12,6 +12,8 @@ import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.client.wellknown.WellKnown
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.api.registerDialogmotekandidatApi
+import no.nav.syfo.ikkeaktuell.IkkeAktuellService
+import no.nav.syfo.ikkeaktuell.api.registerIkkeAktuellApi
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
 import no.nav.syfo.unntak.UnntakService
 import no.nav.syfo.unntak.api.registerUnntakApi
@@ -60,6 +62,14 @@ fun Application.apiModule(
             registerUnntakApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 unntakService = unntakService,
+            )
+            registerIkkeAktuellApi(
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                ikkeAktuellService = IkkeAktuellService(
+                    database = database,
+                    dialogmotekandidatService = dialogmotekandidatService,
+                    oppfolgingstilfelleService = oppfolgingstilfelleService,
+                ),
             )
         }
     }
