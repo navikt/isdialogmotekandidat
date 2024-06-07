@@ -6,7 +6,7 @@ import java.util.*
 
 enum class IkkeAktuellArsak {
     ARBEIDSTAKER_AAP,
-    ARBEIDSTAKER_DOED,
+    ARBEIDSTAKER_DOD,
     DIALOGMOTE_AVHOLDT,
 }
 
