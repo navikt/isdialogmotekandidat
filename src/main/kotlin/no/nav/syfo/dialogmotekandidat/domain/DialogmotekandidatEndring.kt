@@ -15,6 +15,7 @@ enum class DialogmotekandidatEndringArsak {
     DIALOGMOTE_FERDIGSTILT,
     DIALOGMOTE_LUKKET,
     UNNTAK,
+    IKKE_AKTUELL,
     LUKKET,
 }
 
@@ -65,6 +66,14 @@ data class DialogmotekandidatEndring private constructor(
             personIdentNumber = personIdentNumber,
             kandidat = false,
             arsak = DialogmotekandidatEndringArsak.UNNTAK
+        )
+
+        fun ikkeAktuell(
+            personIdentNumber: PersonIdentNumber,
+        ) = create(
+            personIdentNumber = personIdentNumber,
+            kandidat = false,
+            arsak = DialogmotekandidatEndringArsak.IKKE_AKTUELL,
         )
 
         fun lukket(
