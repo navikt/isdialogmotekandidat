@@ -27,6 +27,11 @@ class UnntakService(
         veilederToken: String,
         callId: String,
     ) {
+        val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
+            arbeidstakerPersonIdent = unntak.personIdent,
+            veilederToken = veilederToken,
+            callId = callId,
+        )
         database.connection.use { connection ->
             val ikkeKandidat =
                 connection.getDialogmotekandidatEndringListForPerson(personIdent = unntak.personIdent)
@@ -37,11 +42,6 @@ class UnntakService(
             }
 
             connection.createUnntak(unntak = unntak)
-            val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
-                arbeidstakerPersonIdent = unntak.personIdent,
-                veilederToken = veilederToken,
-                callId = callId,
-            )
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.unntak(
                 personIdentNumber = unntak.personIdent,
             )
