@@ -29,7 +29,7 @@ class DialogmotekandidatEndringProducer(
                     key,
                     kafkaDialogmotekandidatEndring
                 )
-            ).get()
+            ).also { it.get() }
         } catch (e: Exception) {
             log.error(
                 "Exception was thrown when attempting to send KafkaDialogmotekandidatEndring with id {}: ${e.message}",
