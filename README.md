@@ -19,44 +19,8 @@
 
 #### Requirements
 
-* JDK 11
+* JDK 21
 
-## Download packages from Github Package Registry
-
-Certain packages (isdialogmote-schema) must be downloaded from Github Package Registry, which requires
-authentication. The packages can be downloaded via build.gradle:
-
-```
-val githubUser: String by project
-val githubPassword: String by project
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/navikt/isdialogmote-schema")
-        credentials {
-            username = githubUser
-            password = githubPassword
-        }
-    }
-}
-```
-
-`githubUser` and `githubPassword` are properties that are set in `~/.gradle/gradle.properties`:
-
-```
-githubUser=x-access-token
-githubPassword=<token>
-```
-
-Where `<token>` is a personal access token with scope `read:packages`(and SSO enabled).
-
-The variables can alternatively be configured as environment variables or used in the command lines:
-
-* `ORG_GRADLE_PROJECT_githubUser`
-* `ORG_GRADLE_PROJECT_githubPassword`
-
-```
-./gradlew -PgithubUser=x-access-token -PgithubPassword=[token]
-```
 
 ### Build
 
