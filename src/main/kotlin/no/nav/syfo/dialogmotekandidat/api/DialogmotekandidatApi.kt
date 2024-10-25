@@ -7,16 +7,21 @@ import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
 import no.nav.syfo.dialogmotekandidat.domain.toDialogmotekandidatDTO
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.ikkeaktuell.IkkeAktuellService
 import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
+import no.nav.syfo.unntak.UnntakService
 import no.nav.syfo.util.*
 import java.time.LocalDate
 
 const val kandidatApiBasePath = "/api/internad/v1/kandidat"
 const val kandidatApiPersonidentPath = "/personident"
+const val kandidatApiHistorikkPath = "/historikk"
 
 fun Route.registerDialogmotekandidatApi(
     dialogmotekandidatService: DialogmotekandidatService,
     oppfolgingstilfelleService: OppfolgingstilfelleService,
+    unntakService: UnntakService,
+    ikkeAktuellService: IkkeAktuellService,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
 ) {
     route(kandidatApiBasePath) {
@@ -52,6 +57,33 @@ fun Route.registerDialogmotekandidatApi(
                     )
                 }
                 call.respond(kandidatDTO)
+            }
+        }
+        get(kandidatApiHistorikkPath) {
+            val personIdent = personIdentHeader()?.let { personIdent ->
+                PersonIdentNumber(personIdent)
+            }
+                ?: throw IllegalArgumentException("Failed to get historikk for person: No $NAV_PERSONIDENT_HEADER supplied in request header")
+            validateVeilederAccess(
+                action = "Get historikk for person",
+                personIdentToAccess = personIdent,
+                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+            ) {
+                val dialogmotekandidatEndringer = dialogmotekandidatService.getDialogmotekandidatEndringer(
+                    personIdent = personIdent,
+                )
+                val unntak = unntakService.getUnntakList(
+                    personIdent = personIdent,
+                )
+                val ikkeAktuell = ikkeAktuellService.getIkkeAktuellList(
+                    personIdent = personIdent,
+                )
+                val historikkDTOS = HistorikkDTO.createHistorikkDTOs(
+                    dialogmotekandidatEndringer = dialogmotekandidatEndringer,
+                    unntak = unntak,
+                    ikkeAktuell = ikkeAktuell,
+                )
+                call.respond(historikkDTOS)
             }
         }
     }

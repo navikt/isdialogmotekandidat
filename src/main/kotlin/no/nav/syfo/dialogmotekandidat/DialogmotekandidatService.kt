@@ -25,9 +25,13 @@ class DialogmotekandidatService(
 ) {
     fun getLatestDialogmotekandidatEndring(
         personIdent: PersonIdentNumber,
+    ) = getDialogmotekandidatEndringer(personIdent = personIdent).firstOrNull()
+
+    fun getDialogmotekandidatEndringer(
+        personIdent: PersonIdentNumber,
     ) = database.connection.use { connection ->
         connection.getDialogmotekandidatEndringListForPerson(personIdent = personIdent)
-    }.toDialogmotekandidatEndringList().firstOrNull()
+    }.toDialogmotekandidatEndringList()
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
