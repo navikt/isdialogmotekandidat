@@ -60,30 +60,30 @@ fun Route.registerDialogmotekandidatApi(
             }
         }
         get(kandidatApiHistorikkPath) {
-            val personIdent = personIdentHeader()?.let { personIdent ->
+            val personident = personIdentHeader()?.let { personIdent ->
                 PersonIdentNumber(personIdent)
             }
                 ?: throw IllegalArgumentException("Failed to get historikk for person: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(
                 action = "Get historikk for person",
-                personIdentToAccess = personIdent,
+                personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 val dialogmotekandidatEndringer = dialogmotekandidatService.getDialogmotekandidatEndringer(
-                    personIdent = personIdent,
+                    personIdent = personident,
                 )
                 val unntak = unntakService.getUnntakList(
-                    personIdent = personIdent,
+                    personIdent = personident,
                 )
                 val ikkeAktuell = ikkeAktuellService.getIkkeAktuellList(
-                    personIdent = personIdent,
+                    personIdent = personident,
                 )
-                val historikkDTOS = HistorikkDTO.createHistorikkDTOs(
+                val historikkDTOs = HistorikkDTO.createHistorikkDTOs(
                     dialogmotekandidatEndringer = dialogmotekandidatEndringer,
                     unntak = unntak,
                     ikkeAktuell = ikkeAktuell,
                 )
-                call.respond(historikkDTOS)
+                call.respond(historikkDTOs)
             }
         }
     }
