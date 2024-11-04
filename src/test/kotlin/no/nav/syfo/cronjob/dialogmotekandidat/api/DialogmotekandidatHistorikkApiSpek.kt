@@ -2,9 +2,12 @@ package no.nav.syfo.cronjob.dialogmotekandidat.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
 import no.nav.syfo.dialogmotekandidat.api.HistorikkDTO
 import no.nav.syfo.dialogmotekandidat.api.HistorikkType
 import no.nav.syfo.dialogmotekandidat.api.kandidatApiBasePath
@@ -46,15 +49,16 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
     val historikkUrl = "$kandidatApiBasePath/$kandidatApiHistorikkPath"
 
     describe(DialogmotekandidatHistorikkApiSpek::class.java.simpleName) {
-        with(TestApplicationEngine()) {
-            start()
+        testApplication {
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database
 
-            application.testApiModule(
-                externalMockEnvironment = externalMockEnvironment,
-                dialogmotekandidatEndringProducer = mockk<DialogmotekandidatEndringProducer>(),
-            )
+            application {
+                testApiModule(
+                    externalMockEnvironment = externalMockEnvironment,
+                    dialogmotekandidatEndringProducer = mockk<DialogmotekandidatEndringProducer>(),
+                )
+            }
 
             beforeEachTest {
                 database.dropData()
@@ -104,38 +108,37 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
             describe("Get historikk for person") {
                 describe("Happy path") {
                     it("returns empty historikk for person not kandidat") {
-                        with(
-                            handleRequest(HttpMethod.Get, historikkUrl) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                        runTest {
+                            val response = client.get(historikkUrl) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            response.status shouldBeEqualTo HttpStatusCode.OK
 
-                            val historikk =
-                                objectMapper.readValue<List<HistorikkDTO>>(response.content!!)
+                            val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
                             historikk.size shouldBeEqualTo 0
                         }
                     }
 
                     it("returns historikk for person kandidat then dialogmøte ferdigstilt") {
-                        createKandidat()
-                        database.createDialogmotekandidatEndring(
-                            DialogmotekandidatEndring.ferdigstiltDialogmote(
-                                personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        runTest {
+                            createKandidat()
+                            database.createDialogmotekandidatEndring(
+                                DialogmotekandidatEndring.ferdigstiltDialogmote(
+                                    personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                                )
                             )
-                        )
-
-                        with(
-                            handleRequest(HttpMethod.Get, historikkUrl) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                            val response = client.get(historikkUrl) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            response.status shouldBeEqualTo HttpStatusCode.OK
 
-                            val historikk =
-                                objectMapper.readValue<List<HistorikkDTO>>(response.content!!)
+                            val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
                             historikk.size shouldBeEqualTo 1
 
                             historikk[0].type shouldBeEqualTo HistorikkType.KANDIDAT
@@ -145,23 +148,22 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                     }
 
                     it("returns historikk for person kandidat then lukket") {
-                        createKandidat()
-                        database.createDialogmotekandidatEndring(
-                            DialogmotekandidatEndring.lukket(
-                                personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        runTest {
+                            createKandidat()
+                            database.createDialogmotekandidatEndring(
+                                DialogmotekandidatEndring.lukket(
+                                    personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                                )
                             )
-                        )
-
-                        with(
-                            handleRequest(HttpMethod.Get, historikkUrl) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                            val response = client.get(historikkUrl) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            response.status shouldBeEqualTo HttpStatusCode.OK
 
-                            val historikk =
-                                objectMapper.readValue<List<HistorikkDTO>>(response.content!!)
+                            val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
                             historikk.size shouldBeEqualTo 2
 
                             historikk[0].type shouldBeEqualTo HistorikkType.LUKKET
@@ -175,19 +177,18 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                     }
 
                     it("returns historikk for person kandidat then unntak") {
-                        createKandidat()
-                        createUnntak()
-
-                        with(
-                            handleRequest(HttpMethod.Get, historikkUrl) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                        runTest {
+                            createKandidat()
+                            createUnntak()
+                            val response = client.get(historikkUrl) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            response.status shouldBeEqualTo HttpStatusCode.OK
 
-                            val historikk =
-                                objectMapper.readValue<List<HistorikkDTO>>(response.content!!)
+                            val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
                             historikk.size shouldBeEqualTo 2
 
                             historikk[0].type shouldBeEqualTo HistorikkType.UNNTAK
@@ -201,19 +202,18 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                     }
 
                     it("returns historikk for person kandidat then ikke aktuell") {
-                        createKandidat()
-                        createIkkeAktuell()
-
-                        with(
-                            handleRequest(HttpMethod.Get, historikkUrl) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                        runTest {
+                            createKandidat()
+                            createIkkeAktuell()
+                            val response = client.get(historikkUrl) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            response.status shouldBeEqualTo HttpStatusCode.OK
 
-                            val historikk =
-                                objectMapper.readValue<List<HistorikkDTO>>(response.content!!)
+                            val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
                             historikk.size shouldBeEqualTo 2
 
                             historikk[0].type shouldBeEqualTo HistorikkType.IKKE_AKTUELL
@@ -228,45 +228,41 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                 }
                 describe("Unhappy paths") {
                     it("returns status Unauthorized if no token is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, historikkUrl) {}
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                        runTest {
+                            val response = client.get(historikkUrl) {}
+                            response.status shouldBeEqualTo HttpStatusCode.Unauthorized
                         }
                     }
                     it("returns status Forbidden if denied access to person") {
-                        with(
-                            handleRequest(HttpMethod.Get, historikkUrl) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(
-                                    NAV_PERSONIDENT_HEADER,
-                                    UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value
-                                )
+                        runTest {
+                            val response = client.get(historikkUrl) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            response.status shouldBeEqualTo HttpStatusCode.Forbidden
                         }
                     }
                     it("should return status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, historikkUrl) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                        runTest {
+                            val response = client.get(historikkUrl) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            response.status shouldBeEqualTo HttpStatusCode.BadRequest
                         }
                     }
                     it("should return status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, historikkUrl) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(
-                                    NAV_PERSONIDENT_HEADER,
-                                    UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value.drop(1)
-                                )
+                        runTest {
+                            val response = client.get(historikkUrl) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value.drop(1)
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            response.status shouldBeEqualTo HttpStatusCode.BadRequest
                         }
                     }
                 }

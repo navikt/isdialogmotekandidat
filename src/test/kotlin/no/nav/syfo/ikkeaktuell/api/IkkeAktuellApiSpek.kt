@@ -1,9 +1,11 @@
 package no.nav.syfo.ikkeaktuell.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
+import kotlinx.coroutines.test.runTest
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
@@ -29,8 +31,7 @@ class IkkeAktuellApiSpek : Spek({
     val urlIkkeAktuellPersonIdent = "$ikkeAktuellApiBasePath/$ikkeAktuellApiPersonidentPath"
 
     describe(IkkeAktuellApiSpek::class.java.simpleName) {
-        with(TestApplicationEngine()) {
-            start()
+        testApplication {
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database
             val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
@@ -38,10 +39,12 @@ class IkkeAktuellApiSpek : Spek({
                 kafkaProducerDialogmotekandidatEndring = kafkaProducer,
             )
 
-            application.testApiModule(
-                externalMockEnvironment = externalMockEnvironment,
-                dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
-            )
+            application {
+                testApiModule(
+                    externalMockEnvironment = externalMockEnvironment,
+                    dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
+                )
+            }
 
             beforeEachTest {
                 database.dropData()
@@ -62,19 +65,20 @@ class IkkeAktuellApiSpek : Spek({
             describe("Create ikke aktuell for person") {
                 describe("Happy path") {
                     it("creates IkkeAktuell and DialogmotekandidatEndring (not kandidat) when person is kandidat") {
-                        val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
-                            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
-                        )
-                        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
-                        database.isIkkeKandidat(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER) shouldBe false
-                        with(
-                            handleRequest(HttpMethod.Post, urlIkkeAktuellPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        runTest {
+                            val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
+                                personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                            )
+                            database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
+                            database.isIkkeKandidat(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER) shouldBe false
+                            val response = client.post(urlIkkeAktuellPersonIdent) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    HttpHeaders.ContentType to ContentType.Application.Json.toString()
+                                }
                                 setBody(objectMapper.writeValueAsString(newIkkeAktuellDTO))
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Created
+                            response.status shouldBeEqualTo HttpStatusCode.Created
                             val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
                             verify(exactly = 1) {
                                 kafkaProducer.send(capture(producerRecordSlot))
@@ -100,40 +104,41 @@ class IkkeAktuellApiSpek : Spek({
                 }
                 describe("Unhappy paths") {
                     it("returns status Unauthorized if no token is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Post, urlIkkeAktuellPersonIdent) {}
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                        runTest {
+                            val response = client.post(urlIkkeAktuellPersonIdent) {}
+                            response.status shouldBeEqualTo HttpStatusCode.Unauthorized
                             verify(exactly = 0) {
                                 kafkaProducer.send(any())
                             }
                         }
                     }
                     it("returns status Forbidden if denied access to person") {
-                        val newIkkeAktuellDTOWithDeniedAccess =
-                            generateNewIkkeAktuellDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS)
-                        with(
-                            handleRequest(HttpMethod.Post, urlIkkeAktuellPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        runTest {
+                            val newIkkeAktuellDTOWithDeniedAccess =
+                                generateNewIkkeAktuellDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS)
+                            val response = client.post(urlIkkeAktuellPersonIdent) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    HttpHeaders.ContentType to ContentType.Application.Json.toString()
+                                }
                                 setBody(objectMapper.writeValueAsString(newIkkeAktuellDTOWithDeniedAccess))
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            response.status shouldBeEqualTo HttpStatusCode.Forbidden
                             verify(exactly = 0) {
                                 kafkaProducer.send(any())
                             }
                         }
                     }
                     it("returns Conflict when person is not kandidat") {
-                        with(
-                            handleRequest(HttpMethod.Post, urlIkkeAktuellPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        runTest {
+                            val response = client.post(urlIkkeAktuellPersonIdent) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    HttpHeaders.ContentType to ContentType.Application.Json.toString()
+                                }
                                 setBody(objectMapper.writeValueAsString(newIkkeAktuellDTO))
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
+                            response.status shouldBeEqualTo HttpStatusCode.Conflict
                             verify(exactly = 0) {
                                 kafkaProducer.send(any())
                             }

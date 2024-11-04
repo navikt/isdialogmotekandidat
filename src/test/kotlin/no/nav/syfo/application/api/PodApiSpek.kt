@@ -1,6 +1,9 @@
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
+import kotlinx.coroutines.test.runTest
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.api.registerPodApi
 import no.nav.syfo.testhelper.TestDatabase
@@ -13,88 +16,98 @@ import org.spekframework.spek2.style.specification.describe
 object PodApiSpek : Spek({
 
     describe("Successful liveness and readiness checks") {
-        with(TestApplicationEngine()) {
-            start()
+        testApplication {
             val database = TestDatabase()
-            application.routing {
-                registerPodApi(
-                    applicationState = ApplicationState(
-                        alive = true,
-                        ready = true
-                    ),
-                    database = database,
-                )
+
+            application {
+                routing {
+                    registerPodApi(
+                        applicationState = ApplicationState(
+                            alive = true,
+                            ready = true
+                        ),
+                        database = database,
+                    )
+                }
             }
 
             it("Returns ok on is_alive") {
-                with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
-                    response.status()?.isSuccess() shouldBeEqualTo true
-                    response.content shouldNotBeEqualTo null
+                runTest {
+                    val response = client.get("/internal/is_alive")
+                    response.status.isSuccess() shouldBeEqualTo true
+                    response.bodyAsText() shouldNotBeEqualTo null
                 }
             }
-            it("Returns ok on is_alive") {
-                with(handleRequest(HttpMethod.Get, "/internal/is_ready")) {
-                    response.status()?.isSuccess() shouldBeEqualTo true
-                    response.content shouldNotBeEqualTo null
+            it("Returns ok on is_ready") {
+                runTest {
+                    val response = client.get("/internal/is_ready")
+                    response.status.isSuccess() shouldBeEqualTo true
+                    response.bodyAsText() shouldNotBeEqualTo null
                 }
             }
         }
     }
 
     describe("Unsuccessful liveness and readiness checks") {
-        with(TestApplicationEngine()) {
-            start()
+        testApplication {
             val database = TestDatabase()
-            application.routing {
-                registerPodApi(
-                    ApplicationState(
-                        alive = false,
-                        ready = false
-                    ),
-                    database,
-                )
-            }
 
-            it("Returns internal server error when liveness check fails") {
-                with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
-                    response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
-                    response.content shouldNotBeEqualTo null
+            application {
+                routing {
+                    registerPodApi(
+                        applicationState = ApplicationState(
+                            alive = false,
+                            ready = false,
+                        ),
+                        database = database,
+                    )
                 }
             }
 
+            it("Returns internal server error when liveness check fails") {
+                runTest {
+                    val response = client.get("/internal/is_alive")
+                    response.status shouldBeEqualTo HttpStatusCode.InternalServerError
+                    response.bodyAsText() shouldNotBeEqualTo null
+                }
+            }
             it("Returns internal server error when readiness check fails") {
-                with(handleRequest(HttpMethod.Get, "/internal/is_ready")) {
-                    response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
-                    response.content shouldNotBeEqualTo null
+                runTest {
+                    val response = client.get("/internal/is_ready")
+                    response.status shouldBeEqualTo HttpStatusCode.InternalServerError
+                    response.bodyAsText() shouldNotBeEqualTo null
                 }
             }
         }
     }
     describe("Successful liveness and unsuccessful readiness checks when database not working") {
-        with(TestApplicationEngine()) {
-            start()
+        testApplication {
             val database = TestDatabaseNotResponding()
-            application.routing {
-                registerPodApi(
-                    ApplicationState(
-                        alive = true,
-                        ready = true
-                    ),
-                    database,
-                )
-            }
 
-            it("Returns ok on is_alive") {
-                with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
-                    response.status()?.isSuccess() shouldBeEqualTo true
-                    response.content shouldNotBeEqualTo null
+            application {
+                routing {
+                    registerPodApi(
+                        applicationState = ApplicationState(
+                            alive = true,
+                            ready = true,
+                        ),
+                        database = database,
+                    )
                 }
             }
 
+            it("Returns internal server error when liveness check fails") {
+                runTest {
+                    val response = client.get("/internal/is_alive")
+                    response.status.isSuccess() shouldBeEqualTo true
+                    response.bodyAsText() shouldNotBeEqualTo null
+                }
+            }
             it("Returns internal server error when readiness check fails") {
-                with(handleRequest(HttpMethod.Get, "/internal/is_ready")) {
-                    response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
-                    response.content shouldNotBeEqualTo null
+                runTest {
+                    val response = client.get("/internal/is_ready")
+                    response.status shouldBeEqualTo HttpStatusCode.InternalServerError
+                    response.bodyAsText() shouldNotBeEqualTo null
                 }
             }
         }

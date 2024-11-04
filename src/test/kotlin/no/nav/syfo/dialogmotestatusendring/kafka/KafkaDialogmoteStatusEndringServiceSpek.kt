@@ -29,9 +29,7 @@ import java.util.concurrent.Future
 
 class KafkaDialogmoteStatusEndringServiceSpek : Spek({
 
-    with(TestApplicationEngine()) {
-        start()
-
+    testApplication {
         val externalMockEnvironment = ExternalMockEnvironment.instance
         val database = externalMockEnvironment.database
         val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()

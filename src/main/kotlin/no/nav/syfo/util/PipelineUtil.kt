@@ -3,6 +3,7 @@ package no.nav.syfo.util
 import com.auth0.jwt.JWT
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
 
 const val JWT_CLAIM_AZP = "azp"
@@ -35,6 +36,6 @@ fun ApplicationCall.getNAVIdent(): String {
         ?: throw Error("Missing NAVident in private claims")
 }
 
-fun PipelineContext<out Unit, ApplicationCall>.personIdentHeader(): String? {
+fun RoutingContext.personIdentHeader(): String? {
     return this.call.request.headers[NAV_PERSONIDENT_HEADER]
 }

@@ -34,8 +34,8 @@ fun Route.registerUnntakApi(
                 )
                 unntakService.createUnntak(
                     unntak = unntak,
-                    veilederToken = getBearerHeader()!!,
-                    callId = getCallId(),
+                    veilederToken = call.getBearerHeader()!!,
+                    callId = call.getCallId(),
                 )
 
                 call.respond(HttpStatusCode.Created)
@@ -59,8 +59,8 @@ fun Route.registerUnntakApi(
             }
         }
         get(unntakApiStatistikk) {
-            val token = getBearerHeader()!!
-            val callId = getCallId()
+            val token = call.getBearerHeader()!!
+            val callId = call.getCallId()
             val veilderIdent = call.getNAVIdent()
 
             val unntakForventetFriskmelding = unntakService.getUnntakForVeileder(veilderIdent = veilderIdent)

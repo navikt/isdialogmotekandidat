@@ -33,8 +33,8 @@ fun Route.registerIkkeAktuellApi(
                 )
                 ikkeAktuellService.createIkkeAktuell(
                     ikkeAktuell = ikkeAktuell,
-                    veilederToken = getBearerHeader()!!,
-                    callId = getCallId(),
+                    veilederToken = call.getBearerHeader()!!,
+                    callId = call.getCallId(),
                 )
 
                 call.respond(HttpStatusCode.Created)

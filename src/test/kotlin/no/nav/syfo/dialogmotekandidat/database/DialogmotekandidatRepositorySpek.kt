@@ -14,8 +14,7 @@ class DialogmotekandidatRepositorySpek : Spek({
     val kandidatPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 
     describe(DialogmotekandidatRepositorySpek::class.java.simpleName) {
-        with(TestApplicationEngine()) {
-            start()
+        testApplication {
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database
             val dialogmotekandidatRepository = DialogmotekandidatRepository(database)

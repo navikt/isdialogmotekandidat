@@ -29,8 +29,7 @@ object IdenthendelseServiceSpek : Spek({
 
     describe(IdenthendelseServiceSpek::class.java.simpleName) {
 
-        with(TestApplicationEngine()) {
-            start()
+        testApplication {
 
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database

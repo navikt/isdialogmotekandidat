@@ -2,9 +2,12 @@ package no.nav.syfo.unntak.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
+import kotlinx.coroutines.test.runTest
 import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
@@ -30,8 +33,7 @@ class UnntakApiSpek : Spek({
     val urlUnntakStatistikk = "$unntakApiBasePath/$unntakApiStatistikk"
 
     describe(UnntakApiSpek::class.java.simpleName) {
-        with(TestApplicationEngine()) {
-            start()
+        testApplication {
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database
             val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
@@ -39,10 +41,12 @@ class UnntakApiSpek : Spek({
                 kafkaProducerDialogmotekandidatEndring = kafkaProducer,
             )
 
-            application.testApiModule(
-                externalMockEnvironment = externalMockEnvironment,
-                dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
-            )
+            application {
+                testApiModule(
+                    externalMockEnvironment = externalMockEnvironment,
+                    dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
+                )
+            }
 
             beforeEachTest {
                 database.dropData()
@@ -63,21 +67,23 @@ class UnntakApiSpek : Spek({
             describe("Get unntak for person") {
                 describe("Happy path") {
                     it("returns unntak for person if request is successful") {
-                        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
-                        database.connection.use {
-                            it.createUnntak(unntak)
-                            it.commit()
-                        }
+                        runTest {
 
-                        with(
-                            handleRequest(HttpMethod.Get, urlUnntakPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                            val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
+                            database.connection.use {
+                                it.createUnntak(unntak)
+                                it.commit()
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
 
-                            val unntakList = objectMapper.readValue<List<UnntakDTO>>(response.content!!)
+                            val response = client.get(urlUnntakPersonIdent) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value
+                                }
+                            }
+                            response.status shouldBeEqualTo HttpStatusCode.OK
+
+                            val unntakList = objectMapper.readValue<List<UnntakDTO>>(response.bodyAsText())
                             unntakList.size shouldBeEqualTo 1
 
                             val unntakDTO = unntakList.first()
@@ -92,45 +98,44 @@ class UnntakApiSpek : Spek({
                 }
                 describe("Unhappy paths") {
                     it("returns status Unauthorized if no token is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, urlUnntakPersonIdent) {}
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                        runTest {
+                            val response = client.get(urlUnntakPersonIdent) {}
+                            response.status shouldBeEqualTo HttpStatusCode.Unauthorized
                         }
                     }
                     it("returns status Forbidden if denied access to person") {
-                        with(
-                            handleRequest(HttpMethod.Get, urlUnntakPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(
-                                    NAV_PERSONIDENT_HEADER,
-                                    UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value
-                                )
+                        runTest {
+
+                            val response = client.get(urlUnntakPersonIdent) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            response.status shouldBeEqualTo HttpStatusCode.Forbidden
                         }
                     }
                     it("should return status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, urlUnntakPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                        runTest {
+
+                            val response = client.get(urlUnntakPersonIdent) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            response.status shouldBeEqualTo HttpStatusCode.BadRequest
                         }
                     }
                     it("should return status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, urlUnntakPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(
-                                    NAV_PERSONIDENT_HEADER,
-                                    UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value.drop(1)
-                                )
+                        runTest {
+
+                            val response = client.get(urlUnntakPersonIdent) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    NAV_PERSONIDENT_HEADER to UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value.drop(1)
+                                }
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            response.status shouldBeEqualTo HttpStatusCode.BadRequest
                         }
                     }
                 }
@@ -139,18 +144,20 @@ class UnntakApiSpek : Spek({
             describe("Create unntak for person") {
                 describe("Happy path") {
                     it("creates Unntak and DialogmotekandidatEndring (not kandidat) when person is kandidat") {
-                        val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
-                            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
-                        )
-                        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
-                        with(
-                            handleRequest(HttpMethod.Post, urlUnntakPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        runTest {
+                            val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
+                                personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                            )
+                            database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
+                            val response = client.post(urlUnntakPersonIdent) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                    HttpHeaders.ContentType to ContentType.Application.Json.toString()
+                                }
                                 setBody(objectMapper.writeValueAsString(newUnntakDTO))
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Created
+
+                            response.status shouldBeEqualTo HttpStatusCode.Created
                             val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
                             verify(exactly = 1) {
                                 kafkaProducer.send(capture(producerRecordSlot))
@@ -184,40 +191,44 @@ class UnntakApiSpek : Spek({
                 }
                 describe("Unhappy paths") {
                     it("returns status Unauthorized if no token is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Post, urlUnntakPersonIdent) {}
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                        runTest {
+                            val response = client.post(urlUnntakPersonIdent) {
+                                headers {
+                                    HttpHeaders.ContentType to ContentType.Application.Json.toString()
+                                }
+                                setBody(objectMapper.writeValueAsString(newUnntakDTO))
+                            }
+                            response.status shouldBeEqualTo HttpStatusCode.Unauthorized
                             verify(exactly = 0) {
                                 kafkaProducer.send(any())
                             }
                         }
                     }
                     it("returns status Forbidden if denied access to person") {
-                        val newUnntakDTOWithDeniedAccess =
-                            generateNewUnntakDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS)
-                        with(
-                            handleRequest(HttpMethod.Post, urlUnntakPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        runTest {
+                            val newUnntakDTOWithDeniedAccess =
+                                generateNewUnntakDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS)
+                            val response = client.post(urlUnntakPersonIdent) {
+                                headers {
+                                    HttpHeaders.ContentType to ContentType.Application.Json.toString()
+                                }
                                 setBody(objectMapper.writeValueAsString(newUnntakDTOWithDeniedAccess))
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                            response.status shouldBeEqualTo HttpStatusCode.Forbidden
                             verify(exactly = 0) {
                                 kafkaProducer.send(any())
                             }
                         }
                     }
                     it("returns Conflict when person is not kandidat") {
-                        with(
-                            handleRequest(HttpMethod.Post, urlUnntakPersonIdent) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        runTest {
+                            val response = client.post(urlUnntakPersonIdent) {
+                                headers {
+                                    HttpHeaders.ContentType to ContentType.Application.Json.toString()
+                                }
                                 setBody(objectMapper.writeValueAsString(newUnntakDTO))
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Conflict
+                            response.status shouldBeEqualTo HttpStatusCode.Conflict
                             verify(exactly = 0) {
                                 kafkaProducer.send(any())
                             }
@@ -228,21 +239,21 @@ class UnntakApiSpek : Spek({
             describe("Get unntaksstatistikk for veileder") {
                 describe("Happy path") {
                     it("returns unntaksstatistikk if request is successful") {
-                        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
-                        database.connection.use {
-                            it.createUnntak(unntak)
-                            it.commit()
-                        }
-
-                        with(
-                            handleRequest(HttpMethod.Get, urlUnntakStatistikk) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                        runTest {
+                            val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
+                            database.connection.use {
+                                it.createUnntak(unntak)
+                                it.commit()
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val response = client.get(urlUnntakStatistikk) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                }
+                            }
+                            response.status shouldBeEqualTo HttpStatusCode.OK
 
                             val unntakStatistikkList =
-                                objectMapper.readValue<List<UnntakStatistikk>>(response.content!!)
+                                objectMapper.readValue<List<UnntakStatistikk>>(response.bodyAsText())
                             unntakStatistikkList.size shouldBeEqualTo 1
 
                             val unntakStatistikk = unntakStatistikkList.first()
@@ -254,31 +265,30 @@ class UnntakApiSpek : Spek({
                 }
                 describe("Unhappy paths") {
                     it("returns status Unauthorized if no token is supplied") {
-                        with(
-                            handleRequest(HttpMethod.Get, urlUnntakPersonIdent) {}
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                        runTest {
+                            val response = client.get(urlUnntakStatistikk) {}
+                            response.status shouldBeEqualTo HttpStatusCode.Unauthorized
                         }
                     }
                     it("returns empty unntaksstatistikk if no access to person with unntak") {
-                        val unntak =
-                            generateNewUnntakDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS).toUnntak(
-                                createdByIdent = UserConstants.VEILEDER_IDENT
-                            )
-                        database.connection.use {
-                            it.createUnntak(unntak)
-                            it.commit()
-                        }
-
-                        with(
-                            handleRequest(HttpMethod.Get, urlUnntakStatistikk) {
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                        runTest {
+                            val unntak =
+                                generateNewUnntakDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS).toUnntak(
+                                    createdByIdent = UserConstants.VEILEDER_IDENT
+                                )
+                            database.connection.use {
+                                it.createUnntak(unntak)
+                                it.commit()
                             }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val response = client.get(urlUnntakStatistikk) {
+                                headers {
+                                    HttpHeaders.Authorization to bearerHeader(validToken)
+                                }
+                            }
+                            response.status shouldBeEqualTo HttpStatusCode.OK
 
                             val unntakStatistikkList =
-                                objectMapper.readValue<List<UnntakStatistikk>>(response.content!!)
+                                objectMapper.readValue<List<UnntakStatistikk>>(response.bodyAsText())
                             unntakStatistikkList.size shouldBeEqualTo 0
                         }
                     }

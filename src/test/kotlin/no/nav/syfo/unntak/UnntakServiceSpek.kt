@@ -13,8 +13,7 @@ import org.spekframework.spek2.style.specification.describe
 
 class UnntakServiceSpek : Spek({
     describe("UnntakService") {
-        with(TestApplicationEngine()) {
-            start()
+        testApplication {
 
             val externalMockEnvironment = ExternalMockEnvironment.instance
             val database = externalMockEnvironment.database

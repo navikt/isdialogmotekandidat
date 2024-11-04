@@ -38,8 +38,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
         dialogmotekandidatStoppunkt.stoppunktPlanlagt shouldBeEqualTo stoppunktPlanlagtExpected
     }
 
-    with(TestApplicationEngine()) {
-        start()
+    testApplication {
 
         val externalMockEnvironment = ExternalMockEnvironment.instance
         val database = externalMockEnvironment.database
