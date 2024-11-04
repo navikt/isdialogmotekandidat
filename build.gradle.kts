@@ -80,7 +80,14 @@ dependencies {
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion", excludeLog4j)
     implementation("io.confluent:kafka-schema-registry:$confluentVersion", excludeLog4j)
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
-
+    constraints {
+        implementation("org.apache.avro:avro") {
+            because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
+            version {
+                require("1.11.4")
+            }
+        }
+    }
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusJoseJwtVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
