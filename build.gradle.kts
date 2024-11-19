@@ -6,7 +6,7 @@ val flywayVersion = "10.17.2"
 val hikariVersion = "5.1.0"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.17.2"
-val jettyVersion = "9.4.54.v20240208"
+val jettyVersion = "9.4.56.v20240826"
 val kafkaVersion = "3.7.0"
 val kluentVersion = "1.73"
 val ktorVersion = "2.3.12"
@@ -75,7 +75,7 @@ dependencies {
         implementation("org.apache.zookeeper:zookeeper") {
             because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
             version {
-                require("3.8.3")
+                require("3.9.3")
             }
         }
         implementation("org.scala-lang:scala-library") {
@@ -90,13 +90,13 @@ dependencies {
         implementation("org.apache.avro:avro") {
             because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
             version {
-                require("1.11.3")
+                require("1.11.4")
             }
         }
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
-                require("1.26.0")
+                require("1.27.1")
             }
         }
     }
@@ -105,7 +105,7 @@ dependencies {
         implementation("org.json:json") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
             version {
-                require("20231013")
+                require("20240303")
             }
         }
         implementation("org.eclipse.jetty:jetty-server") {
