@@ -63,13 +63,23 @@ fun main() {
     lateinit var dialogmotekandidatService: DialogmotekandidatService
     lateinit var oppfolgingstilfelleService: OppfolgingstilfelleService
 
-    val applicationEngineEnvironment = applicationEngineEnvironment {
+    val applicationEngineEnvironment = applicationEnvironment {
         log = logger
         config = HoconApplicationConfig(ConfigFactory.load())
-        connector {
-            port = applicationPort
-        }
-        module {
+    }
+
+    val server = embeddedServer(
+        Netty,
+        environment = applicationEngineEnvironment,
+        configure = {
+            connector {
+                port = applicationPort
+            }
+            connectionGroupSize = 8
+            workerGroupSize = 8
+            callGroupSize = 16
+        },
+        module = {
             databaseModule(
                 databaseEnvironment = environment.database,
             )
@@ -95,56 +105,50 @@ fun main() {
                 dialogmotekandidatService = dialogmotekandidatService,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             )
+            monitor.subscribe(ApplicationStarted) {
+                applicationState.ready = true
+                logger.info("Application is ready, running Java VM ${Runtime.version()}")
+
+                val kafkaOppfolgingstilfellePersonService = KafkaOppfolgingstilfellePersonService(
+                    database = applicationDatabase,
+                )
+                val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(
+                    database = applicationDatabase,
+                    dialogmotekandidatService = dialogmotekandidatService,
+                    oppfolgingstilfelleService = oppfolgingstilfelleService,
+                )
+
+                launchKafkaTaskOppfolgingstilfellePerson(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
+                    kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
+                )
+                launchKafkaTaskDialogmoteStatusEndring(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
+                    kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
+                )
+
+                val identhendelseService = IdenthendelseService(
+                    database = applicationDatabase,
+                    pdlClient = pdlClient,
+                )
+                val identhendelseConsumerService = IdenthendelseConsumerService(
+                    identhendelseService = identhendelseService,
+                )
+                launchKafkaTaskIdenthendelse(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
+                    kafkaIdenthendelseConsumerService = identhendelseConsumerService,
+                )
+
+                launchCronjobModule(
+                    applicationState = applicationState,
+                    environment = environment,
+                    dialogmotekandidatService = dialogmotekandidatService,
+                )
+            }
         }
-    }
-
-    applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
-        applicationState.ready = true
-        logger.info("Application is ready, running Java VM ${Runtime.version()}")
-
-        val kafkaOppfolgingstilfellePersonService = KafkaOppfolgingstilfellePersonService(
-            database = applicationDatabase,
-        )
-        val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(
-            database = applicationDatabase,
-            dialogmotekandidatService = dialogmotekandidatService,
-            oppfolgingstilfelleService = oppfolgingstilfelleService,
-        )
-
-        launchKafkaTaskOppfolgingstilfellePerson(
-            applicationState = applicationState,
-            kafkaEnvironment = environment.kafka,
-            kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
-        )
-        launchKafkaTaskDialogmoteStatusEndring(
-            applicationState = applicationState,
-            kafkaEnvironment = environment.kafka,
-            kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
-        )
-
-        val identhendelseService = IdenthendelseService(
-            database = applicationDatabase,
-            pdlClient = pdlClient,
-        )
-        val identhendelseConsumerService = IdenthendelseConsumerService(
-            identhendelseService = identhendelseService,
-        )
-        launchKafkaTaskIdenthendelse(
-            applicationState = applicationState,
-            kafkaEnvironment = environment.kafka,
-            kafkaIdenthendelseConsumerService = identhendelseConsumerService,
-        )
-
-        launchCronjobModule(
-            applicationState = applicationState,
-            environment = environment,
-            dialogmotekandidatService = dialogmotekandidatService,
-        )
-    }
-
-    val server = embeddedServer(
-        factory = Netty,
-        environment = applicationEngineEnvironment,
     )
 
     Runtime.getRuntime().addShutdownHook(

@@ -14,17 +14,16 @@ class DialogmotekandidatRepositorySpek : Spek({
     val kandidatPersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 
     describe(DialogmotekandidatRepositorySpek::class.java.simpleName) {
-        with(TestApplicationEngine()) {
-            start()
-            val externalMockEnvironment = ExternalMockEnvironment.instance
-            val database = externalMockEnvironment.database
-            val dialogmotekandidatRepository = DialogmotekandidatRepository(database)
+        val externalMockEnvironment = ExternalMockEnvironment.instance
+        val database = externalMockEnvironment.database
+        val dialogmotekandidatRepository = DialogmotekandidatRepository(database)
 
-            afterEachTest {
-                database.dropData()
-            }
+        afterEachTest {
+            database.dropData()
+        }
 
-            describe("Successfully gets a dialogmotekandidatendring") {
+        describe("Successfully gets a dialogmotekandidatendring") {
+            testApplication {
                 val dialogmoteKandidatEndring = generateDialogmotekandidatEndringStoppunkt(kandidatPersonIdent)
                 database.connection.use { connection ->
                     connection.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmoteKandidatEndring)

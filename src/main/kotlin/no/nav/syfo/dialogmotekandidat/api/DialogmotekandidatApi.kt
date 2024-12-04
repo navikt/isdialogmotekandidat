@@ -1,6 +1,5 @@
 package no.nav.syfo.dialogmotekandidat.api
 
-import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
@@ -37,8 +36,8 @@ fun Route.registerDialogmotekandidatApi(
             ) {
                 val oppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                     arbeidstakerPersonIdent = personIdent,
-                    veilederToken = getBearerHeader(),
-                    callId = getCallId(),
+                    veilederToken = call.getBearerHeader(),
+                    callId = call.getCallId(),
                 )
                 val latestKandidatEndring = dialogmotekandidatService.getLatestDialogmotekandidatEndring(
                     personIdent = personIdent
