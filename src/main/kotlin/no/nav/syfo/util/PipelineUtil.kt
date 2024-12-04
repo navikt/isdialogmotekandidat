@@ -9,11 +9,11 @@ import io.ktor.util.pipeline.*
 const val JWT_CLAIM_AZP = "azp"
 const val JWT_CLAIM_NAVIDENT = "NAVident"
 
-fun PipelineContext<out Unit, ApplicationCall>.getBearerHeader(): String? {
+fun RoutingContext.getBearerHeader(): String? {
     return this.call.getBearerHeader()
 }
 
-fun PipelineContext<out Unit, ApplicationCall>.getCallId(): String {
+fun RoutingContext.getCallId(): String {
     return this.call.getCallId()
 }
 

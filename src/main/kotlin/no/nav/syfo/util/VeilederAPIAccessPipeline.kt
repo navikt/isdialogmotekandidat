@@ -11,9 +11,9 @@ suspend fun RoutingContext.validateVeilederAccess(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     requestBlock: suspend () -> Unit,
 ) {
-    val callId = this.call.getCallId()
+    val callId = getCallId()
 
-    val token = this.call.getBearerHeader()
+    val token = getBearerHeader()
         ?: throw IllegalArgumentException("Failed to complete the following action: $action. No Authorization header supplied")
 
     val hasVeilederAccess = veilederTilgangskontrollClient.hasAccess(

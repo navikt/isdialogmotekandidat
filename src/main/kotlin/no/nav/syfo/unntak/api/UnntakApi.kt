@@ -34,8 +34,8 @@ fun Route.registerUnntakApi(
                 )
                 unntakService.createUnntak(
                     unntak = unntak,
-                    veilederToken = call.getBearerHeader()!!,
-                    callId = call.getCallId(),
+                    veilederToken = getBearerHeader()!!,
+                    callId = getCallId(),
                 )
 
                 call.respond(HttpStatusCode.Created)
