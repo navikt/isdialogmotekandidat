@@ -59,8 +59,8 @@ fun Route.registerUnntakApi(
             }
         }
         get(unntakApiStatistikk) {
-            val token = call.getBearerHeader()!!
-            val callId = call.getCallId()
+            val token = getBearerHeader()!!
+            val callId = getCallId()
             val veilderIdent = call.getNAVIdent()
 
             val unntakForventetFriskmelding = unntakService.getUnntakForVeileder(veilderIdent = veilderIdent)
