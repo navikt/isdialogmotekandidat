@@ -66,7 +66,7 @@ fun Route.registerUnntakApi(
             val unntakForventetFriskmelding = unntakService.getUnntakForVeileder(veilderIdent = veilderIdent)
                 .filter { unntak -> unntak.arsak == UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER }
             val personListWithVeilederAccess = veilederTilgangskontrollClient.hasAccessToPersonList(
-                personIdentList = unntakForventetFriskmelding.map { it.personIdent },
+                personIdentList = unntakForventetFriskmelding.map { it.personIdent }.distinct(),
                 token = token,
                 callId = callId,
             )
