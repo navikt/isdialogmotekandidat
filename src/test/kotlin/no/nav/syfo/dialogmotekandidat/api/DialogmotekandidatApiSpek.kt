@@ -1,11 +1,9 @@
 package no.nav.syfo.dialogmotekandidat.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
@@ -23,7 +21,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class DialogmotekandidatApiSpek : Spek({
-    val objectMapper: ObjectMapper = configuredJacksonMapper()
     val urlKandidatPersonIdent = "$kandidatApiBasePath/$kandidatApiPersonidentPath"
 
     describe(DialogmotekandidatApiSpek::class.java.simpleName) {
@@ -67,9 +64,7 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO =
-                            objectMapper.readValue<DialogmotekandidatDTO>(response.bodyAsText())
-
+                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
                         dialogmotekandidatDTO.kandidat.shouldBeFalse()
                         dialogmotekandidatDTO.kandidatAt.shouldBeNull()
                     }
@@ -90,8 +85,7 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO =
-                            objectMapper.readValue<DialogmotekandidatDTO>(response.bodyAsText())
+                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
 
                         dialogmotekandidatDTO.kandidat.shouldBeFalse()
                         dialogmotekandidatDTO.kandidatAt.shouldBeNull()
@@ -115,9 +109,7 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO =
-                            objectMapper.readValue<DialogmotekandidatDTO>(response.bodyAsText())
-
+                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
                         dialogmotekandidatDTO.kandidat.shouldBeFalse()
                         dialogmotekandidatDTO.kandidatAt.shouldBeNull()
                     }
@@ -139,9 +131,7 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO =
-                            objectMapper.readValue<DialogmotekandidatDTO>(response.bodyAsText())
-
+                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
                         dialogmotekandidatDTO.kandidat.shouldBeTrue()
                         dialogmotekandidatDTO.kandidatAt?.toInstant(ZoneOffset.UTC)
                             ?.toEpochMilli() shouldBeEqualTo dialogmotekandidatEndring.createdAt.toLocalDateTimeOslo()
@@ -167,9 +157,7 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO =
-                            objectMapper.readValue<DialogmotekandidatDTO>(response.bodyAsText())
-
+                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
                         dialogmotekandidatDTO.kandidat.shouldBeFalse()
                     }
                 }
@@ -196,9 +184,7 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO =
-                            objectMapper.readValue<DialogmotekandidatDTO>(response.bodyAsText())
-
+                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
                         dialogmotekandidatDTO.kandidat.shouldBeFalse()
                         dialogmotekandidatDTO.kandidatAt.shouldBeNull()
                     }

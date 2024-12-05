@@ -1,6 +1,5 @@
 package no.nav.syfo.ikkeaktuell.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -18,7 +17,6 @@ import no.nav.syfo.ikkeaktuell.domain.IkkeAktuellArsak
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.util.configure
-import no.nav.syfo.util.configuredJacksonMapper
 
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
@@ -29,7 +27,6 @@ import org.spekframework.spek2.style.specification.describe
 import java.util.concurrent.Future
 
 class IkkeAktuellApiSpek : Spek({
-    val objectMapper: ObjectMapper = configuredJacksonMapper()
     val urlIkkeAktuellPersonIdent = "$ikkeAktuellApiBasePath/$ikkeAktuellApiPersonidentPath"
 
     describe(IkkeAktuellApiSpek::class.java.simpleName) {
@@ -85,7 +82,7 @@ class IkkeAktuellApiSpek : Spek({
                         val response = client.post(urlIkkeAktuellPersonIdent) {
                             bearerAuth(validToken)
                             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newIkkeAktuellDTO))
+                            setBody(newIkkeAktuellDTO)
                         }
                         response.status shouldBeEqualTo HttpStatusCode.Created
                         val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
@@ -132,7 +129,7 @@ class IkkeAktuellApiSpek : Spek({
                         val response = client.post(urlIkkeAktuellPersonIdent) {
                             bearerAuth(validToken)
                             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newIkkeAktuellDTOWithDeniedAccess))
+                            setBody(newIkkeAktuellDTOWithDeniedAccess)
                         }
                         response.status shouldBeEqualTo HttpStatusCode.Forbidden
                         verify(exactly = 0) {
@@ -146,7 +143,7 @@ class IkkeAktuellApiSpek : Spek({
                         val response = client.post(urlIkkeAktuellPersonIdent) {
                             bearerAuth(validToken)
                             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newIkkeAktuellDTO))
+                            setBody(newIkkeAktuellDTO)
                         }
                         response.status shouldBeEqualTo HttpStatusCode.Conflict
                         verify(exactly = 0) {

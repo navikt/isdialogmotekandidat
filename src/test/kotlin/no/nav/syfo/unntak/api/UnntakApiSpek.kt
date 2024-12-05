@@ -1,11 +1,9 @@
 package no.nav.syfo.unntak.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
@@ -30,7 +28,6 @@ import org.spekframework.spek2.style.specification.describe
 import java.util.concurrent.Future
 
 class UnntakApiSpek : Spek({
-    val objectMapper: ObjectMapper = configuredJacksonMapper()
     val urlUnntakPersonIdent = "$unntakApiBasePath/$unntakApiPersonidentPath"
     val urlUnntakStatistikk = "$unntakApiBasePath/$unntakApiStatistikk"
 
@@ -91,7 +88,7 @@ class UnntakApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val unntakList = objectMapper.readValue<List<UnntakDTO>>(response.bodyAsText())
+                        val unntakList = response.body<List<UnntakDTO>>()
                         unntakList.size shouldBeEqualTo 1
 
                         val unntakDTO = unntakList.first()
@@ -159,7 +156,7 @@ class UnntakApiSpek : Spek({
                         val response = client.post(urlUnntakPersonIdent) {
                             bearerAuth(validToken)
                             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newUnntakDTO))
+                            setBody(newUnntakDTO)
                         }
 
                         response.status shouldBeEqualTo HttpStatusCode.Created
@@ -200,7 +197,7 @@ class UnntakApiSpek : Spek({
                         val client = setupApiAndClient()
                         val response = client.post(urlUnntakPersonIdent) {
                             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newUnntakDTO))
+                            setBody(newUnntakDTO)
                         }
                         response.status shouldBeEqualTo HttpStatusCode.Unauthorized
                         verify(exactly = 0) {
@@ -216,7 +213,7 @@ class UnntakApiSpek : Spek({
                         val response = client.post(urlUnntakPersonIdent) {
                             bearerAuth(validToken)
                             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newUnntakDTOWithDeniedAccess))
+                            setBody(newUnntakDTOWithDeniedAccess)
                         }
                         response.status shouldBeEqualTo HttpStatusCode.Forbidden
                         verify(exactly = 0) {
@@ -230,7 +227,7 @@ class UnntakApiSpek : Spek({
                         val response = client.post(urlUnntakPersonIdent) {
                             bearerAuth(validToken)
                             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(objectMapper.writeValueAsString(newUnntakDTO))
+                            setBody(newUnntakDTO)
                         }
                         response.status shouldBeEqualTo HttpStatusCode.Conflict
                         verify(exactly = 0) {
@@ -255,8 +252,7 @@ class UnntakApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val unntakStatistikkList =
-                            objectMapper.readValue<List<UnntakStatistikk>>(response.bodyAsText())
+                        val unntakStatistikkList = response.body<List<UnntakStatistikk>>()
                         unntakStatistikkList.size shouldBeEqualTo 1
 
                         val unntakStatistikk = unntakStatistikkList.first()
@@ -290,8 +286,7 @@ class UnntakApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val unntakStatistikkList =
-                            objectMapper.readValue<List<UnntakStatistikk>>(response.bodyAsText())
+                        val unntakStatistikkList = response.body<List<UnntakStatistikk>>()
                         unntakStatistikkList.size shouldBeEqualTo 0
                     }
                 }

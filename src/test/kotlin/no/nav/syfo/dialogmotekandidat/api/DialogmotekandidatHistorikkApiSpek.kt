@@ -1,11 +1,9 @@
 package no.nav.syfo.dialogmotekandidat.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
@@ -40,7 +38,6 @@ val ikkeAktuell = generateNewIkkeAktuellDTO(
 )
 
 class DialogmotekandidatHistorikkApiSpek : Spek({
-    val objectMapper: ObjectMapper = configuredJacksonMapper()
     val historikkUrl = "$kandidatApiBasePath/$kandidatApiHistorikkPath"
 
     describe(DialogmotekandidatHistorikkApiSpek::class.java.simpleName) {
@@ -117,8 +114,7 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                             header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
-
-                        val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
+                        val historikk = response.body<List<HistorikkDTO>>()
                         historikk.size shouldBeEqualTo 0
                     }
                 }
@@ -137,8 +133,7 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                             header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
-
-                        val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
+                        val historikk = response.body<List<HistorikkDTO>>()
                         historikk.size shouldBeEqualTo 1
 
                         historikk[0].type shouldBeEqualTo HistorikkType.KANDIDAT
@@ -162,7 +157,7 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
+                        val historikk = response.body<List<HistorikkDTO>>()
                         historikk.size shouldBeEqualTo 2
 
                         historikk[0].type shouldBeEqualTo HistorikkType.LUKKET
@@ -186,7 +181,7 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
+                        val historikk = response.body<List<HistorikkDTO>>()
                         historikk.size shouldBeEqualTo 2
 
                         historikk[0].type shouldBeEqualTo HistorikkType.UNNTAK
@@ -210,7 +205,7 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val historikk = objectMapper.readValue<List<HistorikkDTO>>(response.bodyAsText())
+                        val historikk = response.body<List<HistorikkDTO>>()
                         historikk.size shouldBeEqualTo 2
 
                         historikk[0].type shouldBeEqualTo HistorikkType.IKKE_AKTUELL
