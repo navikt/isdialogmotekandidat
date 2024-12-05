@@ -64,6 +64,10 @@ class UnntakService(
         token: String,
         callId: String,
     ): List<UnntakStatistikk> {
+        if (unntakList.isEmpty()) {
+            return emptyList()
+        }
+
         val starttime = System.currentTimeMillis()
         val oppfolgingstilfelleForUnntak = getOppfolgingstilfelleForUnntak(
             unntakList = unntakList,
