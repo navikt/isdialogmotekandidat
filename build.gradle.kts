@@ -1,23 +1,22 @@
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluentVersion = "7.5.1"
+val confluentVersion = "7.7.2"
 val flywayVersion = "10.17.2"
 val hikariVersion = "5.1.0"
 val isdialogmoteSchemaVersion = "1.0.5"
-val jacksonDataTypeVersion = "2.17.2"
+val jacksonDataTypeVersion = "2.18.0"
 val jettyVersion = "9.4.56.v20240826"
-val kafkaVersion = "3.7.0"
+val kafkaVersion = "3.9.0"
 val kluentVersion = "1.73"
-val ktorVersion = "2.3.12"
-val logbackVersion = "1.5.7"
+val ktorVersion = "3.0.2"
+val logbackVersion = "1.5.12"
 val logstashEncoderVersion = "7.4"
 val micrometerRegistryVersion = "1.12.2"
-val nimbusJoseJwtVersion = "9.37.3"
+val nimbusJoseJwtVersion = "9.47"
 val mockkVersion = "1.13.9"
 val postgresVersion = "42.7.4"
 val postgresEmbeddedVersion = "2.0.7"
-val scalaVersion = "2.13.12"
 val spekVersion = "2.0.19"
 
 plugins {
@@ -78,14 +77,15 @@ dependencies {
                 require("3.9.3")
             }
         }
-        implementation("org.scala-lang:scala-library") {
-            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2022-36944")
+        implementation("org.bitbucket.b_c:jose4j") {
+            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
             version {
-                require(scalaVersion)
+                require("0.9.6")
             }
         }
     }
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion", excludeLog4j)
+    implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
     constraints {
         implementation("org.apache.avro:avro") {
             because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
@@ -102,6 +102,12 @@ dependencies {
     }
     implementation("io.confluent:kafka-schema-registry:$confluentVersion", excludeLog4j)
     constraints {
+        implementation("io.github.classgraph:classgraph") {
+            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
+            version {
+                require("4.8.179")
+            }
+        }
         implementation("org.json:json") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
             version {
@@ -133,10 +139,8 @@ dependencies {
             }
         }
     }
-    implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
-
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusJoseJwtVersion")
-    testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
