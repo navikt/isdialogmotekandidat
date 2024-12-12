@@ -10,10 +10,13 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.ClientEnvironment
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.httpClientDefault
-import no.nav.syfo.domain.*
-import no.nav.syfo.util.*
+import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.util.NAV_CALL_ID_HEADER
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.callIdArgument
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 class OppfolgingstilfelleClient(
     private val azureAdClient: AzureAdClient,
@@ -24,8 +27,6 @@ class OppfolgingstilfelleClient(
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH"
     private val personOppfolgingstilfelleVeilederUrl: String =
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSON_PATH"
-    private val personsOppfolgingstilfelleVeilederUrl: String =
-        "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSONS_PATH"
 
     suspend fun getOppfolgingstilfellePerson(
         personIdent: PersonIdentNumber,
@@ -57,35 +58,6 @@ class OppfolgingstilfelleClient(
         }
     }
 
-    suspend fun getOppfolgingstilfellePersons(
-        personIdents: List<PersonIdentNumber>,
-        veilederToken: String,
-        callId: String,
-    ): List<OppfolgingstilfellePersonDTO> {
-        return try {
-            val token = azureAdClient.getOnBehalfOfToken(clientEnvironment.clientId, veilederToken)
-                ?: throw RuntimeException("Could not get azuread access token")
-            val response: HttpResponse = httpClient.post(personsOppfolgingstilfelleVeilederUrl) {
-                header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
-                header(NAV_CALL_ID_HEADER, callId)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                setBody(personIdents.map { it.value })
-            }
-            response.body<List<OppfolgingstilfellePersonDTO>>().also {
-                COUNT_CALL_OPPFOLGINGSTILFELLE_PERSONS_SUCCESS.increment()
-            }
-        } catch (responseException: ResponseException) {
-            log.error(
-                "Error while requesting OppfolgingstilfellePerson for persons from Isoppfolgingstilfelle with {}, {}",
-                StructuredArguments.keyValue("statusCode", responseException.response.status.value),
-                callIdArgument(callId),
-            )
-            COUNT_CALL_OPPFOLGINGSTILFELLE_PERSONS_FAIL.increment()
-            throw responseException
-        }
-    }
-
     private suspend fun getAzureToken(token: String?) =
         if (token == null)
             azureAdClient.getSystemToken(clientEnvironment.clientId)
@@ -107,8 +79,6 @@ class OppfolgingstilfelleClient(
 
         const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSON_PATH =
             "$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_COMMON_PATH/personident"
-        const val ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSONS_PATH =
-            "$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_COMMON_PATH/persons"
 
         private val log = LoggerFactory.getLogger(OppfolgingstilfelleClient::class.java)
     }
