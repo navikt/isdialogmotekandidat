@@ -15,21 +15,23 @@ import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
-import no.nav.syfo.unntak.api.domain.*
+import no.nav.syfo.unntak.api.domain.UnntakDTO
+import no.nav.syfo.unntak.api.domain.toUnntak
 import no.nav.syfo.unntak.database.createUnntak
 import no.nav.syfo.unntak.database.getUnntakList
-import no.nav.syfo.unntak.domain.UnntakStatistikk
-import no.nav.syfo.util.*
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.configure
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.apache.kafka.clients.producer.*
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.util.concurrent.Future
 
 class UnntakApiSpek : Spek({
     val urlUnntakPersonIdent = "$unntakApiBasePath/$unntakApiPersonidentPath"
-    val urlUnntakStatistikk = "$unntakApiBasePath/$unntakApiStatistikk"
 
     describe(UnntakApiSpek::class.java.simpleName) {
         val externalMockEnvironment = ExternalMockEnvironment.instance
@@ -233,61 +235,6 @@ class UnntakApiSpek : Spek({
                         verify(exactly = 0) {
                             kafkaProducer.send(any())
                         }
-                    }
-                }
-            }
-        }
-        describe("Get unntaksstatistikk for veileder") {
-            describe("Happy path") {
-                it("returns unntaksstatistikk if request is successful") {
-                    testApplication {
-                        val client = setupApiAndClient()
-                        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
-                        database.connection.use {
-                            it.createUnntak(unntak)
-                            it.commit()
-                        }
-                        val response = client.get(urlUnntakStatistikk) {
-                            bearerAuth(validToken)
-                        }
-                        response.status shouldBeEqualTo HttpStatusCode.OK
-
-                        val unntakStatistikkList = response.body<List<UnntakStatistikk>>()
-                        unntakStatistikkList.size shouldBeEqualTo 1
-
-                        val unntakStatistikk = unntakStatistikkList.first()
-                        unntakStatistikk.unntakDato shouldNotBeEqualTo null
-                        unntakStatistikk.tilfelleStart shouldNotBeEqualTo null
-                        unntakStatistikk.tilfelleEnd shouldNotBeEqualTo null
-                    }
-                }
-            }
-            describe("Unhappy paths") {
-                it("returns status Unauthorized if no token is supplied") {
-                    testApplication {
-                        val client = setupApiAndClient()
-                        val response = client.get(urlUnntakStatistikk) {}
-                        response.status shouldBeEqualTo HttpStatusCode.Unauthorized
-                    }
-                }
-                it("returns empty unntaksstatistikk if no access to person with unntak") {
-                    testApplication {
-                        val client = setupApiAndClient()
-                        val unntak =
-                            generateNewUnntakDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS).toUnntak(
-                                createdByIdent = UserConstants.VEILEDER_IDENT
-                            )
-                        database.connection.use {
-                            it.createUnntak(unntak)
-                            it.commit()
-                        }
-                        val response = client.get(urlUnntakStatistikk) {
-                            bearerAuth(validToken)
-                        }
-                        response.status shouldBeEqualTo HttpStatusCode.OK
-
-                        val unntakStatistikkList = response.body<List<UnntakStatistikk>>()
-                        unntakStatistikkList.size shouldBeEqualTo 0
                     }
                 }
             }

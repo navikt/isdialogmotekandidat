@@ -2,28 +2,17 @@ package no.nav.syfo.testhelper.mock
 
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient.Companion.ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSONS_PATH
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleDTO
 import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfellePersonDTO
 import no.nav.syfo.dialogmotekandidat.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_DEFAULT
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import java.time.LocalDate
 
-suspend fun MockRequestHandleScope.oppfolgingstilfelleMockResponse(request: HttpRequestData): HttpResponseData {
-    val requestUrl = request.url.encodedPath
-    return if (requestUrl.endsWith(ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSONS_PATH)) {
-        val personidenter = request.receiveBody<List<String>>()
-        val oppfolgingstilfellePersonDTOS = personidenter
-            .filter { it != PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value }
-            .map { oppfolgingstilfellePersonDTO(it) }
-        respond(oppfolgingstilfellePersonDTOS)
-    } else {
-        val personIdent = request.headers[NAV_PERSONIDENT_HEADER]
-        respond(oppfolgingstilfellePersonDTO(personIdent))
-    }
+fun MockRequestHandleScope.oppfolgingstilfelleMockResponse(request: HttpRequestData): HttpResponseData {
+    val personIdent = request.headers[NAV_PERSONIDENT_HEADER]
+    return respond(oppfolgingstilfellePersonDTO(personIdent))
 }
 
 private fun oppfolgingstilfellePersonDTO(personIdent: String?) =

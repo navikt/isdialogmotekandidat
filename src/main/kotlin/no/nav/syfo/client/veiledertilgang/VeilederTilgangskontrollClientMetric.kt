@@ -1,7 +1,6 @@
 package no.nav.syfo.client.veiledertilgang
 
 import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.Timer
 import no.nav.syfo.application.metric.METRICS_NS
 import no.nav.syfo.application.metric.METRICS_REGISTRY
 
@@ -9,11 +8,6 @@ const val CALL_TILGANGSKONTROLL_PERSON_BASE = "${METRICS_NS}_call_tilgangskontro
 const val CALL_TILGANGSKONTROLL_PERSON_SUCCESS = "${CALL_TILGANGSKONTROLL_PERSON_BASE}_success_count"
 const val CALL_TILGANGSKONTROLL_PERSON_FAIL = "${CALL_TILGANGSKONTROLL_PERSON_BASE}_fail_count"
 const val CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN = "${CALL_TILGANGSKONTROLL_PERSON_BASE}_forbidden_count"
-
-const val CALL_TILGANGSKONTROLL_PERSONS_BASE = "${METRICS_NS}_call_tilgangskontroll_persons"
-const val CALL_TILGANGSKONTROLL_PERSONS_SUCCESS = "${CALL_TILGANGSKONTROLL_PERSONS_BASE}_success_count"
-const val CALL_TILGANGSKONTROLL_PERSONS_FAIL = "${CALL_TILGANGSKONTROLL_PERSONS_BASE}_fail_count"
-const val CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN = "${CALL_TILGANGSKONTROLL_PERSONS_BASE}_forbidden_count"
 
 val COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS: Counter = Counter.builder(CALL_TILGANGSKONTROLL_PERSON_SUCCESS)
     .description("Counts the number of successful calls to istilgangskontroll - person")
@@ -23,20 +17,4 @@ val COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL: Counter = Counter.builder(CALL_TILG
     .register(METRICS_REGISTRY)
 val COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN: Counter = Counter.builder(CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN)
     .description("Counts the number of forbidden calls to istilgangskontroll - person")
-    .register(METRICS_REGISTRY)
-
-val COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS: Counter = Counter.builder(CALL_TILGANGSKONTROLL_PERSONS_SUCCESS)
-    .description("Counts the number of successful calls to istilgangskontroll - persons")
-    .register(METRICS_REGISTRY)
-val COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL: Counter = Counter.builder(CALL_TILGANGSKONTROLL_PERSONS_FAIL)
-    .description("Counts the number of failed calls to istilgangskontroll - persons")
-    .register(METRICS_REGISTRY)
-val COUNT_CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN: Counter = Counter.builder(CALL_TILGANGSKONTROLL_PERSONS_FORBIDDEN)
-    .description("Counts the number of forbidden calls to istilgangskontroll - persons")
-    .register(METRICS_REGISTRY)
-
-const val CALL_TILGANGSKONTROLL_PERSONS_TIMER = "${CALL_TILGANGSKONTROLL_PERSONS_BASE}_timer"
-val HISTOGRAM_CALL_TILGANGSKONTROLL_PERSONS_TIMER: Timer = Timer
-    .builder(CALL_TILGANGSKONTROLL_PERSONS_TIMER)
-    .description("Timer for calls to tilgangskontroll persons")
     .register(METRICS_REGISTRY)

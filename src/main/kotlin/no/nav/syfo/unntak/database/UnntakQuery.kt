@@ -1,13 +1,15 @@
 package no.nav.syfo.unntak.database
 
-import no.nav.syfo.application.database.*
+import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.database.NoElementInsertedException
+import no.nav.syfo.application.database.toList
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.unntak.domain.Unntak
 import no.nav.syfo.unntak.database.domain.PUnntak
+import no.nav.syfo.unntak.domain.Unntak
 import java.sql.Connection
 import java.sql.ResultSet
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 const val queryCreateUnntak =
     """
@@ -52,23 +54,6 @@ fun DatabaseInterface.getUnntakList(
 ): List<PUnntak> = this.connection.use { connection ->
     connection.prepareStatement(queryGetUnntakForPerson).use {
         it.setString(1, personIdent.value)
-        it.executeQuery().toList { toPUnntakList() }
-    }
-}
-
-const val queryGetUnntakForVeileder: String =
-    """
-        SELECT * 
-        FROM UNNTAK
-        WHERE created_by = ?
-        ORDER BY created_at DESC;
-    """
-
-fun DatabaseInterface.getUnntakForVeileder(
-    veilederIdent: String,
-): List<PUnntak> = this.connection.use { connection ->
-    connection.prepareStatement(queryGetUnntakForVeileder).use {
-        it.setString(1, veilederIdent)
         it.executeQuery().toList { toPUnntakList() }
     }
 }

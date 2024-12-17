@@ -44,23 +44,4 @@ class OppfolgingstilfelleService(
 
         return oppfolgingstilfellePerson.toOppfolgingstilfelleList(arbeidstakerPersonIdent)
     }
-
-    internal suspend fun getAllOppfolgingstilfellerForPersons(
-        personIdents: List<PersonIdentNumber>,
-        veilederToken: String,
-        callId: String,
-    ): Map<PersonIdentNumber, List<Oppfolgingstilfelle>> {
-        val oppfolgingstilfellePersons = oppfolgingstilfelleClient.getOppfolgingstilfellePersons(
-            personIdents = personIdents,
-            veilederToken = veilederToken,
-            callId = callId,
-        )
-
-        return oppfolgingstilfellePersons.associate {
-            val personIdent = PersonIdentNumber(it.personIdent)
-            personIdent to it.toOppfolgingstilfelleList(
-                personIdent
-            )
-        }
-    }
 }
