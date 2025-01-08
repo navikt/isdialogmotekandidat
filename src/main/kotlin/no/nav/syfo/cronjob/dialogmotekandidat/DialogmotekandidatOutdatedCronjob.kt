@@ -8,6 +8,7 @@ import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.*
+import java.util.UUID
 
 class DialogmotekandidatOutdatedCronjob(
     private val outdatedDialogmotekandidatCutoff: LocalDate,
@@ -50,6 +51,6 @@ class DialogmotekandidatOutdatedCronjob(
     companion object {
         private val log = LoggerFactory.getLogger(DialogmotekandidatOutdatedCronjob::class.java)
 
-        private val uuids = emptyList<UUID>()
+        private val uuids = listOf(UUID.fromString("69d4ace5-9e27-497c-ac59-4371b9768aab"))
     }
 }
