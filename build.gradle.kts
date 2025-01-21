@@ -1,28 +1,29 @@
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluentVersion = "7.7.2"
-val flywayVersion = "10.17.2"
-val hikariVersion = "5.1.0"
+val confluentVersion = "7.8.0"
+val flywayVersion = "11.2.0"
+val hikariVersion = "6.2.1"
 val isdialogmoteSchemaVersion = "1.0.5"
-val jacksonDataTypeVersion = "2.18.0"
-val jettyVersion = "9.4.56.v20240826"
+val jacksonDataTypeVersion = "2.18.2"
+val jettyVersion = "9.4.57.v20241219"
 val kafkaVersion = "3.9.0"
 val kluentVersion = "1.73"
-val ktorVersion = "3.0.2"
-val logbackVersion = "1.5.12"
-val logstashEncoderVersion = "7.4"
-val micrometerRegistryVersion = "1.12.2"
-val nimbusJoseJwtVersion = "9.47"
-val mockkVersion = "1.13.9"
-val postgresVersion = "42.7.4"
-val postgresEmbeddedVersion = "2.0.7"
+val ktorVersion = "3.0.3"
+val logbackVersion = "1.5.16"
+val logstashEncoderVersion = "8.0"
+val micrometerRegistryVersion = "1.12.13"
+val nimbusJoseJwtVersion = "10.0.1"
+val mockkVersion = "1.13.16"
+val postgresVersion = "42.7.5"
+val postgresEmbeddedVersion = "2.1.0"
 val spekVersion = "2.0.19"
 
 plugins {
-    kotlin("jvm") version "2.0.20"
-    id("com.gradleup.shadow") version "8.3.2"
+    kotlin("jvm") version "2.1.0"
+    id("com.gradleup.shadow") version "8.3.5"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    id("com.github.ben-manes.versions") version "0.51.0"
 }
 
 repositories {
@@ -90,7 +91,7 @@ dependencies {
         implementation("org.apache.avro:avro") {
             because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
             version {
-                require("1.11.4")
+                require("1.12.0")
             }
         }
         implementation("org.apache.commons:commons-compress") {
@@ -112,6 +113,12 @@ dependencies {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
             version {
                 require("20240303")
+            }
+        }
+        implementation("org.apache.mina:mina-core") {
+            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2024-52046")
+            version {
+                require("2.2.4")
             }
         }
         implementation("org.eclipse.jetty:jetty-server") {
