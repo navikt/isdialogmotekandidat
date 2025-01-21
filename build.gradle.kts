@@ -2,7 +2,7 @@ group = "no.nav.syfo"
 version = "0.0.1"
 
 val confluentVersion = "7.8.0"
-val flywayVersion = "11.1.1"
+val flywayVersion = "11.2.0"
 val hikariVersion = "6.2.1"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.18.2"
@@ -15,14 +15,15 @@ val logstashEncoderVersion = "8.0"
 val micrometerRegistryVersion = "1.12.13"
 val nimbusJoseJwtVersion = "10.0.1"
 val mockkVersion = "1.13.16"
-val postgresVersion = "42.7.4"
-val postgresEmbeddedVersion = "2.0.7"
+val postgresVersion = "42.7.5"
+val postgresEmbeddedVersion = "2.1.0"
 val spekVersion = "2.0.19"
 
 plugins {
     kotlin("jvm") version "2.1.0"
     id("com.gradleup.shadow") version "8.3.5"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    id("com.github.ben-manes.versions") version "0.51.0"
 }
 
 repositories {
