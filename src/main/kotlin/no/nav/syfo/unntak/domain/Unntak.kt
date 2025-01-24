@@ -1,7 +1,7 @@
 package no.nav.syfo.unntak.domain
 
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.unntak.api.domain.UnntakDTO
+import no.nav.syfo.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -14,22 +14,48 @@ enum class UnntakArsak {
     ARBEIDSFORHOLD_OPPHORT,
 }
 
-data class Unntak(
+data class Unntak private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val createdBy: String,
     val personIdent: PersonIdentNumber,
     val arsak: UnntakArsak,
     val beskrivelse: String?,
-)
+) {
 
-fun List<Unntak>.toUnntakDTOList() = this.map { unntak ->
-    UnntakDTO(
-        uuid = unntak.uuid.toString(),
-        createdAt = unntak.createdAt.toLocalDateTime(),
-        createdBy = unntak.createdBy,
-        personIdent = unntak.personIdent.value,
-        arsak = unntak.arsak.name,
-        beskrivelse = unntak.beskrivelse,
-    )
+    constructor(
+        createdBy: String,
+        personIdent: PersonIdentNumber,
+        arsak: UnntakArsak,
+        beskrivelse: String?,
+    ) : this(
+        uuid = UUID.randomUUID(),
+        createdAt = nowUTC(),
+        createdBy = createdBy,
+        personIdent = personIdent,
+        arsak = arsak,
+        beskrivelse = beskrivelse,
+    ) {
+        if (arsak in listOf(UnntakArsak.FRISKMELDT, UnntakArsak.ARBEIDSFORHOLD_OPPHORT)) {
+            throw IllegalArgumentException("$arsak skal ikke brukes for nye unntak, bruk IkkeAktuell")
+        }
+    }
+
+    companion object {
+        fun createFromDatabase(
+            uuid: UUID,
+            createdAt: OffsetDateTime,
+            createdBy: String,
+            personIdent: PersonIdentNumber,
+            arsak: UnntakArsak,
+            beskrivelse: String?,
+        ) = Unntak(
+            uuid = uuid,
+            createdAt = createdAt,
+            createdBy = createdBy,
+            personIdent = personIdent,
+            arsak = arsak,
+            beskrivelse = beskrivelse,
+        )
+    }
 }

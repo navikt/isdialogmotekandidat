@@ -1,5 +1,6 @@
 package no.nav.syfo.unntak.api.domain
 
+import no.nav.syfo.unntak.domain.Unntak
 import java.time.LocalDateTime
 
 data class UnntakDTO(
@@ -10,3 +11,14 @@ data class UnntakDTO(
     val arsak: String,
     val beskrivelse: String?,
 )
+
+fun List<Unntak>.toUnntakDTOList() = this.map { unntak ->
+    UnntakDTO(
+        uuid = unntak.uuid.toString(),
+        createdAt = unntak.createdAt.toLocalDateTime(),
+        createdBy = unntak.createdBy,
+        personIdent = unntak.personIdent.value,
+        arsak = unntak.arsak.name,
+        beskrivelse = unntak.beskrivelse,
+    )
+}

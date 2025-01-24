@@ -17,7 +17,7 @@ data class PUnntak(
 )
 
 fun List<PUnntak>.toUnntakList() = this.map { pUnntak ->
-    Unntak(
+    Unntak.createFromDatabase(
         uuid = pUnntak.uuid,
         createdAt = pUnntak.createdAt,
         createdBy = pUnntak.createdBy,
