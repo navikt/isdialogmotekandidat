@@ -8,6 +8,8 @@ enum class IkkeAktuellArsak {
     ARBEIDSTAKER_AAP,
     ARBEIDSTAKER_DOD,
     DIALOGMOTE_AVHOLDT,
+    FRISKMELDT,
+    ARBEIDSFORHOLD_OPPHORT,
 }
 
 data class IkkeAktuell(
