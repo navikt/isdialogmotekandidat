@@ -19,6 +19,7 @@ import no.nav.syfo.unntak.api.domain.UnntakDTO
 import no.nav.syfo.unntak.api.domain.toUnntak
 import no.nav.syfo.unntak.database.createUnntak
 import no.nav.syfo.unntak.database.getUnntakList
+import no.nav.syfo.unntak.domain.UnntakArsak
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import org.amshove.kluent.shouldBeEqualTo
@@ -100,6 +101,31 @@ class UnntakApiSpek : Spek({
                         unntakDTO.createdBy shouldBeEqualTo UserConstants.VEILEDER_IDENT
                         unntakDTO.arsak shouldBeEqualTo newUnntakDTO.arsak
                         unntakDTO.beskrivelse shouldBeEqualTo newUnntakDTO.beskrivelse
+                    }
+                }
+                it("returns unntak with arsak FRISKMELDT for person") {
+                    testApplication {
+                        val client = setupApiAndClient()
+
+                        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT).copy(
+                            arsak = UnntakArsak.FRISKMELDT
+                        )
+                        database.connection.use {
+                            it.createUnntak(unntak)
+                            it.commit()
+                        }
+
+                        val response = client.get(urlUnntakPersonIdent) {
+                            bearerAuth(validToken)
+                            header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                        }
+                        response.status shouldBeEqualTo HttpStatusCode.OK
+
+                        val unntakList = response.body<List<UnntakDTO>>()
+                        unntakList.size shouldBeEqualTo 1
+
+                        val unntakDTO = unntakList.first()
+                        unntakDTO.arsak shouldBeEqualTo UnntakArsak.FRISKMELDT.name
                     }
                 }
             }
@@ -194,6 +220,31 @@ class UnntakApiSpek : Spek({
                 }
             }
             describe("Unhappy paths") {
+                it("returns status BadRequest when arsak is FRISKMELDT or ARBEIDSFORHOLD_OPPHORT") {
+                    testApplication {
+                        val client = setupApiAndClient()
+                        val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(
+                            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        )
+                        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
+
+                        client.post(urlUnntakPersonIdent) {
+                            bearerAuth(validToken)
+                            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.FRISKMELDT))
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.BadRequest
+                        }
+
+                        client.post(urlUnntakPersonIdent) {
+                            bearerAuth(validToken)
+                            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                            setBody(generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.ARBEIDSFORHOLD_OPPHORT))
+                        }.apply {
+                            status shouldBeEqualTo HttpStatusCode.BadRequest
+                        }
+                    }
+                }
                 it("returns status Unauthorized if no token is supplied") {
                     testApplication {
                         val client = setupApiAndClient()
