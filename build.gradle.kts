@@ -12,7 +12,7 @@ val kluentVersion = "1.73"
 val ktorVersion = "3.0.3"
 val logbackVersion = "1.5.16"
 val logstashEncoderVersion = "8.0"
-val micrometerRegistryVersion = "1.12.13"
+val micrometerRegistryVersion = "1.14.3"
 val nimbusJoseJwtVersion = "10.0.1"
 val mockkVersion = "1.13.16"
 val postgresVersion = "42.7.5"
@@ -23,7 +23,7 @@ plugins {
     kotlin("jvm") version "2.1.0"
     id("com.gradleup.shadow") version "8.3.5"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("com.github.ben-manes.versions") version "0.51.0"
+    id("com.github.ben-manes.versions") version "0.52.0"
 }
 
 repositories {
