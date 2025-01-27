@@ -8,9 +8,13 @@ import java.util.*
 enum class UnntakArsak {
     MEDISINSKE_GRUNNER,
     INNLEGGELSE_INSTITUSJON,
+
+    @Deprecated("Brukes ikke lenger for Unntak, bruk IkkeAktuell")
     FRISKMELDT,
     FORVENTET_FRISKMELDING_INNEN_28UKER,
     DOKUMENTERT_TILTAK_FRISKMELDING,
+
+    @Deprecated("Brukes ikke lenger for Unntak, bruk IkkeAktuell")
     ARBEIDSFORHOLD_OPPHORT,
 }
 
