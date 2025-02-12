@@ -11,4 +11,5 @@ data class KafkaDialogmotekandidatEndring(
     val arsak: String,
     val unntakArsak: String?,
     val tilfelleStart: LocalDate?,
+    val veilederident: String?,
 )
