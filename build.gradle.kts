@@ -1,18 +1,18 @@
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluentVersion = "7.8.0"
-val flywayVersion = "11.2.0"
+val confluentVersion = "7.8.1"
+val flywayVersion = "11.3.1"
 val hikariVersion = "6.2.1"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.18.2"
 val jettyVersion = "9.4.57.v20241219"
 val kafkaVersion = "3.9.0"
 val kluentVersion = "1.73"
-val ktorVersion = "3.0.3"
+val ktorVersion = "3.1.0"
 val logbackVersion = "1.5.16"
 val logstashEncoderVersion = "8.0"
-val micrometerRegistryVersion = "1.12.13"
+val micrometerRegistryVersion = "1.14.4"
 val nettyCodecVersion = "4.1.118.Final"
 val nimbusJoseJwtVersion = "10.0.1"
 val mockkVersion = "1.13.16"
@@ -21,10 +21,10 @@ val postgresEmbeddedVersion = "2.1.0"
 val spekVersion = "2.0.19"
 
 plugins {
-    kotlin("jvm") version "2.1.0"
-    id("com.gradleup.shadow") version "8.3.5"
+    kotlin("jvm") version "2.1.10"
+    id("com.gradleup.shadow") version "8.3.6"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("com.github.ben-manes.versions") version "0.51.0"
+    id("com.github.ben-manes.versions") version "0.52.0"
 }
 
 repositories {
