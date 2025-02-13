@@ -13,6 +13,7 @@ val ktorVersion = "3.0.3"
 val logbackVersion = "1.5.16"
 val logstashEncoderVersion = "8.0"
 val micrometerRegistryVersion = "1.12.13"
+val nettyCodecVersion = "4.1.118.Final"
 val nimbusJoseJwtVersion = "10.0.1"
 val mockkVersion = "1.13.16"
 val postgresVersion = "42.7.5"
@@ -48,6 +49,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+    implementation("io.netty:netty-codec-http2:$nettyCodecVersion") // TODO: Remove when Ktor upgrades Netty Codec
 
     // Logging
     implementation("ch.qos.logback:logback-classic:$logbackVersion")

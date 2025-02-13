@@ -216,6 +216,7 @@ class UnntakApiSpek : Spek({
                         kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.UNNTAK.name
                         kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo false
                         kafkaDialogmoteKandidatEndring.unntakArsak shouldBeEqualTo newUnntakDTO.arsak
+                        kafkaDialogmoteKandidatEndring.unntakVeilederident shouldBeEqualTo UserConstants.VEILEDER_IDENT
                     }
                 }
             }
