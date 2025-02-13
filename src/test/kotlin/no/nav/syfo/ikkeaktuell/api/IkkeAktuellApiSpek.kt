@@ -105,7 +105,7 @@ class IkkeAktuellApiSpek : Spek({
                         kafkaDialogmoteKandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.IKKE_AKTUELL.name
                         kafkaDialogmoteKandidatEndring.kandidat shouldBeEqualTo false
                         kafkaDialogmoteKandidatEndring.unntakArsak shouldBe null
-                        kafkaDialogmoteKandidatEndring.veilederident shouldBe null
+                        kafkaDialogmoteKandidatEndring.unntakVeilederident shouldBe null
                     }
                 }
             }

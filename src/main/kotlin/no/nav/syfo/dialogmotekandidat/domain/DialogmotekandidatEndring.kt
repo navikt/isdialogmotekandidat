@@ -114,7 +114,7 @@ fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring(
     arsak = this.arsak.name,
     unntakArsak = unntak?.arsak?.name,
     tilfelleStart = tilfelleStart,
-    veilederident = unntak?.createdBy,
+    unntakVeilederident = unntak?.createdBy,
 )
 
 fun DialogmotekandidatEndring.isBeforeStartOfOppfolgingstilfelle(
