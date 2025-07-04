@@ -1,13 +1,13 @@
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluentVersion = "7.9.0"
+val confluentVersion = "8.0.0"
 val flywayVersion = "11.10.0"
 val hikariVersion = "6.3.0"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.19.1"
-val jettyVersion = "9.4.57.v20241219"
-val kafkaVersion = "3.9.0"
+val jettyVersion = "12.0.22"
+val kafkaVersion = "4.0.0"
 val kluentVersion = "1.73"
 val ktorVersion = "3.2.0"
 val logbackVersion = "1.5.18"
@@ -76,16 +76,16 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
     constraints {
-        implementation("org.apache.zookeeper:zookeeper") {
-            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
-            version {
-                require("3.9.3")
-            }
-        }
         implementation("org.bitbucket.b_c:jose4j") {
             because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
             version {
                 require("0.9.6")
+            }
+        }
+        implementation("commons-beanutils:commons-beanutils") {
+            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+            version {
+                require("1.11.0")
             }
         }
     }
@@ -111,18 +111,6 @@ dependencies {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
             version {
                 require("4.8.179")
-            }
-        }
-        implementation("org.json:json") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
-            version {
-                require("20240303")
-            }
-        }
-        implementation("org.apache.mina:mina-core") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2024-52046")
-            version {
-                require("2.2.4")
             }
         }
         implementation("org.eclipse.jetty:jetty-server") {
