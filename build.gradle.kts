@@ -114,30 +114,7 @@ dependencies {
                 require("4.8.179")
             }
         }
-        implementation("org.eclipse.jetty:jetty-server") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jettyVersion)
-            }
-        }
-        implementation("org.eclipse.jetty:jetty-xml") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jettyVersion)
-            }
-        }
-        implementation("org.eclipse.jetty:jetty-servlets") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jettyVersion)
-            }
-        }
-        implementation("org.eclipse.jetty.http2:http2-server") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jettyVersion)
-            }
-        }
+        implementation(platform("org.eclipse.jetty:jetty-bom:$jettyVersion"))
     }
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusJoseJwtVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
