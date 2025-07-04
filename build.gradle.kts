@@ -75,7 +75,7 @@ dependencies {
     testImplementation("io.zonky.test:embedded-postgres:$postgresEmbeddedVersion")
     testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:$postgresRuntimeVersion"))
 
-    implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
+    implementation("org.apache.kafka:kafka_2.13:$kafkaVersion")
     constraints {
         implementation("org.bitbucket.b_c:jose4j") {
             because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
@@ -90,7 +90,7 @@ dependencies {
             }
         }
     }
-    implementation("io.confluent:kafka-avro-serializer:$confluentVersion", excludeLog4j)
+    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
     constraints {
         implementation("org.apache.avro:avro") {
@@ -106,7 +106,7 @@ dependencies {
             }
         }
     }
-    implementation("io.confluent:kafka-schema-registry:$confluentVersion", excludeLog4j)
+    implementation("io.confluent:kafka-schema-registry:$confluentVersion")
     constraints {
         implementation("io.github.classgraph:classgraph") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
