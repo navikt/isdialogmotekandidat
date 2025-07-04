@@ -37,6 +37,11 @@ repositories {
     }
 }
 
+configurations.all {
+    exclude(group = "log4j")
+    exclude(group = "org.apache.logging.log4j")
+}
+
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
@@ -70,10 +75,6 @@ dependencies {
     testImplementation("io.zonky.test:embedded-postgres:$postgresEmbeddedVersion")
     testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:$postgresRuntimeVersion"))
 
-    // Kafka
-    val excludeLog4j = fun ExternalModuleDependency.() {
-        exclude(group = "log4j")
-    }
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion", excludeLog4j)
     constraints {
         implementation("org.bitbucket.b_c:jose4j") {
