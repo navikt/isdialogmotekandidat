@@ -114,8 +114,9 @@ dependencies {
                 require("4.8.179")
             }
         }
-        implementation(platform("org.eclipse.jetty:jetty-bom:$jettyVersion"))
     }
+    implementation(platform("org.eclipse.jetty:jetty-bom:$jettyVersion"))
+
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusJoseJwtVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
