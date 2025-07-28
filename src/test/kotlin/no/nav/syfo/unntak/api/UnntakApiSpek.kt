@@ -8,18 +8,20 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
-import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
-import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
-import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
+import no.nav.syfo.api.endpoints.unntakApiBasePath
+import no.nav.syfo.api.endpoints.unntakApiPersonidentPath
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
+import no.nav.syfo.domain.DialogmotekandidatEndringArsak
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
-import no.nav.syfo.unntak.api.domain.UnntakDTO
-import no.nav.syfo.unntak.api.domain.toUnntak
-import no.nav.syfo.unntak.database.createUnntak
-import no.nav.syfo.unntak.database.getUnntakList
-import no.nav.syfo.unntak.domain.UnntakArsak
+import no.nav.syfo.api.UnntakDTO
+import no.nav.syfo.api.toUnntak
+import no.nav.syfo.infrastructure.database.createUnntak
+import no.nav.syfo.infrastructure.database.getUnntakList
+import no.nav.syfo.domain.UnntakArsak
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import org.amshove.kluent.shouldBeEqualTo
@@ -232,7 +234,12 @@ class UnntakApiSpek : Spek({
                         client.post(urlUnntakPersonIdent) {
                             bearerAuth(validToken)
                             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.FRISKMELDT))
+                            setBody(
+                                generateNewUnntakDTO(
+                                    personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                                    arsak = UnntakArsak.FRISKMELDT
+                                )
+                            )
                         }.apply {
                             status shouldBeEqualTo HttpStatusCode.BadRequest
                         }
@@ -240,7 +247,12 @@ class UnntakApiSpek : Spek({
                         client.post(urlUnntakPersonIdent) {
                             bearerAuth(validToken)
                             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                            setBody(generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.ARBEIDSFORHOLD_OPPHORT))
+                            setBody(
+                                generateNewUnntakDTO(
+                                    personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                                    arsak = UnntakArsak.ARBEIDSFORHOLD_OPPHORT
+                                )
+                            )
                         }.apply {
                             status shouldBeEqualTo HttpStatusCode.BadRequest
                         }

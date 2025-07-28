@@ -1,14 +1,15 @@
 package no.nav.syfo.cronjob.dialogmotekandidat
 
 import io.mockk.*
-import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
-import no.nav.syfo.dialogmotekandidat.database.DialogmotekandidatRepository
-import no.nav.syfo.dialogmotekandidat.database.PDialogmotekandidatEndring
-import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
-import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndringArsak
-import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
-import no.nav.syfo.dialogmotekandidat.kafka.KafkaDialogmotekandidatEndring
+import no.nav.syfo.application.DialogmotekandidatService
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.PDialogmotekandidatEndring
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
+import no.nav.syfo.domain.DialogmotekandidatEndringArsak
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.infrastructure.cronjob.dialogmotekandidat.DialogmotekandidatOutdatedCronjob
 import no.nav.syfo.oppfolgingstilfelle.toOffsetDatetime
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants

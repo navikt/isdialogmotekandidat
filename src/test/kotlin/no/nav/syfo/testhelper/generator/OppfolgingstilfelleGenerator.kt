@@ -1,7 +1,7 @@
 package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.oppfolgingstilfelle.domain.Oppfolgingstilfelle
+import no.nav.syfo.domain.Oppfolgingstilfelle
 import java.time.LocalDate
 
 fun generateOppfolgingstilfelle(

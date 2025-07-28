@@ -1,12 +1,12 @@
 package no.nav.syfo.testhelper
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
-import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.dialogmotekandidat.database.createDialogmotekandidatEndring
-import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatEndringListForPerson
-import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatEndringList
-import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
-import no.nav.syfo.dialogmotekandidat.domain.isLatestIkkeKandidat
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
+import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.domain.isLatestIkkeKandidat
 import no.nav.syfo.domain.PersonIdentNumber
 import org.flywaydb.core.Flyway
 import java.sql.Connection

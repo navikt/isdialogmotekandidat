@@ -1,6 +1,8 @@
 package no.nav.syfo.dialogmotekandidat.database
 
 import io.ktor.server.testing.*
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData

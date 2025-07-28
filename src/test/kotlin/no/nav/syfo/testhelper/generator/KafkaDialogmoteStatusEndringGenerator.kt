@@ -1,7 +1,7 @@
 package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
-import no.nav.syfo.dialogmotestatusendring.domain.DialogmoteStatusEndringType
+import no.nav.syfo.domain.DialogmoteStatusEndringType
 import no.nav.syfo.domain.PersonIdentNumber
 import java.time.OffsetDateTime
 

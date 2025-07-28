@@ -1,11 +1,12 @@
 package no.nav.syfo.testhelper
 
-import no.nav.syfo.application.*
-import no.nav.syfo.application.database.DatabaseEnvironment
-import no.nav.syfo.application.kafka.KafkaEnvironment
-import no.nav.syfo.client.ClientEnvironment
-import no.nav.syfo.client.ClientsEnvironment
-import no.nav.syfo.client.azuread.AzureEnvironment
+import no.nav.syfo.ApplicationState
+import no.nav.syfo.Environment
+import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
+import no.nav.syfo.infrastructure.clients.ClientEnvironment
+import no.nav.syfo.infrastructure.clients.ClientsEnvironment
+import no.nav.syfo.infrastructure.clients.azuread.AzureEnvironment
 import java.time.LocalDate
 
 fun testEnvironment() = Environment(

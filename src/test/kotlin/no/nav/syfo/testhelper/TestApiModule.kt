@@ -1,14 +1,14 @@
 package no.nav.syfo.testhelper
 
 import io.ktor.server.application.*
-import no.nav.syfo.application.api.apiModule
-import no.nav.syfo.client.azuread.AzureAdClient
-import no.nav.syfo.client.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.dialogmotekandidat.DialogmotekandidatService
-import no.nav.syfo.dialogmotekandidat.database.DialogmotekandidatRepository
-import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
-import no.nav.syfo.oppfolgingstilfelle.OppfolgingstilfelleService
+import no.nav.syfo.api.apiModule
+import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.application.DialogmotekandidatService
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
+import no.nav.syfo.application.OppfolgingstilfelleService
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,

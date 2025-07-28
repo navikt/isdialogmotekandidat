@@ -2,8 +2,8 @@ package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.domain.PersonIdentNumber
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfelle
-import no.nav.syfo.oppfolgingstilfelle.kafka.KafkaOppfolgingstilfellePerson
+import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfelle
+import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePerson
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER_DEFAULT
 import no.nav.syfo.util.nowUTC

@@ -1,8 +1,8 @@
 package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.domain.PersonIdentNumber
-import no.nav.syfo.unntak.api.domain.CreateUnntakDTO
-import no.nav.syfo.unntak.domain.UnntakArsak
+import no.nav.syfo.api.CreateUnntakDTO
+import no.nav.syfo.domain.UnntakArsak
 
 fun generateNewUnntakDTO(
     personIdent: PersonIdentNumber,
