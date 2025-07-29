@@ -28,19 +28,21 @@ data class HistorikkDTO(
 fun List<DialogmotekandidatEndring>.toKandidatHistorikk(): List<HistorikkDTO> = this.mapNotNull {
     val tidspunkt = it.createdAt.toLocalDateTime()
     when (it.arsak) {
-        DialogmotekandidatEndringArsak.STOPPUNKT -> HistorikkDTO(
-            tidspunkt = tidspunkt,
-            type = HistorikkType.KANDIDAT,
-            arsak = it.arsak.name,
-            vurdertAv = null,
-        )
+        DialogmotekandidatEndringArsak.STOPPUNKT ->
+            HistorikkDTO(
+                tidspunkt = tidspunkt,
+                type = HistorikkType.KANDIDAT,
+                arsak = it.arsak.name,
+                vurdertAv = null,
+            )
 
-        DialogmotekandidatEndringArsak.LUKKET -> HistorikkDTO(
-            tidspunkt = tidspunkt,
-            type = HistorikkType.LUKKET,
-            arsak = it.arsak.name,
-            vurdertAv = null,
-        )
+        DialogmotekandidatEndringArsak.LUKKET ->
+            HistorikkDTO(
+                tidspunkt = tidspunkt,
+                type = HistorikkType.LUKKET,
+                arsak = it.arsak.name,
+                vurdertAv = null,
+            )
 
         // Disse dekkes av dialogmote-historikk og unntak/ikke-aktuell-historikk
         DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT, DialogmotekandidatEndringArsak.DIALOGMOTE_LUKKET, DialogmotekandidatEndringArsak.UNNTAK, DialogmotekandidatEndringArsak.IKKE_AKTUELL -> null

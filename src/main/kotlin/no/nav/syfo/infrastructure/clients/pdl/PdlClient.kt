@@ -8,7 +8,7 @@ import io.ktor.http.*
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.httpClientDefault
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.pdl.domain.IdentType
 import no.nav.syfo.infrastructure.clients.pdl.domain.PdlHentIdenter
 import no.nav.syfo.infrastructure.clients.pdl.domain.PdlHentIdenterRequest
@@ -25,7 +25,7 @@ class PdlClient(
 ) {
 
     suspend fun getPdlIdenter(
-        personIdent: PersonIdentNumber,
+        personIdent: Personident,
         callId: String? = null,
     ): PdlHentIdenter? {
         val token = azureAdClient.getSystemToken(pdlEnvironment.clientId)

@@ -8,7 +8,7 @@ import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPers
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Unntak
 import no.nav.syfo.domain.isDialogmotekandidat
 import no.nav.syfo.domain.toDialogmotekandidatEndring
@@ -34,11 +34,11 @@ class DialogmotekandidatService(
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
 ) {
     fun getLatestDialogmotekandidatEndring(
-        personIdent: PersonIdentNumber,
+        personIdent: Personident,
     ) = getDialogmotekandidatEndringer(personIdent = personIdent).firstOrNull()
 
     fun getDialogmotekandidatEndringer(
-        personIdent: PersonIdentNumber,
+        personIdent: Personident,
     ) = database.connection.use { connection ->
         connection.getDialogmotekandidatEndringListForPerson(personIdent = personIdent)
     }.toDialogmotekandidatEndringList()

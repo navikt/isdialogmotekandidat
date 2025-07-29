@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Unntak
 import no.nav.syfo.domain.UnntakArsak
 import java.time.OffsetDateTime
@@ -21,7 +21,7 @@ fun List<PUnntak>.toUnntakList() = this.map { pUnntak ->
         uuid = pUnntak.uuid,
         createdAt = pUnntak.createdAt,
         createdBy = pUnntak.createdBy,
-        personIdent = PersonIdentNumber(pUnntak.personIdent),
+        personIdent = Personident(pUnntak.personIdent),
         arsak = UnntakArsak.valueOf(pUnntak.arsak),
         beskrivelse = pUnntak.beskrivelse,
     )

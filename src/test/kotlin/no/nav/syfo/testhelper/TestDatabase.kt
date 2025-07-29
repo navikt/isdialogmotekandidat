@@ -7,7 +7,7 @@ import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandi
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.isLatestIkkeKandidat
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 
@@ -66,7 +66,7 @@ fun DatabaseInterface.createDialogmotekandidatEndring(dialogmotekandidatEndring:
     }
 }
 
-fun DatabaseInterface.isIkkeKandidat(personIdentNumber: PersonIdentNumber) =
+fun DatabaseInterface.isIkkeKandidat(personIdentNumber: Personident) =
     connection.getDialogmotekandidatEndringListForPerson(personIdent = personIdentNumber)
         .toDialogmotekandidatEndringList()
         .isLatestIkkeKandidat()

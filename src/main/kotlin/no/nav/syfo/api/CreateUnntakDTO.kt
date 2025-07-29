@@ -1,6 +1,6 @@
 package no.nav.syfo.api
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Unntak
 import no.nav.syfo.domain.UnntakArsak
 
@@ -14,7 +14,7 @@ fun CreateUnntakDTO.toUnntak(
     createdByIdent: String,
 ) = Unntak(
     createdBy = createdByIdent,
-    personIdent = PersonIdentNumber(this.personIdent),
+    personIdent = Personident(this.personIdent),
     arsak = UnntakArsak.valueOf(this.arsak),
     beskrivelse = this.beskrivelse,
 )

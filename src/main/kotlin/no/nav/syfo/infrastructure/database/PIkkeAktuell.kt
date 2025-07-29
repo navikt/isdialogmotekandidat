@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.IkkeAktuellArsak
 import java.time.OffsetDateTime
@@ -21,7 +21,7 @@ fun List<PIkkeAktuell>.toIkkeAktuellList() = this.map {
         uuid = it.uuid,
         createdAt = it.createdAt,
         createdBy = it.createdBy,
-        personIdent = PersonIdentNumber(it.personIdent),
+        personIdent = Personident(it.personIdent),
         arsak = IkkeAktuellArsak.valueOf(it.arsak),
         beskrivelse = it.beskrivelse,
     )

@@ -7,7 +7,7 @@ import no.nav.syfo.api.HistorikkDTO
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.domain.toDialogmotekandidatDTO
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.application.IkkeAktuellService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.application.UnntakService
@@ -28,7 +28,7 @@ fun Route.registerDialogmotekandidatApi(
     route(kandidatApiBasePath) {
         get(kandidatApiPersonidentPath) {
             val personIdent = personIdentHeader()?.let { personIdent ->
-                PersonIdentNumber(personIdent)
+                Personident(personIdent)
             }
                 ?: throw IllegalArgumentException("Failed to get kandidat for person: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(
@@ -63,7 +63,7 @@ fun Route.registerDialogmotekandidatApi(
         }
         get(kandidatApiHistorikkPath) {
             val personident = personIdentHeader()?.let { personIdent ->
-                PersonIdentNumber(personIdent)
+                Personident(personIdent)
             }
                 ?: throw IllegalArgumentException("Failed to get historikk for person: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(

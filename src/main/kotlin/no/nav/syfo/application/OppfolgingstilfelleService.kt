@@ -3,7 +3,7 @@ package no.nav.syfo.application
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.toOppfolgingstilfelleList
 import no.nav.syfo.domain.Oppfolgingstilfelle
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.tilfelleForDate
 import java.time.LocalDate
 
@@ -11,7 +11,7 @@ class OppfolgingstilfelleService(
     private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
 ) {
     suspend fun getLatestOppfolgingstilfelle(
-        arbeidstakerPersonIdent: PersonIdentNumber,
+        arbeidstakerPersonIdent: Personident,
         veilederToken: String? = null,
         callId: String? = null,
     ) = getAllOppfolgingstilfeller(
@@ -21,7 +21,7 @@ class OppfolgingstilfelleService(
     ).firstOrNull()
 
     suspend fun getOppfolgingstilfelleForDate(
-        arbeidstakerPersonIdent: PersonIdentNumber,
+        arbeidstakerPersonIdent: Personident,
         date: LocalDate,
         veilederToken: String? = null,
         callId: String? = null,
@@ -32,7 +32,7 @@ class OppfolgingstilfelleService(
     ).tilfelleForDate(date)
 
     private suspend fun getAllOppfolgingstilfeller(
-        arbeidstakerPersonIdent: PersonIdentNumber,
+        arbeidstakerPersonIdent: Personident,
         veilederToken: String? = null,
         callId: String? = null,
     ): List<Oppfolgingstilfelle> {

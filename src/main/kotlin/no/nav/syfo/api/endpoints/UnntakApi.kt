@@ -8,7 +8,7 @@ import no.nav.syfo.api.CreateUnntakDTO
 import no.nav.syfo.api.toUnntak
 import no.nav.syfo.api.toUnntakDTOList
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.application.UnntakService
 import no.nav.syfo.util.*
 
@@ -22,7 +22,7 @@ fun Route.registerUnntakApi(
     route(unntakApiBasePath) {
         post(unntakApiPersonidentPath) {
             val createUnntakDTO = call.receive<CreateUnntakDTO>()
-            val personIdent = PersonIdentNumber(createUnntakDTO.personIdent)
+            val personIdent = Personident(createUnntakDTO.personIdent)
             validateVeilederAccess(
                 action = "Create unntak for person",
                 personIdentToAccess = personIdent,
@@ -42,7 +42,7 @@ fun Route.registerUnntakApi(
         }
         get(unntakApiPersonidentPath) {
             val personIdent = personIdentHeader()?.let { personIdent ->
-                PersonIdentNumber(personIdent)
+                Personident(personIdent)
             }
                 ?: throw IllegalArgumentException("Failed to get unntak for person: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(

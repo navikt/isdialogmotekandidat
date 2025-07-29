@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.kafka.identhendelse
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 
 // Basert på https://github.com/navikt/pdl/blob/master/libs/contract-pdl-avro/src/main/avro/no/nav/person/pdl/aktor/AktorV2.avdl
 
@@ -9,13 +9,13 @@ data class KafkaIdenthendelseDTO(
 ) {
     val folkeregisterIdenter: List<Identifikator> = identifikatorer.filter { it.type == IdentType.FOLKEREGISTERIDENT }
 
-    fun getActivePersonident(): PersonIdentNumber? = folkeregisterIdenter
+    fun getActivePersonident(): Personident? = folkeregisterIdenter
         .find { it.gjeldende }
-        ?.let { PersonIdentNumber(it.idnummer) }
+        ?.let { Personident(it.idnummer) }
 
-    fun getInactivePersonidenter(): List<PersonIdentNumber> = folkeregisterIdenter
+    fun getInactivePersonidenter(): List<Personident> = folkeregisterIdenter
         .filter { !it.gjeldende }
-        .map { PersonIdentNumber(it.idnummer) }
+        .map { Personident(it.idnummer) }
 }
 
 data class Identifikator(

@@ -8,7 +8,7 @@ import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmoteka
 import no.nav.syfo.infrastructure.database.createDialogmoteStatus
 import no.nav.syfo.domain.DialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmoteStatusEndringType
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.getIdentCount
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
@@ -103,7 +103,7 @@ object IdenthendelseServiceSpek : Spek({
     }
 })
 
-fun populateDatabase(oldIdent: PersonIdentNumber, database: DatabaseInterface, updateInAllTables: Boolean = true) {
+fun populateDatabase(oldIdent: Personident, database: DatabaseInterface, updateInAllTables: Boolean = true) {
     val stoppunkt = generateDialogmotekandidatStoppunktPlanlagt(oldIdent, LocalDate.now())
     val endring = generateDialogmotekandidatEndringStoppunkt(oldIdent)
 

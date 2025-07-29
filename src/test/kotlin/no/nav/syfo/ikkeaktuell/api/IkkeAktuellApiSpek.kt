@@ -1,6 +1,7 @@
 package no.nav.syfo.ikkeaktuell.api
 
 import io.ktor.client.*
+import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -8,16 +9,17 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.*
 import no.nav.syfo.api.endpoints.ikkeAktuellApiBasePath
-import no.nav.syfo.api.endpoints.ikkeAktuellApiPersonidentPath
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.api.CreateIkkeAktuellDTO
+import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.IkkeAktuellArsak
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 
 import org.amshove.kluent.shouldBe
@@ -26,14 +28,18 @@ import org.amshove.kluent.shouldNotBeEqualTo
 import org.apache.kafka.clients.producer.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.UUID
 import java.util.concurrent.Future
 
 class IkkeAktuellApiSpek : Spek({
-    val urlIkkeAktuellPersonIdent = "$ikkeAktuellApiBasePath/$ikkeAktuellApiPersonidentPath"
+    val urlIkkeAktuellPersonIdent = "$ikkeAktuellApiBasePath/personident"
+    val externalMockEnvironment = ExternalMockEnvironment.instance
+    val database = externalMockEnvironment.database
+    val ikkeAktuellRepository = externalMockEnvironment.ikkeAktuellRepository
 
     describe(IkkeAktuellApiSpek::class.java.simpleName) {
-        val externalMockEnvironment = ExternalMockEnvironment.instance
-        val database = externalMockEnvironment.database
         val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
         val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
             kafkaProducerDialogmotekandidatEndring = kafkaProducer,
@@ -156,11 +162,81 @@ class IkkeAktuellApiSpek : Spek({
                 }
             }
         }
+        describe("Get ikke aktuell vurderinger for person") {
+
+            fun newIkkeAktuellVurdering() =
+                IkkeAktuell(
+                    uuid = UUID.randomUUID(),
+                    createdAt = LocalDateTime.now().atOffset(ZoneOffset.UTC),
+                    createdBy = UserConstants.VEILEDER_IDENT,
+                    personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                    arsak = IkkeAktuellArsak.ARBEIDSTAKER_AAP,
+                    beskrivelse = "Dette er en beskrivelse for hvorfor personen ikke er aktuell for dialogmøte",
+                )
+
+            it("Successfully retrieves ikke aktuell vurderinger for person") {
+                testApplication {
+                    ikkeAktuellRepository.createIkkeAktuell(
+                        connection = database.connection,
+                        commit = true,
+                        ikkeAktuell = newIkkeAktuellVurdering(),
+                    )
+                    ikkeAktuellRepository.createIkkeAktuell(
+                        connection = database.connection,
+                        commit = true,
+                        ikkeAktuell = newIkkeAktuellVurdering(),
+                    )
+
+                    val client = setupApiAndClient()
+                    val response = client.get(urlIkkeAktuellPersonIdent) {
+                        bearerAuth(validToken)
+                        header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+                    }
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+                    val responseBody = response.body<List<IkkeAktuell>>()
+                    responseBody.size shouldBeEqualTo 2
+                }
+            }
+
+            it("Fails to retrieves ikke aktuell vurderinger for person when another person has vurdering") {
+                testApplication {
+                    ikkeAktuellRepository.createIkkeAktuell(
+                        connection = database.connection,
+                        commit = true,
+                        ikkeAktuell = newIkkeAktuellVurdering(),
+                    )
+
+                    val client = setupApiAndClient()
+                    val response = client.get(urlIkkeAktuellPersonIdent) {
+                        bearerAuth(validToken)
+                        header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_ALTERNATIVE.value)
+                    }
+                    response.status shouldBeEqualTo HttpStatusCode.OK
+                    val responseBody = response.body<List<IkkeAktuell>>()
+                    responseBody.size shouldBeEqualTo 0
+                }
+            }
+
+            it("returns status Forbidden if denied access to person") {
+                testApplication {
+                    val client = setupApiAndClient()
+
+                    val response = client.get(urlIkkeAktuellPersonIdent) {
+                        bearerAuth(validToken)
+                        header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        header(NAV_PERSONIDENT_HEADER, UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value)
+                    }
+                    response.status shouldBeEqualTo HttpStatusCode.Forbidden
+                }
+            }
+        }
     }
 })
 
 fun generateNewIkkeAktuellDTO(
-    personIdent: PersonIdentNumber,
+    personIdent: Personident,
 ) = CreateIkkeAktuellDTO(
     personIdent = personIdent.value,
     arsak = IkkeAktuellArsak.DIALOGMOTE_AVHOLDT.name,

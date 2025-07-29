@@ -1,7 +1,7 @@
 package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.domain.DialogmoteStatusEndring
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import java.sql.Connection
 import java.time.OffsetDateTime
 import java.util.*
@@ -51,7 +51,7 @@ const val queryGetLatestDialogmoteFerdigstiltForPerson =
     """
 
 fun Connection.getLatestDialogmoteFerdigstiltForPerson(
-    personIdent: PersonIdentNumber,
+    personIdent: Personident,
 ): OffsetDateTime? {
     val dateTimeList = prepareStatement(queryGetLatestDialogmoteFerdigstiltForPerson).use {
         it.setString(1, personIdent.value)

@@ -21,7 +21,7 @@ enum class DialogmotekandidatStoppunktStatus {
 data class DialogmotekandidatStoppunkt private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
-    val personIdent: PersonIdentNumber,
+    val personIdent: Personident,
     val processedAt: OffsetDateTime?,
     val status: DialogmotekandidatStoppunktStatus,
     val stoppunktPlanlagt: LocalDate,
@@ -39,7 +39,7 @@ data class DialogmotekandidatStoppunkt private constructor(
         }
 
         fun planlagt(
-            arbeidstakerPersonIdent: PersonIdentNumber,
+            arbeidstakerPersonIdent: Personident,
             tilfelleStart: LocalDate,
             tilfelleEnd: LocalDate,
         ) = DialogmotekandidatStoppunkt(

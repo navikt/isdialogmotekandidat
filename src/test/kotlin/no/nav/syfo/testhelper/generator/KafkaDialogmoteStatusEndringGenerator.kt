@@ -2,11 +2,11 @@ package no.nav.syfo.testhelper.generator
 
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmoteStatusEndringType
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import java.time.OffsetDateTime
 
 fun generateKDialogmoteStatusEndring(
-    personIdentNumber: PersonIdentNumber,
+    personIdentNumber: Personident,
     statusEndringType: DialogmoteStatusEndringType,
     moteTidspunkt: OffsetDateTime,
     endringsTidspunkt: OffsetDateTime,

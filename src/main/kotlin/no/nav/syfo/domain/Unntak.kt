@@ -21,14 +21,14 @@ data class Unntak private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val createdBy: String,
-    val personIdent: PersonIdentNumber,
+    val personIdent: Personident,
     val arsak: UnntakArsak,
     val beskrivelse: String?,
 ) {
 
     constructor(
         createdBy: String,
-        personIdent: PersonIdentNumber,
+        personIdent: Personident,
         arsak: UnntakArsak,
         beskrivelse: String?,
     ) : this(
@@ -49,7 +49,7 @@ data class Unntak private constructor(
             uuid: UUID,
             createdAt: OffsetDateTime,
             createdBy: String,
-            personIdent: PersonIdentNumber,
+            personIdent: Personident,
             arsak: UnntakArsak,
             beskrivelse: String?,
         ) = Unntak(

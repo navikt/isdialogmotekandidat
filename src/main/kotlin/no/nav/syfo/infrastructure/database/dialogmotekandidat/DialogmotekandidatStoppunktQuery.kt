@@ -2,7 +2,7 @@ package no.nav.syfo.infrastructure.database.dialogmotekandidat
 
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.NoElementInsertedException
 import no.nav.syfo.infrastructure.database.toList
@@ -61,7 +61,7 @@ const val queryGetDialogmotekandidatStoppunkt =
     """
 
 fun DatabaseInterface.getDialogmotekandidatStoppunktList(
-    arbeidstakerPersonIdent: PersonIdentNumber,
+    arbeidstakerPersonIdent: Personident,
 ): List<PDialogmotekandidatStoppunkt> =
     this.connection.use { connection ->
         connection.prepareStatement(queryGetDialogmotekandidatStoppunkt).use {
@@ -114,7 +114,7 @@ fun ResultSet.toPDialogmotekandidatStoppunktList(): PDialogmotekandidatStoppunkt
         id = getInt("id"),
         uuid = UUID.fromString(getString("uuid")),
         createdAt = getObject("created_at", OffsetDateTime::class.java),
-        personIdent = PersonIdentNumber(getString("personident")),
+        personIdent = Personident(getString("personident")),
         processedAt = getObject("processed_at", OffsetDateTime::class.java),
         status = getString("status"),
         stoppunktPlanlagt = getDate("stoppunkt_planlagt").toLocalDate(),

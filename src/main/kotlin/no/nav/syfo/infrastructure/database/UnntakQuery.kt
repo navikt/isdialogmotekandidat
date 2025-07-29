@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Unntak
 import java.sql.Connection
 import java.sql.ResultSet
@@ -46,7 +46,7 @@ const val queryGetUnntakForPerson: String =
     """
 
 fun DatabaseInterface.getUnntakList(
-    personIdent: PersonIdentNumber,
+    personIdent: Personident,
 ): List<PUnntak> = this.connection.use { connection ->
     connection.prepareStatement(queryGetUnntakForPerson).use {
         it.setString(1, personIdent.value)
