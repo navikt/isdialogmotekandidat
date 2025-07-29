@@ -1,8 +1,8 @@
 package no.nav.syfo.oppfolgingstilfelle
 
-import no.nav.syfo.dialogmotekandidat.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
-import no.nav.syfo.dialogmotekandidat.domain.DialogmotekandidatEndring
-import no.nav.syfo.oppfolgingstilfelle.domain.isDialogmotekandidat
+import no.nav.syfo.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
+import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.domain.isDialogmotekandidat
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.generator.*
 import no.nav.syfo.util.defaultZoneOffset
@@ -68,7 +68,8 @@ class OppfolgingstilfelleSpek : Spek({
 
             val result = latestOppfolgingstilfelle.isDialogmotekandidat(
                 dialogmotekandidatEndringList = dialogmotekandidatEndringList,
-                latestDialogmoteFerdigstilt = latestOppfolgingstilfelle.tilfelleStart.toOffsetDatetime().plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 10),
+                latestDialogmoteFerdigstilt = latestOppfolgingstilfelle.tilfelleStart.toOffsetDatetime()
+                    .plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 10),
             )
             result.shouldBeFalse()
         }

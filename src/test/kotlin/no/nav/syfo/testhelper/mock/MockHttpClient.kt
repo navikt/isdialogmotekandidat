@@ -4,8 +4,8 @@ import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import no.nav.syfo.application.Environment
-import no.nav.syfo.client.commonConfig
+import no.nav.syfo.Environment
+import no.nav.syfo.infrastructure.clients.commonConfig
 import no.nav.syfo.util.configuredJacksonMapper
 
 val mapper = configuredJacksonMapper()

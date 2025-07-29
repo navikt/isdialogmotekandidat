@@ -1,6 +1,8 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.dialogmotekandidat.domain.*
+import no.nav.syfo.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
+import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.PersonIdentNumber
 import java.time.LocalDate
 

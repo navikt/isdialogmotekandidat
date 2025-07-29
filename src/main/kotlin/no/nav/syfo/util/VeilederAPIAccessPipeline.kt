@@ -1,8 +1,8 @@
 package no.nav.syfo.util
 
 import io.ktor.server.routing.*
-import no.nav.syfo.application.exception.ForbiddenAccessVeilederException
-import no.nav.syfo.client.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.api.exception.ForbiddenAccessVeilederException
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.domain.PersonIdentNumber
 
 suspend fun RoutingContext.validateVeilederAccess(

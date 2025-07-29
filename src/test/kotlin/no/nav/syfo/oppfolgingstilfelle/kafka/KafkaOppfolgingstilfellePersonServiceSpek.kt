@@ -1,11 +1,17 @@
 package no.nav.syfo.oppfolgingstilfelle.kafka
 
-import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.dialogmotekandidat.database.getDialogmotekandidatStoppunktList
-import no.nav.syfo.dialogmotekandidat.database.toDialogmotekandidatStoppunktList
-import no.nav.syfo.dialogmotekandidat.domain.*
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatStoppunktList
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatStoppunktList
+import no.nav.syfo.domain.ARENA_CUTOFF
+import no.nav.syfo.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
+import no.nav.syfo.domain.DialogmotekandidatStoppunkt
+import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfelle
+import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePerson
+import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePersonService
+import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.OPPFOLGINGSTILFELLE_PERSON_TOPIC
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD
@@ -238,7 +244,9 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                 stoppunktForCurrentTilfelle.personIdent.value shouldBeEqualTo kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
                 stoppunktForCurrentTilfelle.processedAt.shouldBeNull()
                 stoppunktForCurrentTilfelle.status shouldBeEqualTo DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT
-                stoppunktForCurrentTilfelle.stoppunktPlanlagt shouldBeEqualTo currentTilfelle.start.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
+                stoppunktForCurrentTilfelle.stoppunktPlanlagt shouldBeEqualTo currentTilfelle.start.plusDays(
+                    DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
+                )
             }
 
             it("should create 2 DialogmotekandidatStoppunkt, if polled 1 that is not Dialogmotekandidat and 2 that are Dialogmotekandidat") {

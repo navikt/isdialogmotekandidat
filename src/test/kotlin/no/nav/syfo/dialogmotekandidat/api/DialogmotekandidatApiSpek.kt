@@ -8,7 +8,10 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
-import no.nav.syfo.dialogmotekandidat.kafka.DialogmotekandidatEndringProducer
+import no.nav.syfo.api.DialogmotekandidatDTO
+import no.nav.syfo.api.endpoints.kandidatApiBasePath
+import no.nav.syfo.api.endpoints.kandidatApiPersonidentPath
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.oppfolgingstilfelle.toOffsetDatetime
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.*

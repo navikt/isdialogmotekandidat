@@ -1,7 +1,7 @@
 package no.nav.syfo.testhelper
 
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.client.wellknown.WellKnown
+import no.nav.syfo.ApplicationState
+import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.testhelper.mock.*
 import java.nio.file.Paths
 
