@@ -6,7 +6,7 @@ import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandi
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.isLatestIkkeKandidat
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.createUnntak
 import no.nav.syfo.infrastructure.database.toUnntakList
 import no.nav.syfo.infrastructure.database.getUnntakList
@@ -50,7 +50,7 @@ class UnntakService(
         }
     }
 
-    fun getUnntakList(personIdent: PersonIdentNumber): List<Unntak> {
+    fun getUnntakList(personIdent: Personident): List<Unntak> {
         return database.getUnntakList(personIdent = personIdent).toUnntakList()
     }
 }

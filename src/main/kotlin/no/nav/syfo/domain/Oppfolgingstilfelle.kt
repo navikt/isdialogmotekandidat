@@ -6,7 +6,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 
 data class Oppfolgingstilfelle(
-    val personIdent: PersonIdentNumber,
+    val personIdent: Personident,
     val tilfelleStart: LocalDate,
     val tilfelleEnd: LocalDate,
     val arbeidstakerAtTilfelleEnd: Boolean,

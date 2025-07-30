@@ -13,7 +13,7 @@ enum class DialogmoteStatusEndringType {
 }
 
 data class DialogmoteStatusEndring private constructor(
-    val personIdentNumber: PersonIdentNumber,
+    val personIdentNumber: Personident,
     val type: DialogmoteStatusEndringType,
     val createdAt: OffsetDateTime,
     val moteTidspunkt: OffsetDateTime,
@@ -21,7 +21,7 @@ data class DialogmoteStatusEndring private constructor(
 ) {
     companion object {
         fun create(kafkaDialogmoteStatusEndring: KDialogmoteStatusEndring) = DialogmoteStatusEndring(
-            personIdentNumber = PersonIdentNumber(kafkaDialogmoteStatusEndring.getPersonIdent()),
+            personIdentNumber = Personident(kafkaDialogmoteStatusEndring.getPersonIdent()),
             type = DialogmoteStatusEndringType.valueOf(kafkaDialogmoteStatusEndring.getStatusEndringType()),
             createdAt = OffsetDateTime.now(),
             moteTidspunkt = OffsetDateTime.ofInstant(

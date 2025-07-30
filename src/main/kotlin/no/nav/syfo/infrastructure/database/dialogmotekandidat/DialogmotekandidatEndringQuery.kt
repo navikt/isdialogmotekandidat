@@ -4,7 +4,7 @@ import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.NoElementInsertedException
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.Instant
@@ -50,7 +50,7 @@ const val queryGetDialogmotekandidatEndringForPerson =
     """
 
 fun Connection.getDialogmotekandidatEndringListForPerson(
-    personIdent: PersonIdentNumber,
+    personIdent: Personident,
 ): List<PDialogmotekandidatEndring> = prepareStatement(queryGetDialogmotekandidatEndringForPerson).use {
     it.setString(1, personIdent.value)
     it.executeQuery().toList { toPDialogmotekandidatEndringList() }

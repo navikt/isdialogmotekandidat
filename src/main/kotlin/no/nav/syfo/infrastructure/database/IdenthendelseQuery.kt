@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import java.sql.Connection
 import java.sql.PreparedStatement
 
@@ -12,8 +12,8 @@ const val queryUpdateKandidatStoppunkt =
     """
 
 fun Connection.updateKandidatStoppunkt(
-    nyPersonident: PersonIdentNumber,
-    inactiveIdenter: List<PersonIdentNumber>,
+    nyPersonident: Personident,
+    inactiveIdenter: List<Personident>,
     commit: Boolean = false,
 ): Int {
     var updatedRows = 0
@@ -38,8 +38,8 @@ const val queryUpdateKandidatEndring =
     """
 
 fun Connection.updateKandidatEndring(
-    nyPersonident: PersonIdentNumber,
-    inactiveIdenter: List<PersonIdentNumber>,
+    nyPersonident: Personident,
+    inactiveIdenter: List<Personident>,
     commit: Boolean = false,
 ): Int {
     var updatedRows = 0
@@ -64,8 +64,8 @@ const val queryUpdateUnntak =
     """
 
 fun Connection.updateUnntak(
-    nyPersonident: PersonIdentNumber,
-    inactiveIdenter: List<PersonIdentNumber>,
+    nyPersonident: Personident,
+    inactiveIdenter: List<Personident>,
     commit: Boolean = false,
 ): Int {
     var updatedRows = 0
@@ -90,8 +90,8 @@ const val queryUpdateDialogmoteStatus =
     """
 
 fun Connection.updateDialogmoteStatus(
-    nyPersonident: PersonIdentNumber,
-    inactiveIdenter: List<PersonIdentNumber>,
+    nyPersonident: Personident,
+    inactiveIdenter: List<Personident>,
     commit: Boolean = false,
 ): Int {
     var updatedRows = 0
@@ -124,7 +124,7 @@ const val queryGetIdentCount =
     """
 
 fun DatabaseInterface.getIdentCount(
-    identer: List<PersonIdentNumber>,
+    identer: List<Personident>,
 ): Int =
     this.connection.use { connection ->
         connection.prepareStatement(queryGetIdentCount).use<PreparedStatement, Int> {

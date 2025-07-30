@@ -10,7 +10,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.httpClientDefault
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -29,7 +29,7 @@ class OppfolgingstilfelleClient(
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSON_PATH"
 
     suspend fun getOppfolgingstilfellePerson(
-        personIdent: PersonIdentNumber,
+        personIdent: Personident,
         veilederToken: String? = null,
         callId: String?,
     ): OppfolgingstilfellePersonDTO? {

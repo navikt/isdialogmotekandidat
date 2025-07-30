@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.clients.oppfolgingstilfelle
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.Oppfolgingstilfelle
 import no.nav.syfo.util.isBeforeOrEqual
@@ -21,7 +21,7 @@ data class OppfolgingstilfelleDTO(
 )
 
 fun OppfolgingstilfelleDTO.toOppfolgingstilfelle(
-    personIdent: PersonIdentNumber,
+    personIdent: Personident,
     dodsdato: LocalDate?,
 ) = Oppfolgingstilfelle(
     personIdent = personIdent,
@@ -32,7 +32,7 @@ fun OppfolgingstilfelleDTO.toOppfolgingstilfelle(
     dodsdato = dodsdato,
 )
 
-fun OppfolgingstilfellePersonDTO?.toOppfolgingstilfelleList(personIdent: PersonIdentNumber): List<Oppfolgingstilfelle> =
+fun OppfolgingstilfellePersonDTO?.toOppfolgingstilfelleList(personIdent: Personident): List<Oppfolgingstilfelle> =
     this?.oppfolgingstilfelleList
         ?.filter { it.start.isBeforeOrEqual(tomorrow()) }
         ?.map {

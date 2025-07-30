@@ -3,7 +3,7 @@ package no.nav.syfo.testhelper.mock
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.pdl.domain.IdentType
 import no.nav.syfo.infrastructure.clients.pdl.domain.PdlHentIdenter
 import no.nav.syfo.infrastructure.clients.pdl.domain.PdlHentIdenterRequest
@@ -14,9 +14,9 @@ import no.nav.syfo.testhelper.UserConstants
 
 suspend fun MockRequestHandleScope.pdlMockResponse(request: HttpRequestData): HttpResponseData {
     val pdlRequest = request.receiveBody<PdlHentIdenterRequest>()
-    return when (val personIdent = PersonIdentNumber(pdlRequest.variables.ident)) {
+    return when (val personIdent = Personident(pdlRequest.variables.ident)) {
         UserConstants.ARBEIDSTAKER_3_PERSONIDENTNUMBER -> {
-            respond(generatePdlIdenterResponse(PersonIdentNumber("11111111111")))
+            respond(generatePdlIdenterResponse(Personident("11111111111")))
         }
         UserConstants.FEILENDE_PERSONIDENTNUMBER -> {
             respond(HttpStatusCode.InternalServerError)
@@ -28,7 +28,7 @@ suspend fun MockRequestHandleScope.pdlMockResponse(request: HttpRequestData): Ht
 }
 
 private fun generatePdlIdenterResponse(
-    personIdentNumber: PersonIdentNumber,
+    personIdentNumber: Personident,
 ) = PdlIdenterResponse(
     data = PdlHentIdenter(
         hentIdenter = PdlIdenter(
@@ -49,12 +49,12 @@ private fun generatePdlIdenterResponse(
     errors = null,
 )
 
-private fun PersonIdentNumber.toHistoricalPersonIdentNumber(): PersonIdentNumber {
+private fun Personident.toHistoricalPersonIdentNumber(): Personident {
     val firstDigit = this.value[0].digitToInt()
     val newDigit = firstDigit + 4
     val dNummer = this.value.replace(
         firstDigit.toString(),
         newDigit.toString(),
     )
-    return PersonIdentNumber(dNummer)
+    return Personident(dNummer)
 }

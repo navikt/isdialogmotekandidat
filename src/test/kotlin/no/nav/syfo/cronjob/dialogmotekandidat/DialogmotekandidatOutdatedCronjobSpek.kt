@@ -8,7 +8,7 @@ import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandi
 import no.nav.syfo.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.cronjob.dialogmotekandidat.DialogmotekandidatOutdatedCronjob
 import no.nav.syfo.oppfolgingstilfelle.toOffsetDatetime
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -46,7 +46,7 @@ class DialogmotekandidatOutdatedCronjobSpek : Spek({
         dialogmotekandidatService = dialogmotekandidatService,
     )
 
-    fun getDialogmotekandidatEndringer(personIdent: PersonIdentNumber): List<PDialogmotekandidatEndring> =
+    fun getDialogmotekandidatEndringer(personIdent: Personident): List<PDialogmotekandidatEndring> =
         database.connection.use { connection -> connection.getDialogmotekandidatEndringListForPerson(personIdent) }
 
     beforeEachTest {

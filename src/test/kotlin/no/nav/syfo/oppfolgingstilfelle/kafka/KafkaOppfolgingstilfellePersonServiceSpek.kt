@@ -7,7 +7,7 @@ import no.nav.syfo.domain.ARENA_CUTOFF
 import no.nav.syfo.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfelle
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePerson
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePersonService
@@ -192,7 +192,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
                 val dialogmotekandidatStoppunktList =
                     database.getDialogmotekandidatStoppunktList(
-                        arbeidstakerPersonIdent = PersonIdentNumber(
+                        arbeidstakerPersonIdent = Personident(
                             kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
                         )
                     ).toDialogmotekandidatStoppunktList()
@@ -228,7 +228,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
                 val dialogmotekandidatStoppunktList =
                     database.getDialogmotekandidatStoppunktList(
-                        arbeidstakerPersonIdent = PersonIdentNumber(
+                        arbeidstakerPersonIdent = Personident(
                             kafkaOppfolgingstilfellePersonVanligOgFramtidig.personIdentNumber
                         )
                     ).toDialogmotekandidatStoppunktList()
@@ -270,7 +270,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
                 val dialogmotekandidatStoppunktList: List<DialogmotekandidatStoppunkt> =
                     database.getDialogmotekandidatStoppunktList(
-                        arbeidstakerPersonIdent = PersonIdentNumber(
+                        arbeidstakerPersonIdent = Personident(
                             kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
                         )
                     ).toDialogmotekandidatStoppunktList()
@@ -309,7 +309,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
                 val dialogmotekandidatStoppunktList: List<DialogmotekandidatStoppunkt> =
                     database.getDialogmotekandidatStoppunktList(
-                        arbeidstakerPersonIdent = PersonIdentNumber(
+                        arbeidstakerPersonIdent = Personident(
                             kafkaOppfolgingstilfellePersonTilbakedatertLast.personIdentNumber
                         )
                     ).toDialogmotekandidatStoppunktList()
@@ -347,7 +347,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
 
                 val dialogmotekandidatStoppunktList: List<DialogmotekandidatStoppunkt> =
                     database.getDialogmotekandidatStoppunktList(
-                        arbeidstakerPersonIdent = PersonIdentNumber(
+                        arbeidstakerPersonIdent = Personident(
                             kafkaOppfolgingstilfellePersonTilbakedatertLast.personIdentNumber
                         )
                     ).toDialogmotekandidatStoppunktList()
@@ -398,7 +398,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                 }
                 val dialogmotekandidatStoppunktList =
                     database.getDialogmotekandidatStoppunktList(
-                        arbeidstakerPersonIdent = PersonIdentNumber(
+                        arbeidstakerPersonIdent = Personident(
                             kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber
                         )
                     ).toDialogmotekandidatStoppunktList()
@@ -439,7 +439,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                 }
                 val dialogmotekandidatStoppunktList =
                     database.getDialogmotekandidatStoppunktList(
-                        arbeidstakerPersonIdent = PersonIdentNumber(
+                        arbeidstakerPersonIdent = Personident(
                             kafkaOppfolgingstilfellePersonDialogmotekandidatWithDodsdato.personIdentNumber
                         )
                     ).toDialogmotekandidatStoppunktList()
@@ -524,7 +524,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                 }
 
                 val dialogmotekandidatStoppunktList = database.getDialogmotekandidatStoppunktList(
-                    arbeidstakerPersonIdent = PersonIdentNumber(
+                    arbeidstakerPersonIdent = Personident(
                         kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber,
                     ),
                 ).toDialogmotekandidatStoppunktList()
@@ -588,7 +588,7 @@ class KafkaOppfolgingstilfellePersonServiceSpek : Spek({
                 }
 
                 val dialogmotekandidatStoppunktList = database.getDialogmotekandidatStoppunktList(
-                    arbeidstakerPersonIdent = PersonIdentNumber(
+                    arbeidstakerPersonIdent = Personident(
                         kafkaOppfolgingstilfellePersonDialogmotekandidatFirst.personIdentNumber,
                     ),
                 ).toDialogmotekandidatStoppunktList()

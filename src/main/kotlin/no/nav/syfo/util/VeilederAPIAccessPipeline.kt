@@ -3,11 +3,11 @@ package no.nav.syfo.util
 import io.ktor.server.routing.*
 import no.nav.syfo.api.exception.ForbiddenAccessVeilederException
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 
 suspend fun RoutingContext.validateVeilederAccess(
     action: String,
-    personIdentToAccess: PersonIdentNumber,
+    personIdentToAccess: Personident,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     requestBlock: suspend () -> Unit,
 ) {

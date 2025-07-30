@@ -3,11 +3,11 @@ package no.nav.syfo.testhelper.generator
 import no.nav.syfo.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import java.time.LocalDate
 
 fun generateDialogmotekandidatStoppunktPlanlagt(
-    arbeidstakerPersonIdent: PersonIdentNumber,
+    arbeidstakerPersonIdent: Personident,
     planlagt: LocalDate,
 ): DialogmotekandidatStoppunkt = DialogmotekandidatStoppunkt.planlagt(
     arbeidstakerPersonIdent = arbeidstakerPersonIdent,
@@ -16,13 +16,13 @@ fun generateDialogmotekandidatStoppunktPlanlagt(
 )
 
 fun generateDialogmotekandidatEndringStoppunkt(
-    personIdentNumber: PersonIdentNumber,
+    personIdentNumber: Personident,
 ): DialogmotekandidatEndring = DialogmotekandidatEndring.stoppunktKandidat(
     personIdentNumber = personIdentNumber
 )
 
 fun generateDialogmotekandidatEndringFerdigstilt(
-    personIdentNumber: PersonIdentNumber,
+    personIdentNumber: Personident,
 ): DialogmotekandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
     personIdentNumber = personIdentNumber
 )

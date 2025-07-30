@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.domain.Oppfolgingstilfelle
 import no.nav.syfo.util.*
@@ -27,7 +27,7 @@ data class KafkaOppfolgingstilfelle(
 fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelle(
     tilfelle: KafkaOppfolgingstilfelle,
 ) = Oppfolgingstilfelle(
-    personIdent = PersonIdentNumber(this.personIdentNumber),
+    personIdent = Personident(this.personIdentNumber),
     tilfelleStart = tilfelle.start,
     tilfelleEnd = tilfelle.end,
     arbeidstakerAtTilfelleEnd = tilfelle.arbeidstakerAtTilfelleEnd,

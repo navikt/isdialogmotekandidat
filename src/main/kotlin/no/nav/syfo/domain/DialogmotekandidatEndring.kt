@@ -20,13 +20,13 @@ enum class DialogmotekandidatEndringArsak {
 data class DialogmotekandidatEndring private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
-    val personIdentNumber: PersonIdentNumber,
+    val personIdentNumber: Personident,
     val kandidat: Boolean,
     val arsak: DialogmotekandidatEndringArsak,
 ) {
     companion object {
         fun stoppunktKandidat(
-            personIdentNumber: PersonIdentNumber,
+            personIdentNumber: Personident,
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = true,
@@ -43,7 +43,7 @@ data class DialogmotekandidatEndring private constructor(
             )
 
         fun ferdigstiltDialogmote(
-            personIdentNumber: PersonIdentNumber,
+            personIdentNumber: Personident,
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
@@ -51,7 +51,7 @@ data class DialogmotekandidatEndring private constructor(
         )
 
         fun lukketDialogmote(
-            personIdentNumber: PersonIdentNumber,
+            personIdentNumber: Personident,
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
@@ -59,7 +59,7 @@ data class DialogmotekandidatEndring private constructor(
         )
 
         fun unntak(
-            personIdentNumber: PersonIdentNumber,
+            personIdentNumber: Personident,
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
@@ -67,7 +67,7 @@ data class DialogmotekandidatEndring private constructor(
         )
 
         fun ikkeAktuell(
-            personIdentNumber: PersonIdentNumber,
+            personIdentNumber: Personident,
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
@@ -75,7 +75,7 @@ data class DialogmotekandidatEndring private constructor(
         )
 
         fun lukket(
-            personIdentNumber: PersonIdentNumber,
+            personIdentNumber: Personident,
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
@@ -83,7 +83,7 @@ data class DialogmotekandidatEndring private constructor(
         )
 
         private fun create(
-            personIdentNumber: PersonIdentNumber,
+            personIdentNumber: Personident,
             kandidat: Boolean,
             arsak: DialogmotekandidatEndringArsak,
         ) = DialogmotekandidatEndring(

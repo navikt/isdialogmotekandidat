@@ -1,11 +1,11 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Oppfolgingstilfelle
 import java.time.LocalDate
 
 fun generateOppfolgingstilfelle(
-    arbeidstakerPersonIdent: PersonIdentNumber,
+    arbeidstakerPersonIdent: Personident,
     oppfolgingstilfelleDurationInDays: Long,
     backdatedNumberOfDays: Long = 0,
 ) = Oppfolgingstilfelle(

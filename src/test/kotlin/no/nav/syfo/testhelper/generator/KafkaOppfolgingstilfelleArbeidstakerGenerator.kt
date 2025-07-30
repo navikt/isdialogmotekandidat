@@ -1,6 +1,6 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfelle
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePerson
@@ -12,7 +12,7 @@ import java.util.*
 
 fun generateKafkaOppfolgingstilfellePerson(
     arbeidstakerAtTilfelleEnd: Boolean = true,
-    personIdentNumber: PersonIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+    personIdentNumber: Personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
     start: LocalDate = LocalDate.now().minusDays(1),
     oppfolgingstilfelleDurationInDays: Long,
     virksomhetsnummer: Virksomhetsnummer = VIRKSOMHETSNUMMER_DEFAULT,

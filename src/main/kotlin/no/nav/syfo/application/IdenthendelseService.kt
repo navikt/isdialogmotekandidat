@@ -3,7 +3,7 @@ package no.nav.syfo.application
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.kafka.identhendelse.COUNT_KAFKA_CONSUMER_PDL_AKTOR_UPDATES
 import no.nav.syfo.infrastructure.kafka.identhendelse.KafkaIdenthendelseDTO
 import no.nav.syfo.infrastructure.database.getIdentCount
@@ -37,7 +37,7 @@ class IdenthendelseService(
         }
     }
 
-    private fun updateAllTables(activeIdent: PersonIdentNumber, inactiveIdenter: List<PersonIdentNumber>): Int {
+    private fun updateAllTables(activeIdent: Personident, inactiveIdenter: List<Personident>): Int {
         var numberOfUpdatedIdenter = 0
         val inactiveIdenterCount = database.getIdentCount(inactiveIdenter)
 
@@ -56,7 +56,7 @@ class IdenthendelseService(
     }
 
     // Erfaringer fra andre team tilsier at vi burde dobbeltsjekke at ting har blitt oppdatert i PDL før vi gjør endringer
-    private fun checkThatPdlIsUpdated(nyIdent: PersonIdentNumber) {
+    private fun checkThatPdlIsUpdated(nyIdent: Personident) {
         runBlocking {
             val pdlIdenter = pdlClient.getPdlIdenter(nyIdent)?.hentIdenter ?: throw RuntimeException("Fant ingen identer fra PDL")
             if (nyIdent.value != pdlIdenter.aktivIdent && pdlIdenter.identhendelseIsNotHistorisk(nyIdent.value)) {

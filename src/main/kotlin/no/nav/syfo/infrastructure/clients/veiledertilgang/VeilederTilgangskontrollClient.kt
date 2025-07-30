@@ -9,7 +9,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.httpClientDefault
-import no.nav.syfo.domain.PersonIdentNumber
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -25,7 +25,7 @@ class VeilederTilgangskontrollClient(
 
     suspend fun hasAccess(
         callId: String,
-        personIdent: PersonIdentNumber,
+        personIdent: Personident,
         token: String,
     ): Boolean {
         val onBehalfOfToken = azureAdClient.getOnBehalfOfToken(
