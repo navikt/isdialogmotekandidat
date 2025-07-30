@@ -1,31 +1,17 @@
 package no.nav.syfo.application
 
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.*
+import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.util.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING
 import no.nav.syfo.util.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING
-import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPerson
-import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.DialogmotekandidatStoppunkt
-import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Unntak
-import no.nav.syfo.domain.isDialogmotekandidat
-import no.nav.syfo.domain.toDialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.findOutdatedDialogmotekandidater
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidaterWithStoppunktTodayOrYesterday
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatStoppunktList
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.updateDialogmotekandidatStoppunktStatus
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
@@ -33,14 +19,28 @@ class DialogmotekandidatService(
     private val database: DatabaseInterface,
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
 ) {
-    fun getLatestDialogmotekandidatEndring(
-        personIdent: Personident,
-    ) = getDialogmotekandidatEndringer(personIdent = personIdent).firstOrNull()
+
+    suspend fun getKandidat(
+        personident: Personident,
+        veilederToken: String?,
+        callId: String,
+    ): Dialogmotekandidat {
+        val oppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
+            arbeidstakerPersonIdent = personident,
+            veilederToken = veilederToken,
+            callId = callId,
+        )
+        val latestKandidatEndring: DialogmotekandidatEndring? = getDialogmotekandidatEndringer(personident = personident).firstOrNull()
+        return Dialogmotekandidat.create(
+            latestDialogmotekandidatEndring = latestKandidatEndring,
+            latestOppfolgingstilfelleStart = oppfolgingstilfelle?.tilfelleStart
+        )
+    }
 
     fun getDialogmotekandidatEndringer(
-        personIdent: Personident,
+        personident: Personident,
     ) = database.connection.use { connection ->
-        connection.getDialogmotekandidatEndringListForPerson(personIdent = personIdent)
+        connection.getDialogmotekandidatEndringListForPerson(personIdent = personident)
     }.toDialogmotekandidatEndringList()
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =

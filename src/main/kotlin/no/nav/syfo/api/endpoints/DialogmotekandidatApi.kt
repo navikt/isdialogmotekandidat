@@ -2,17 +2,14 @@ package no.nav.syfo.api.endpoints
 
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.syfo.api.DialogmotekandidatDTO
 import no.nav.syfo.api.HistorikkDTO
-import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.application.DialogmotekandidatService
-import no.nav.syfo.domain.toDialogmotekandidatDTO
-import no.nav.syfo.domain.Personident
 import no.nav.syfo.application.IkkeAktuellService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.application.UnntakService
+import no.nav.syfo.domain.Personident
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.util.*
-import java.time.LocalDate
 
 const val kandidatApiBasePath = "/api/internad/v1/kandidat"
 const val kandidatApiPersonidentPath = "/personident"
@@ -27,38 +24,21 @@ fun Route.registerDialogmotekandidatApi(
 ) {
     route(kandidatApiBasePath) {
         get(kandidatApiPersonidentPath) {
-            val personIdent = personIdentHeader()?.let { personIdent ->
+            val personident = personIdentHeader()?.let { personIdent ->
                 Personident(personIdent)
             }
                 ?: throw IllegalArgumentException("Failed to get kandidat for person: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(
                 action = "Get Kandidat for person",
-                personIdentToAccess = personIdent,
+                personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val oppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
-                    arbeidstakerPersonIdent = personIdent,
+                val dialogmotekandidat = dialogmotekandidatService.getKandidat(
+                    personident = personident,
                     veilederToken = getBearerHeader(),
                     callId = getCallId(),
                 )
-                val latestKandidatEndring = dialogmotekandidatService.getLatestDialogmotekandidatEndring(
-                    personIdent = personIdent
-                )
-                val kandidatDate = latestKandidatEndring?.createdAt?.toLocalDate()
-                val oppfolgingstilfelleStart = oppfolgingstilfelle?.tilfelleStart
-                val kandidatInOppfolgingstilfelle =
-                    oppfolgingstilfelleStart != null && kandidatDate != null && kandidatDate.isAfterOrEqual(oppfolgingstilfelleStart)
-                val sevenDaysPassedSinceKandidat = kandidatDate != null && kandidatDate.isBeforeOrEqual(LocalDate.now().minusDays(7))
-
-                val kandidatDTO = if (kandidatInOppfolgingstilfelle && sevenDaysPassedSinceKandidat) {
-                    latestKandidatEndring.toDialogmotekandidatDTO()
-                } else {
-                    DialogmotekandidatDTO(
-                        kandidat = false,
-                        kandidatAt = null,
-                    )
-                }
-                call.respond(kandidatDTO)
+                call.respond(dialogmotekandidat)
             }
         }
         get(kandidatApiHistorikkPath) {
@@ -72,7 +52,7 @@ fun Route.registerDialogmotekandidatApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 val dialogmotekandidatEndringer = dialogmotekandidatService.getDialogmotekandidatEndringer(
-                    personIdent = personident,
+                    personident = personident,
                 )
                 val unntak = unntakService.getUnntakList(
                     personIdent = personident,

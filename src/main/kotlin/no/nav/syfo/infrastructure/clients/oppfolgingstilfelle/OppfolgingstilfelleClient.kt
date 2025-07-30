@@ -7,10 +7,11 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.application.IOppfolgingstilfelleClient
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.httpClientDefault
-import no.nav.syfo.domain.Personident
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -22,15 +23,15 @@ class OppfolgingstilfelleClient(
     private val azureAdClient: AzureAdClient,
     private val clientEnvironment: ClientEnvironment,
     private val httpClient: HttpClient = httpClientDefault(),
-) {
+) : IOppfolgingstilfelleClient {
     private val personOppfolgingstilfelleSystemUrl: String =
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_SYSTEM_PERSON_PATH"
     private val personOppfolgingstilfelleVeilederUrl: String =
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSON_PATH"
 
-    suspend fun getOppfolgingstilfellePerson(
+    override suspend fun getOppfolgingstilfellePerson(
         personIdent: Personident,
-        veilederToken: String? = null,
+        veilederToken: String?,
         callId: String?,
     ): OppfolgingstilfellePersonDTO? {
         val callIdToUse = callId ?: UUID.randomUUID().toString()

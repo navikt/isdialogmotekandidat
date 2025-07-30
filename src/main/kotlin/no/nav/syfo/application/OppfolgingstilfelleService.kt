@@ -1,14 +1,13 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
-import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.toOppfolgingstilfelleList
 import no.nav.syfo.domain.Oppfolgingstilfelle
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.tilfelleForDate
+import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.toOppfolgingstilfelleList
 import java.time.LocalDate
 
 class OppfolgingstilfelleService(
-    private val oppfolgingstilfelleClient: OppfolgingstilfelleClient,
+    private val oppfolgingstilfelleClient: IOppfolgingstilfelleClient,
 ) {
     suspend fun getLatestOppfolgingstilfelle(
         arbeidstakerPersonIdent: Personident,
