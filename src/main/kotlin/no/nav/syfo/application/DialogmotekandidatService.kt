@@ -30,7 +30,8 @@ class DialogmotekandidatService(
             veilederToken = veilederToken,
             callId = callId,
         )
-        val latestKandidatEndring: DialogmotekandidatEndring? = getDialogmotekandidatEndringer(personident = personident).firstOrNull()
+        val latestKandidatEndring: DialogmotekandidatEndring? =
+            getDialogmotekandidatEndringer(personident = personident).firstOrNull()
         return Dialogmotekandidat.create(
             latestDialogmotekandidatEndring = latestKandidatEndring,
             latestOppfolgingstilfelleStart = oppfolgingstilfelle?.tilfelleStart

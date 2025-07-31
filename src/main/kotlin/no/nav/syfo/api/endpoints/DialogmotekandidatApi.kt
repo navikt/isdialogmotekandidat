@@ -5,7 +5,6 @@ import io.ktor.server.routing.*
 import no.nav.syfo.api.HistorikkDTO
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.IkkeAktuellService
-import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.application.UnntakService
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
@@ -17,7 +16,6 @@ const val kandidatApiHistorikkPath = "/historikk"
 
 fun Route.registerDialogmotekandidatApi(
     dialogmotekandidatService: DialogmotekandidatService,
-    oppfolgingstilfelleService: OppfolgingstilfelleService,
     unntakService: UnntakService,
     ikkeAktuellService: IkkeAktuellService,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
