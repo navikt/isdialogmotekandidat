@@ -8,15 +8,21 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
-import no.nav.syfo.api.DialogmotekandidatDTO
 import no.nav.syfo.api.endpoints.kandidatApiBasePath
 import no.nav.syfo.api.endpoints.kandidatApiPersonidentPath
+import no.nav.syfo.domain.Dialogmotekandidat
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.oppfolgingstilfelle.toOffsetDatetime
 import no.nav.syfo.testhelper.*
-import no.nav.syfo.testhelper.generator.*
-import no.nav.syfo.util.*
-import org.amshove.kluent.*
+import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringFerdigstilt
+import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.configure
+import no.nav.syfo.util.toLocalDateTimeOslo
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeFalse
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldBeTrue
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
@@ -67,9 +73,9 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
-                        dialogmotekandidatDTO.kandidat.shouldBeFalse()
-                        dialogmotekandidatDTO.kandidatAt.shouldBeNull()
+                        val dialogmotekandidat = response.body<Dialogmotekandidat>()
+                        dialogmotekandidat.kandidat.shouldBeFalse()
+                        dialogmotekandidat.kandidatAt.shouldBeNull()
                     }
                 }
 
@@ -88,10 +94,10 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
+                        val dialogmotekandidat = response.body<Dialogmotekandidat>()
 
-                        dialogmotekandidatDTO.kandidat.shouldBeFalse()
-                        dialogmotekandidatDTO.kandidatAt.shouldBeNull()
+                        dialogmotekandidat.kandidat.shouldBeFalse()
+                        dialogmotekandidat.kandidatAt.shouldBeNull()
                     }
                 }
 
@@ -112,9 +118,9 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
-                        dialogmotekandidatDTO.kandidat.shouldBeFalse()
-                        dialogmotekandidatDTO.kandidatAt.shouldBeNull()
+                        val dialogmotekandidat = response.body<Dialogmotekandidat>()
+                        dialogmotekandidat.kandidat.shouldBeFalse()
+                        dialogmotekandidat.kandidatAt.shouldBeNull()
                     }
                 }
                 it("returns kandidat=true for person that was generated as Stoppunkt-Kandidat 7 days ago") {
@@ -134,9 +140,9 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
-                        dialogmotekandidatDTO.kandidat.shouldBeTrue()
-                        dialogmotekandidatDTO.kandidatAt?.toInstant(ZoneOffset.UTC)
+                        val dialogmotekandidat = response.body<Dialogmotekandidat>()
+                        dialogmotekandidat.kandidat.shouldBeTrue()
+                        dialogmotekandidat.kandidatAt?.toInstant(ZoneOffset.UTC)
                             ?.toEpochMilli() shouldBeEqualTo dialogmotekandidatEndring.createdAt.toLocalDateTimeOslo()
                             .toInstant(ZoneOffset.UTC)
                             .toEpochMilli()
@@ -160,8 +166,8 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
-                        dialogmotekandidatDTO.kandidat.shouldBeFalse()
+                        val dialogmotekandidat = response.body<Dialogmotekandidat>()
+                        dialogmotekandidat.kandidat.shouldBeFalse()
                     }
                 }
 
@@ -187,9 +193,9 @@ class DialogmotekandidatApiSpek : Spek({
                         }
                         response.status shouldBeEqualTo HttpStatusCode.OK
 
-                        val dialogmotekandidatDTO = response.body<DialogmotekandidatDTO>()
-                        dialogmotekandidatDTO.kandidat.shouldBeFalse()
-                        dialogmotekandidatDTO.kandidatAt.shouldBeNull()
+                        val dialogmotekandidat = response.body<Dialogmotekandidat>()
+                        dialogmotekandidat.kandidat.shouldBeFalse()
+                        dialogmotekandidat.kandidatAt.shouldBeNull()
                     }
                 }
             }

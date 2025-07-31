@@ -1,9 +1,9 @@
 package no.nav.syfo.domain
 
-import no.nav.syfo.api.DialogmotekandidatDTO
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.PDialogmotekandidatEndring
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
-import no.nav.syfo.util.*
+import no.nav.syfo.util.nowUTC
+import no.nav.syfo.util.toLocalDateOslo
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
@@ -95,11 +95,6 @@ data class DialogmotekandidatEndring private constructor(
         )
     }
 }
-
-fun DialogmotekandidatEndring?.toDialogmotekandidatDTO() = DialogmotekandidatDTO(
-    kandidat = this?.kandidat ?: false,
-    kandidatAt = if (this?.kandidat == true) this.createdAt.toLocalDateTimeOslo() else null,
-)
 
 fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring(
     unntak: Unntak?,
