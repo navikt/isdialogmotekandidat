@@ -18,7 +18,7 @@ jobs:
     name: Deploy Kafka topic Dialogmotekandidat to NAIS dev-gcp
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
@@ -30,7 +30,7 @@ jobs:
     needs: deploy-kafka-dialogmotekandidat-dev
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: prod-gcp
