@@ -13,7 +13,7 @@ import no.nav.syfo.infrastructure.database.toIkkeAktuellList
 class IkkeAktuellService(
     private val database: DatabaseInterface,
     private val dialogmotekandidatService: DialogmotekandidatService,
-    private val ikkeAktuellRepository: IIkkeAktuellRepository,
+    private val ikkeAktuellRepository: IMotebehovVurderingRepository,
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
 ) {
     suspend fun createIkkeAktuell(
