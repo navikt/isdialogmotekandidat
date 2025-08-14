@@ -13,7 +13,7 @@ import no.nav.syfo.infrastructure.database.toIkkeAktuellList
 class IkkeAktuellService(
     private val database: DatabaseInterface,
     private val dialogmotekandidatService: DialogmotekandidatService,
-    private val ikkeAktuellRepository: IIkkeAktuellRepository,
+    private val dialogmotekandidatVurderingRepository: IDialogmotekandidatVurderingRepository,
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
 ) {
     suspend fun createIkkeAktuell(
@@ -30,7 +30,7 @@ class IkkeAktuellService(
                 throw ConflictException("Failed to create IkkeAktuell: Person is not kandidat")
             }
 
-            ikkeAktuellRepository.createIkkeAktuell(connection = connection, commit = false, ikkeAktuell = ikkeAktuell)
+            dialogmotekandidatVurderingRepository.createIkkeAktuell(connection = connection, commit = false, ikkeAktuell = ikkeAktuell)
             val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                 arbeidstakerPersonIdent = ikkeAktuell.personIdent,
                 veilederToken = veilederToken,
@@ -50,5 +50,5 @@ class IkkeAktuellService(
     }
 
     suspend fun getIkkeAktuellList(personIdent: Personident): List<IkkeAktuell> =
-        ikkeAktuellRepository.getIkkeAktuellListForPerson(personIdent = personIdent).toIkkeAktuellList()
+        dialogmotekandidatVurderingRepository.getIkkeAktuellListForPerson(personIdent = personIdent).toIkkeAktuellList()
 }

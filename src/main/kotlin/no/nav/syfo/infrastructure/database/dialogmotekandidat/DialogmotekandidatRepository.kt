@@ -1,8 +1,8 @@
 package no.nav.syfo.infrastructure.database.dialogmotekandidat
 
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
-import no.nav.syfo.domain.Personident
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.*

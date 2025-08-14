@@ -5,7 +5,7 @@ import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.PIkkeAktuell
 import java.sql.Connection
 
-interface IIkkeAktuellRepository {
+interface IDialogmotekandidatVurderingRepository {
     suspend fun getIkkeAktuellListForPerson(personIdent: Personident): List<PIkkeAktuell>
     suspend fun createIkkeAktuell(connection: Connection, commit: Boolean, ikkeAktuell: IkkeAktuell): Unit
 }
