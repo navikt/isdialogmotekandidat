@@ -19,7 +19,7 @@ import no.nav.syfo.application.metric.registerMetricApi
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.IkkeAktuellRepository
+import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -52,7 +52,7 @@ fun Application.apiModule(
     val ikkeAktuellService = IkkeAktuellService(
         database = database,
         dialogmotekandidatService = dialogmotekandidatService,
-        ikkeAktuellRepository = IkkeAktuellRepository(database),
+        dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database),
         oppfolgingstilfelleService = oppfolgingstilfelleService,
     )
 

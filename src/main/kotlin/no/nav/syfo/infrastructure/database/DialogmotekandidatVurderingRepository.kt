@@ -1,15 +1,14 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.application.IIkkeAktuellRepository
+import no.nav.syfo.application.IDialogmotekandidatVurderingRepository
 import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.Personident
 import java.sql.Connection
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.*
-import kotlin.use
 
-class IkkeAktuellRepository(private val database: DatabaseInterface) : IIkkeAktuellRepository {
+class DialogmotekandidatVurderingRepository(private val database: DatabaseInterface) : IDialogmotekandidatVurderingRepository {
 
     override suspend fun getIkkeAktuellListForPerson(personIdent: Personident): List<PIkkeAktuell> =
         database.connection.use { connection ->

@@ -8,23 +8,25 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.api.HistorikkDTO
 import no.nav.syfo.api.HistorikkType
 import no.nav.syfo.api.endpoints.kandidatApiBasePath
 import no.nav.syfo.api.endpoints.kandidatApiHistorikkPath
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
+import no.nav.syfo.api.toIkkeAktuell
+import no.nav.syfo.api.toUnntak
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatEndringArsak
-import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
-import no.nav.syfo.api.toIkkeAktuell
 import no.nav.syfo.ikkeaktuell.api.generateNewIkkeAktuellDTO
-import no.nav.syfo.infrastructure.database.createIkkeAktuell
+import no.nav.syfo.infrastructure.database.createUnntak
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
-import no.nav.syfo.api.toUnntak
-import no.nav.syfo.infrastructure.database.createUnntak
-import no.nav.syfo.util.*
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.configure
+import no.nav.syfo.util.nowUTC
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
 import org.spekframework.spek2.Spek
@@ -47,6 +49,7 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
     describe(DialogmotekandidatHistorikkApiSpek::class.java.simpleName) {
         val externalMockEnvironment = ExternalMockEnvironment.instance
         val database = externalMockEnvironment.database
+        val dialogmotekandidatVurderingRepository = externalMockEnvironment.dialogmotekandidatVurderingRepository
 
         fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
             application {
@@ -103,7 +106,13 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
                         personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
                     )
                 )
-                it.createIkkeAktuell(ikkeAktuell)
+                runBlocking {
+                    dialogmotekandidatVurderingRepository.createIkkeAktuell(
+                        connection = it,
+                        commit = false,
+                        ikkeAktuell = ikkeAktuell
+                    )
+                }
                 it.commit()
             }
         }

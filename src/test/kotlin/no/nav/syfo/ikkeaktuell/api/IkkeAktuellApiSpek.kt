@@ -1,43 +1,44 @@
 package no.nav.syfo.ikkeaktuell.api
 
 import io.ktor.client.*
-import io.ktor.client.call.body
+import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.*
-import no.nav.syfo.api.endpoints.ikkeAktuellApiBasePath
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
-import no.nav.syfo.domain.DialogmotekandidatEndringArsak
-import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
-import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
-import no.nav.syfo.domain.Personident
 import no.nav.syfo.api.CreateIkkeAktuellDTO
+import no.nav.syfo.api.endpoints.ikkeAktuellApiBasePath
+import no.nav.syfo.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.IkkeAktuellArsak
+import no.nav.syfo.domain.Personident
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
-
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.apache.kafka.clients.producer.*
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.Future
 
 class IkkeAktuellApiSpek : Spek({
     val urlIkkeAktuellPersonIdent = "$ikkeAktuellApiBasePath/personident"
     val externalMockEnvironment = ExternalMockEnvironment.instance
     val database = externalMockEnvironment.database
-    val ikkeAktuellRepository = externalMockEnvironment.ikkeAktuellRepository
+    val dialogmotekandidatVurderingRepository = externalMockEnvironment.dialogmotekandidatVurderingRepository
 
     describe(IkkeAktuellApiSpek::class.java.simpleName) {
         val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
@@ -176,12 +177,12 @@ class IkkeAktuellApiSpek : Spek({
 
             it("Successfully retrieves ikke aktuell vurderinger for person") {
                 testApplication {
-                    ikkeAktuellRepository.createIkkeAktuell(
+                    dialogmotekandidatVurderingRepository.createIkkeAktuell(
                         connection = database.connection,
                         commit = true,
                         ikkeAktuell = newIkkeAktuellVurdering(),
                     )
-                    ikkeAktuellRepository.createIkkeAktuell(
+                    dialogmotekandidatVurderingRepository.createIkkeAktuell(
                         connection = database.connection,
                         commit = true,
                         ikkeAktuell = newIkkeAktuellVurdering(),
@@ -201,7 +202,7 @@ class IkkeAktuellApiSpek : Spek({
 
             it("Fails to retrieves ikke aktuell vurderinger for person when another person has vurdering") {
                 testApplication {
-                    ikkeAktuellRepository.createIkkeAktuell(
+                    dialogmotekandidatVurderingRepository.createIkkeAktuell(
                         connection = database.connection,
                         commit = true,
                         ikkeAktuell = newIkkeAktuellVurdering(),
