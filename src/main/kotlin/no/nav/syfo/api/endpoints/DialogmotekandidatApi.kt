@@ -4,8 +4,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.api.HistorikkDTO
 import no.nav.syfo.application.DialogmotekandidatService
-import no.nav.syfo.application.IkkeAktuellService
-import no.nav.syfo.application.UnntakService
+import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.util.*
@@ -16,8 +15,7 @@ const val kandidatApiHistorikkPath = "/historikk"
 
 fun Route.registerDialogmotekandidatApi(
     dialogmotekandidatService: DialogmotekandidatService,
-    unntakService: UnntakService,
-    ikkeAktuellService: IkkeAktuellService,
+    dialogmotekandidatVurderingService: DialogmotekandidatVurderingService,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
 ) {
     route(kandidatApiBasePath) {
@@ -52,12 +50,8 @@ fun Route.registerDialogmotekandidatApi(
                 val dialogmotekandidatEndringer = dialogmotekandidatService.getDialogmotekandidatEndringer(
                     personident = personident,
                 )
-                val unntak = unntakService.getUnntakList(
-                    personIdent = personident,
-                )
-                val ikkeAktuell = ikkeAktuellService.getIkkeAktuellList(
-                    personIdent = personident,
-                )
+                val unntak = dialogmotekandidatVurderingService.getUnntakList(personIdent = personident)
+                val ikkeAktuell = dialogmotekandidatVurderingService.getIkkeAktuellList(personIdent = personident)
                 val historikkDTOs = HistorikkDTO.createHistorikkDTOs(
                     dialogmotekandidatEndringer = dialogmotekandidatEndringer,
                     unntak = unntak,

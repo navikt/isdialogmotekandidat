@@ -7,9 +7,9 @@ import io.ktor.server.routing.*
 import no.nav.syfo.api.CreateUnntakDTO
 import no.nav.syfo.api.toUnntak
 import no.nav.syfo.api.toUnntakDTOList
-import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.application.UnntakService
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.util.*
 
 const val unntakApiBasePath = "/api/internad/v1/unntak"
@@ -17,7 +17,7 @@ const val unntakApiPersonidentPath = "/personident"
 
 fun Route.registerUnntakApi(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
-    unntakService: UnntakService,
+    dialogmotekandidatVurderingService: DialogmotekandidatVurderingService,
 ) {
     route(unntakApiBasePath) {
         post(unntakApiPersonidentPath) {
@@ -31,7 +31,7 @@ fun Route.registerUnntakApi(
                 val unntak = createUnntakDTO.toUnntak(
                     createdByIdent = call.getNAVIdent()
                 )
-                unntakService.createUnntak(
+                dialogmotekandidatVurderingService.createUnntak(
                     unntak = unntak,
                     veilederToken = getBearerHeader()!!,
                     callId = getCallId(),
@@ -50,7 +50,7 @@ fun Route.registerUnntakApi(
                 personIdentToAccess = personIdent,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val unntakDTOList = unntakService.getUnntakList(
+                val unntakDTOList = dialogmotekandidatVurderingService.getUnntakList(
                     personIdent = personIdent
                 ).toUnntakDTOList()
 

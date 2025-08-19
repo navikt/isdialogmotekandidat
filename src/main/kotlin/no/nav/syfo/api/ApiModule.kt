@@ -12,9 +12,8 @@ import no.nav.syfo.api.endpoints.registerDialogmotekandidatApi
 import no.nav.syfo.api.endpoints.registerIkkeAktuellApi
 import no.nav.syfo.api.endpoints.registerUnntakApi
 import no.nav.syfo.application.DialogmotekandidatService
-import no.nav.syfo.application.IkkeAktuellService
+import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.application.OppfolgingstilfelleService
-import no.nav.syfo.application.UnntakService
 import no.nav.syfo.application.metric.registerMetricApi
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
@@ -43,13 +42,7 @@ fun Application.apiModule(
         ),
     )
     installStatusPages()
-
-    val unntakService = UnntakService(
-        database = database,
-        dialogmotekandidatService = dialogmotekandidatService,
-        oppfolgingstilfelleService = oppfolgingstilfelleService,
-    )
-    val ikkeAktuellService = IkkeAktuellService(
+    val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
         database = database,
         dialogmotekandidatService = dialogmotekandidatService,
         dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database),
@@ -66,16 +59,15 @@ fun Application.apiModule(
             registerDialogmotekandidatApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 dialogmotekandidatService = dialogmotekandidatService,
-                unntakService = unntakService,
-                ikkeAktuellService = ikkeAktuellService,
+                dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
             )
             registerUnntakApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-                unntakService = unntakService,
+                dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
             )
             registerIkkeAktuellApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-                ikkeAktuellService = ikkeAktuellService,
+                dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
             )
         }
     }

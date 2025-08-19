@@ -8,20 +8,18 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.*
+import no.nav.syfo.api.UnntakDTO
 import no.nav.syfo.api.endpoints.unntakApiBasePath
 import no.nav.syfo.api.endpoints.unntakApiPersonidentPath
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
+import no.nav.syfo.api.toUnntak
 import no.nav.syfo.domain.DialogmotekandidatEndringArsak
+import no.nav.syfo.domain.UnntakArsak
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
 import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
-import no.nav.syfo.api.UnntakDTO
-import no.nav.syfo.api.toUnntak
-import no.nav.syfo.infrastructure.database.createUnntak
-import no.nav.syfo.infrastructure.database.getUnntakList
-import no.nav.syfo.domain.UnntakArsak
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import org.amshove.kluent.shouldBeEqualTo
@@ -39,6 +37,7 @@ class UnntakApiSpek : Spek({
     describe(UnntakApiSpek::class.java.simpleName) {
         val externalMockEnvironment = ExternalMockEnvironment.instance
         val database = externalMockEnvironment.database
+        val dialogmotekandidatVurderingRepository = externalMockEnvironment.dialogmotekandidatVurderingRepository
         val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
         val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
             kafkaProducerDialogmotekandidatEndring = kafkaProducer,
@@ -83,7 +82,7 @@ class UnntakApiSpek : Spek({
 
                         val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
                         database.connection.use {
-                            it.createUnntak(unntak)
+                            dialogmotekandidatVurderingRepository.createUnntak(it, unntak)
                             it.commit()
                         }
 
@@ -113,7 +112,7 @@ class UnntakApiSpek : Spek({
                             arsak = UnntakArsak.FRISKMELDT
                         )
                         database.connection.use {
-                            it.createUnntak(unntak)
+                            dialogmotekandidatVurderingRepository.createUnntak(it, unntak)
                             it.commit()
                         }
 
@@ -204,7 +203,7 @@ class UnntakApiSpek : Spek({
                         latestDialogmotekandidatEndring.arsak shouldBeEqualTo DialogmotekandidatEndringArsak.UNNTAK.name
 
                         val latestUnntak =
-                            database.getUnntakList(
+                            dialogmotekandidatVurderingRepository.getUnntakList(
                                 personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
                             ).first()
                         latestUnntak.createdAt shouldNotBeEqualTo null

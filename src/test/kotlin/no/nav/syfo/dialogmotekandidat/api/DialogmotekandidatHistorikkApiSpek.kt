@@ -18,7 +18,6 @@ import no.nav.syfo.api.toUnntak
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.ikkeaktuell.api.generateNewIkkeAktuellDTO
-import no.nav.syfo.infrastructure.database.createUnntak
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.testhelper.*
@@ -88,14 +87,16 @@ class DialogmotekandidatHistorikkApiSpek : Spek({
         }
 
         fun createUnntak() {
-            database.connection.use {
-                it.createDialogmotekandidatEndring(
-                    DialogmotekandidatEndring.unntak(
-                        personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+            runBlocking {
+                database.connection.use {
+                    it.createDialogmotekandidatEndring(
+                        DialogmotekandidatEndring.unntak(
+                            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        )
                     )
-                )
-                it.createUnntak(unntak)
-                it.commit()
+                    dialogmotekandidatVurderingRepository.createUnntak(it, unntak)
+                    it.commit()
+                }
             }
         }
 

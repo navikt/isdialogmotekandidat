@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.database
 import no.nav.syfo.application.IDialogmotekandidatVurderingRepository
 import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.Personident
+import no.nav.syfo.domain.Unntak
 import java.sql.Connection
 import java.sql.ResultSet
 import java.time.OffsetDateTime
@@ -35,6 +36,30 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         if (commit) connection.commit()
     }
 
+    override suspend fun createUnntak(connection: Connection, unntak: Unntak) {
+        val idList = connection.prepareStatement(QUERY_CREATE_UNNTAK).use {
+            it.setString(1, unntak.uuid.toString())
+            it.setObject(2, unntak.createdAt)
+            it.setString(3, unntak.createdBy)
+            it.setString(4, unntak.personIdent.value)
+            it.setString(5, unntak.arsak.name)
+            it.setString(6, unntak.beskrivelse)
+            it.executeQuery().toList { getInt("id") }
+        }
+
+        if (idList.size != 1) {
+            throw NoElementInsertedException("Creating UNNTAK failed, no rows affected.")
+        }
+    }
+
+    override suspend fun getUnntakList(personIdent: Personident): List<PUnntak> =
+        database.connection.use { connection ->
+            connection.prepareStatement(QUERY_GET_UNNTAK_FOR_PERSON).use {
+                it.setString(1, personIdent.value)
+                it.executeQuery().toList { toPUnntakList() }
+            }
+        }
+
     companion object {
         private const val GET_IKKE_AKTUELL_FOR_PERSON =
             """
@@ -56,15 +81,49 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
                 ) values (DEFAULT, ?, ?, ?, ?, ?, ?)
                 RETURNING id
             """
+
+        private const val QUERY_CREATE_UNNTAK =
+            """
+                INSERT INTO UNNTAK (
+                    id,
+                    uuid,
+                    created_at,
+                    created_by,
+                    personident,
+                    arsak,
+                    beskrivelse
+                ) values (DEFAULT, ?, ?, ?, ?, ?, ?)
+                RETURNING id
+            """
+
+        private const val QUERY_GET_UNNTAK_FOR_PERSON: String =
+            """
+                SELECT * 
+                FROM UNNTAK
+                WHERE personident = ?
+                ORDER BY created_at DESC;
+            """
     }
 }
 
-private fun ResultSet.toPIkkeAktuell() = PIkkeAktuell(
-    id = getInt("id"),
-    uuid = UUID.fromString(getString("uuid")),
-    createdAt = getObject("created_at", OffsetDateTime::class.java),
-    createdBy = getString("created_by"),
-    personIdent = getString("personident"),
-    arsak = getString("arsak"),
-    beskrivelse = getString("beskrivelse"),
-)
+private fun ResultSet.toPIkkeAktuell() =
+    PIkkeAktuell(
+        id = getInt("id"),
+        uuid = UUID.fromString(getString("uuid")),
+        createdAt = getObject("created_at", OffsetDateTime::class.java),
+        createdBy = getString("created_by"),
+        personIdent = getString("personident"),
+        arsak = getString("arsak"),
+        beskrivelse = getString("beskrivelse"),
+    )
+
+fun ResultSet.toPUnntakList() =
+    PUnntak(
+        id = getInt("id"),
+        uuid = UUID.fromString(getString("uuid")),
+        createdAt = getObject("created_at", OffsetDateTime::class.java),
+        createdBy = getString("created_by"),
+        personIdent = getString("personident"),
+        arsak = getString("arsak"),
+        beskrivelse = getString("beskrivelse"),
+    )
