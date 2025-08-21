@@ -6,7 +6,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.api.CreateIkkeAktuellDTO
 import no.nav.syfo.api.toIkkeAktuell
-import no.nav.syfo.application.IkkeAktuellService
+import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.util.*
@@ -15,7 +15,7 @@ const val ikkeAktuellApiBasePath = "/api/internad/v1/ikkeaktuell"
 
 fun Route.registerIkkeAktuellApi(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
-    ikkeAktuellService: IkkeAktuellService,
+    dialogmotekandidatVurderingService: DialogmotekandidatVurderingService,
 ) {
     route(ikkeAktuellApiBasePath) {
         post("/personident") {
@@ -29,7 +29,7 @@ fun Route.registerIkkeAktuellApi(
                 val ikkeAktuell = createIkkeAktuellDTO.toIkkeAktuell(
                     createdByIdent = call.getNAVIdent()
                 )
-                ikkeAktuellService.createIkkeAktuell(
+                dialogmotekandidatVurderingService.createIkkeAktuell(
                     ikkeAktuell = ikkeAktuell,
                     veilederToken = getBearerHeader()!!,
                     callId = getCallId(),
@@ -47,7 +47,7 @@ fun Route.registerIkkeAktuellApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 call.respond(
-                    ikkeAktuellService.getIkkeAktuellList(personIdent = personIdent)
+                    dialogmotekandidatVurderingService.getIkkeAktuellList(personIdent = personIdent)
                 )
             }
         }
