@@ -3,7 +3,7 @@ version = "0.0.1"
 
 val confluentVersion = "8.0.0"
 val flywayVersion = "11.11.2"
-val hikariVersion = "6.3.0"
+val hikariVersion = "7.0.2"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.19.2"
 val jettyVersion = "12.1.0"
