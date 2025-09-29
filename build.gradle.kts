@@ -1,8 +1,8 @@
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluentVersion = "8.0.0"
-val flywayVersion = "11.13.1"
+val confluentVersion = "8.0.1"
+val flywayVersion = "11.13.2"
 val hikariVersion = "6.3.0"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.20.0"
@@ -12,7 +12,7 @@ val kluentVersion = "1.73"
 val ktorVersion = "3.3.0"
 val logbackVersion = "1.5.18"
 val logstashEncoderVersion = "8.1"
-val micrometerRegistryVersion = "1.12.13"
+val micrometerRegistryVersion = "1.15.4"
 val nettyCodecVersion = "4.2.6.Final"
 val nimbusJoseJwtVersion = "10.5"
 val mockkVersion = "1.14.5"
@@ -25,7 +25,7 @@ plugins {
     kotlin("jvm") version "2.2.20"
     id("com.gradleup.shadow") version "8.3.7"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("com.github.ben-manes.versions") version "0.52.0"
+    id("com.github.ben-manes.versions") version "0.53.0"
 }
 
 repositories {
