@@ -13,9 +13,8 @@
 
 ##### Test Libraries:
 
-* Kluent
+* Junit
 * Mockk
-* Spek
 
 #### Requirements
 
