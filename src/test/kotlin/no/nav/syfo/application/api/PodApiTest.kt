@@ -8,13 +8,14 @@ import io.ktor.server.testing.*
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.api.registerPodApi
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.testhelper.TestDatabase
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.TestDatabaseNotResponding
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class PodApiTest {
-    private val database = TestDatabase()
+    private val externalMockEnvironment = ExternalMockEnvironment.instance
+    private val database = externalMockEnvironment.database
     private val databaseNotResponding = TestDatabaseNotResponding()
 
     private fun ApplicationTestBuilder.setupPodApi(database: DatabaseInterface, applicationState: ApplicationState) {
