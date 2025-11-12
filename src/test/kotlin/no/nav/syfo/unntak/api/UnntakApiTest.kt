@@ -196,4 +196,40 @@ class UnntakApiTest {
         }
         assertEquals(HttpStatusCode.BadRequest, arbeidsforholdResponse.status)
     }
+
+    @Test
+    fun `returns status Conflict when person is not kandidat`() = testApplication {
+        val client = setupApiAndClient()
+        val response = client.post(urlUnntakPersonIdent) {
+            bearerAuth(validToken)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(newUnntakDTO)
+        }
+        assertEquals(HttpStatusCode.Conflict, response.status)
+        verify(exactly = 0) { kafkaProducer.send(any()) }
+    }
+
+    @Test
+    fun `returns status Unauthorized if no token is supplied when creating unntak`() = testApplication {
+        val client = setupApiAndClient()
+        val response = client.post(urlUnntakPersonIdent) {
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(newUnntakDTO)
+        }
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        verify(exactly = 0) { kafkaProducer.send(any()) }
+    }
+
+    @Test
+    fun `returns status Forbidden if denied access to person when creating unntak`() = testApplication {
+        val client = setupApiAndClient()
+        val newUnntakDTOWithDeniedAccess = generateNewUnntakDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS)
+        val response = client.post(urlUnntakPersonIdent) {
+            bearerAuth(validToken)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(newUnntakDTOWithDeniedAccess)
+        }
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+        verify(exactly = 0) { kafkaProducer.send(any()) }
+    }
 }
