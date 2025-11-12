@@ -1,3 +1,5 @@
+import com.adarshr.gradle.testlogger.theme.ThemeType
+
 group = "no.nav.syfo"
 version = "0.0.1"
 
@@ -8,7 +10,6 @@ val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.20.0"
 val jettyVersion = "12.1.1"
 val kafkaVersion = "4.0.0"
-val kluentVersion = "1.73"
 val ktorVersion = "3.3.0"
 val logbackVersion = "1.5.18"
 val logstashEncoderVersion = "8.1"
@@ -19,13 +20,13 @@ val mockkVersion = "1.14.5"
 val postgresVersion = "42.7.8"
 val postgresEmbeddedVersion = "2.1.1"
 val postgresRuntimeVersion = "17.6.0"
-val spekVersion = "2.0.19"
 
 plugins {
     kotlin("jvm") version "2.2.20"
     id("com.gradleup.shadow") version "8.3.7"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.github.ben-manes.versions") version "0.52.0"
+    id("com.adarshr.test-logger") version "4.0.0"
 }
 
 repositories {
@@ -72,6 +73,7 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    testImplementation(kotlin("test"))
     testImplementation("io.zonky.test:embedded-postgres:$postgresEmbeddedVersion")
     testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:$postgresRuntimeVersion"))
 
@@ -121,9 +123,6 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
 }
 
 kotlin {
@@ -149,9 +148,12 @@ tasks {
     }
 
     test {
-        useJUnitPlatform {
-            includeEngines("spek2")
-        }
+        useJUnitPlatform()
         testLogging.showStandardStreams = true
+        testlogger {
+            theme = ThemeType.STANDARD_PARALLEL
+            showFullStackTraces = true
+            showPassed = false
+        }
     }
 }

@@ -17,3 +17,5 @@ fun tomorrow(): LocalDate = LocalDate.now().plusDays(1)
 fun LocalDate.isAfterOrEqual(another: LocalDate) = this.isAfter(another) || this == another
 
 fun LocalDate.isBeforeOrEqual(another: LocalDate) = this.isBefore(another) || this == another
+
+fun LocalDate.toOffsetDatetime(): OffsetDateTime = this.atStartOfDay().atOffset(defaultZoneOffset)
