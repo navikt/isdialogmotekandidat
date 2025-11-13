@@ -158,7 +158,7 @@ class UnntakApiTest {
 
         val latestEndring = database.connection.getDialogmotekandidatEndringListForPerson(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).firstOrNull()
         assertNotNull(latestEndring)
-        assertEquals(false, latestEndring!!.kandidat)
+        assertFalse(latestEndring!!.kandidat)
         assertEquals(DialogmotekandidatEndringArsak.UNNTAK.name, latestEndring.arsak)
 
         val latestUnntak = dialogmotekandidatVurderingRepository.getUnntakList(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).first()
@@ -171,7 +171,7 @@ class UnntakApiTest {
         val kafkaValue = producerRecordSlot.captured.value()
         assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, kafkaValue.personIdentNumber)
         assertEquals(DialogmotekandidatEndringArsak.UNNTAK.name, kafkaValue.arsak)
-        assertEquals(false, kafkaValue.kandidat)
+        assertFalse(kafkaValue.kandidat)
         assertEquals(newUnntakDTO.arsak, kafkaValue.unntakArsak)
         assertEquals(UserConstants.VEILEDER_IDENT, kafkaValue.unntakVeilederident)
     }

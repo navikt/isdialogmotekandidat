@@ -12,6 +12,8 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.TestDatabaseNotResponding
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class PodApiTest {
@@ -35,51 +37,64 @@ class PodApiTest {
         }
     }
 
-    @Test
-    fun `Returns ok on is_alive`() = testApplication {
-        setupPodApi(database, ApplicationState(alive = true, ready = true))
-        val response = client.get("/internal/is_alive")
-        assertTrue(response.status.isSuccess())
-        assertNotNull(response.bodyAsText())
+    @Nested
+    @DisplayName("Liveness and readiness checks")
+    inner class SuccessfulLivenessAndReadiness {
+        @Test
+        fun `Returns ok on is_alive`() = testApplication {
+            setupPodApi(database, ApplicationState(alive = true, ready = true))
+            val response = client.get("/internal/is_alive")
+            assertTrue(response.status.isSuccess())
+            assertNotNull(response.bodyAsText())
+        }
+
+        @Test
+        fun `Returns ok on is_ready`() = testApplication {
+            setupPodApi(database, ApplicationState(alive = true, ready = true))
+            val response = client.get("/internal/is_ready")
+            assertTrue(response.status.isSuccess())
+            assertNotNull(response.bodyAsText())
+        }
     }
 
-    @Test
-    fun `Returns ok on is_ready`() = testApplication {
-        setupPodApi(database, ApplicationState(alive = true, ready = true))
-        val response = client.get("/internal/is_ready")
-        assertTrue(response.status.isSuccess())
-        assertNotNull(response.bodyAsText())
+    @Nested
+    @DisplayName("Unsuccessful liveness and readiness checks")
+    inner class UnsuccessfulLivenessAndReadiness {
+        @Test
+        fun `Returns internal server error when liveness check fails`() = testApplication {
+            setupPodApi(database, ApplicationState(alive = false, ready = false))
+            val response = client.get("/internal/is_alive")
+            assertEquals(HttpStatusCode.InternalServerError, response.status)
+            assertNotNull(response.bodyAsText())
+        }
+
+        @Test
+        fun `Returns internal server error when readiness check fails`() = testApplication {
+            setupPodApi(database, ApplicationState(alive = true, ready = false))
+            val response = client.get("/internal/is_ready")
+            assertEquals(HttpStatusCode.InternalServerError, response.status)
+            assertNotNull(response.bodyAsText())
+        }
     }
 
-    @Test
-    fun `Returns internal server error when liveness check fails`() = testApplication {
-        setupPodApi(database, ApplicationState(alive = false, ready = false))
-        val response = client.get("/internal/is_alive")
-        assertEquals(HttpStatusCode.InternalServerError, response.status)
-        assertNotNull(response.bodyAsText())
-    }
+    @Nested
+    @DisplayName("Database not working")
+    inner class DatabaseNotWorking {
+        @Test
+        fun `Returns ok liveness and internal server error readiness when database not responding`() = testApplication {
+            setupPodApi(databaseNotResponding, ApplicationState(alive = true, ready = false))
+            val alive = client.get("/internal/is_alive")
+            assertTrue(alive.status.isSuccess())
+            val ready = client.get("/internal/is_ready")
+            assertEquals(HttpStatusCode.InternalServerError, ready.status)
+        }
 
-    @Test
-    fun `Returns internal server error when readiness check fails`() = testApplication {
-        setupPodApi(database, ApplicationState(alive = true, ready = false))
-        val response = client.get("/internal/is_ready")
-        assertEquals(HttpStatusCode.InternalServerError, response.status)
-        assertNotNull(response.bodyAsText())
-    }
-
-    @Test
-    fun `Returns ok liveness and internal server error readiness when database not responding`() = testApplication {
-        setupPodApi(databaseNotResponding, ApplicationState(alive = true, ready = false))
-        val alive = client.get("/internal/is_alive")
-        assertTrue(alive.status.isSuccess())
-        val ready = client.get("/internal/is_ready")
-        assertEquals(HttpStatusCode.InternalServerError, ready.status)
-    }
-
-    @Test
-    fun `Returns internal server error on readiness when database not responding and app ready`() = testApplication {
-        setupPodApi(databaseNotResponding, ApplicationState(alive = true, ready = true))
-        val ready = client.get("/internal/is_ready")
-        assertEquals(HttpStatusCode.InternalServerError, ready.status)
+        @Test
+        fun `Returns internal server error on readiness when database not responding and app ready`() =
+            testApplication {
+                setupPodApi(databaseNotResponding, ApplicationState(alive = true, ready = true))
+                val ready = client.get("/internal/is_ready")
+                assertEquals(HttpStatusCode.InternalServerError, ready.status)
+            }
     }
 }

@@ -149,7 +149,6 @@ tasks {
 
     test {
         useJUnitPlatform()
-        testLogging.showStandardStreams = true
         testlogger {
             theme = ThemeType.STANDARD_PARALLEL
             showFullStackTraces = true

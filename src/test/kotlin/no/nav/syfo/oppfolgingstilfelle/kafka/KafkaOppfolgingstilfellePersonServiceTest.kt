@@ -21,14 +21,15 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.generateKafkaOppfolgingstilfellePerson
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.LocalDate
-import kotlin.test.assertEquals
 
 class KafkaOppfolgingstilfellePersonServiceTest {
     private val externalMockEnvironment = ExternalMockEnvironment.instance
