@@ -3,29 +3,28 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluentVersion = "8.0.0"
-val flywayVersion = "11.13.1"
-val hikariVersion = "6.3.0"
+val confluentVersion = "8.1.0"
+val flywayVersion = "11.18.0"
+val hikariVersion = "7.0.2"
 val isdialogmoteSchemaVersion = "1.0.5"
-val jacksonDataTypeVersion = "2.20.0"
-val jettyVersion = "12.1.1"
-val kafkaVersion = "4.0.0"
-val ktorVersion = "3.3.0"
-val logbackVersion = "1.5.18"
-val logstashEncoderVersion = "8.1"
+val jacksonDataTypeVersion = "2.20.1"
+val jettyVersion = "12.1.4"
+val kafkaVersion = "4.1.0"
+val ktorVersion = "3.3.3"
+val logbackVersion = "1.5.21"
+val logstashEncoderVersion = "9.0"
 val micrometerRegistryVersion = "1.12.13"
-val nettyCodecVersion = "4.2.6.Final"
 val nimbusJoseJwtVersion = "10.5"
-val mockkVersion = "1.14.5"
+val mockkVersion = "1.14.6"
 val postgresVersion = "42.7.8"
-val postgresEmbeddedVersion = "2.1.1"
+val postgresEmbeddedVersion = "2.2.0"
 val postgresRuntimeVersion = "17.6.0"
 
 plugins {
-    kotlin("jvm") version "2.2.20"
-    id("com.gradleup.shadow") version "8.3.7"
+    kotlin("jvm") version "2.2.21"
+    id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("com.github.ben-manes.versions") version "0.52.0"
+    id("com.github.ben-manes.versions") version "0.53.0"
     id("com.adarshr.test-logger") version "4.0.0"
 }
 
@@ -48,7 +47,6 @@ dependencies {
     implementation(kotlin("reflect"))
 
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
@@ -56,7 +54,6 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
-    implementation("io.netty:netty-codec-http2:$nettyCodecVersion") // TODO: Remove when Ktor upgrades Netty Codec
 
     // Logging
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
@@ -98,13 +95,13 @@ dependencies {
         implementation("org.apache.avro:avro") {
             because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
             version {
-                require("1.12.0")
+                require("1.12.1")
             }
         }
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
-                require("1.27.1")
+                require("1.28")
             }
         }
     }
@@ -113,7 +110,13 @@ dependencies {
         implementation("io.github.classgraph:classgraph") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
             version {
-                require("4.8.179")
+                require("4.8.184")
+            }
+        }
+        implementation("org.glassfish.jersey.core:jersey-client") {
+            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2025-12383")
+            version {
+                require("3.1.11")
             }
         }
     }
