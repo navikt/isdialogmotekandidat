@@ -14,7 +14,7 @@ val ktorVersion = "3.3.3"
 val logbackVersion = "1.5.21"
 val logstashEncoderVersion = "9.0"
 val micrometerRegistryVersion = "1.12.13"
-val nimbusJoseJwtVersion = "10.5"
+val nimbusJoseJwtVersion = "10.6"
 val mockkVersion = "1.14.6"
 val postgresVersion = "42.7.8"
 val postgresEmbeddedVersion = "2.2.0"
@@ -117,6 +117,11 @@ dependencies {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2025-12383")
             version {
                 require("3.1.11")
+            }
+        }
+        implementation("com.nimbusds:nimbus-jose-jwt") {
+            version {
+                require(nimbusJoseJwtVersion)
             }
         }
     }
