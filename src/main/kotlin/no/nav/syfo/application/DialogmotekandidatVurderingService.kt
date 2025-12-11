@@ -5,6 +5,7 @@ import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
+import no.nav.syfo.infrastructure.database.toAvventList
 import no.nav.syfo.infrastructure.database.toIkkeAktuellList
 import no.nav.syfo.infrastructure.database.toUnntakList
 
@@ -84,4 +85,28 @@ class DialogmotekandidatVurderingService(
 
     suspend fun getUnntakList(personIdent: Personident): List<Unntak> =
         dialogmotekandidatVurderingRepository.getUnntakList(personIdent = personIdent).toUnntakList()
+
+    suspend fun createAvvent(
+        avvent: Avvent,
+    ) {
+        database.connection.use { connection ->
+            val ikkeKandidat =
+                connection.getDialogmotekandidatEndringListForPerson(personIdent = avvent.personIdent)
+                    .toDialogmotekandidatEndringList()
+                    .isLatestIkkeKandidat()
+            if (ikkeKandidat) {
+                throw ConflictException("Failed to create Avvent: Person is not kandidat")
+            }
+            dialogmotekandidatVurderingRepository.createAvvent(connection = connection, avvent = avvent)
+            connection.commit()
+        }
+    }
+
+    suspend fun getAvventList(personident: Personident): List<Avvent> {
+        val allAvvent = dialogmotekandidatVurderingRepository.getAvventList(personIdent = personident).toAvventList()
+        val latestEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
+        return if (latestEndring?.kandidat == true) {
+            allAvvent.filter { it.createdAt.isAfter(latestEndring.createdAt) }
+        } else emptyList()
+    }
 }
