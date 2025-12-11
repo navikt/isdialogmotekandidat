@@ -1,13 +1,15 @@
 package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.application.IDialogmotekandidatVurderingRepository
+import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Unntak
 import java.sql.Connection
+import java.sql.Date
 import java.sql.ResultSet
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 class DialogmotekandidatVurderingRepository(private val database: DatabaseInterface) : IDialogmotekandidatVurderingRepository {
 
@@ -52,11 +54,35 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
+    override suspend fun createAvvent(connection: Connection, avvent: Avvent) {
+        val idList = connection.prepareStatement(QUERY_CREATE_AVVENT).use {
+            it.setString(1, avvent.uuid.toString())
+            it.setObject(2, avvent.createdAt)
+            it.setDate(3, Date.valueOf(avvent.frist))
+            it.setString(4, avvent.createdBy)
+            it.setString(5, avvent.personIdent.value)
+            it.setString(6, avvent.beskrivelse)
+            it.executeQuery().toList { getInt("id") }
+        }
+
+        if (idList.size != 1) {
+            throw NoElementInsertedException("Creating AVVENT failed, no rows affected.")
+        }
+    }
+
     override suspend fun getUnntakList(personIdent: Personident): List<PUnntak> =
         database.connection.use { connection ->
             connection.prepareStatement(QUERY_GET_UNNTAK_FOR_PERSON).use {
                 it.setString(1, personIdent.value)
                 it.executeQuery().toList { toPUnntakList() }
+            }
+        }
+
+    override suspend fun getAvventList(personIdent: Personident): List<PAvvent> =
+        database.connection.use { connection ->
+            connection.prepareStatement(QUERY_GET_AVVENT_FOR_PERSON).use {
+                it.setString(1, personIdent.value)
+                it.executeQuery().toList { toPAvventList() }
             }
         }
 
@@ -96,10 +122,32 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
                 RETURNING id
             """
 
+        private const val QUERY_CREATE_AVVENT =
+            """
+                INSERT INTO AVVENT (
+                    id,
+                    uuid,
+                    created_at,
+                    frist,
+                    created_by,
+                    personident,
+                    beskrivelse
+                ) values (DEFAULT, ?, ?, ?, ?, ?, ?)
+                RETURNING id
+            """
+
         private const val QUERY_GET_UNNTAK_FOR_PERSON: String =
             """
                 SELECT * 
                 FROM UNNTAK
+                WHERE personident = ?
+                ORDER BY created_at DESC;
+            """
+
+        private const val QUERY_GET_AVVENT_FOR_PERSON: String =
+            """
+                SELECT * 
+                FROM AVVENT
                 WHERE personident = ?
                 ORDER BY created_at DESC;
             """
@@ -125,5 +173,16 @@ fun ResultSet.toPUnntakList() =
         createdBy = getString("created_by"),
         personIdent = getString("personident"),
         arsak = getString("arsak"),
+        beskrivelse = getString("beskrivelse"),
+    )
+
+fun ResultSet.toPAvventList() =
+    PAvvent(
+        id = getInt("id"),
+        uuid = UUID.fromString(getString("uuid")),
+        createdAt = getObject("created_at", OffsetDateTime::class.java),
+        frist = getDate("frist").toLocalDate(),
+        createdBy = getString("created_by"),
+        personIdent = getString("personident"),
         beskrivelse = getString("beskrivelse"),
     )
