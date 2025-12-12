@@ -10,21 +10,21 @@ data class Avvent private constructor(
     val createdAt: OffsetDateTime,
     val frist: LocalDate,
     val createdBy: String,
-    val personIdent: Personident,
+    val personident: Personident,
     val beskrivelse: String?,
 ) {
 
     constructor(
         frist: LocalDate,
         createdBy: String,
-        personIdent: Personident,
+        personident: Personident,
         beskrivelse: String?,
     ) : this(
         uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
         frist = frist,
         createdBy = createdBy,
-        personIdent = personIdent,
+        personident = personident,
         beskrivelse = beskrivelse,
     )
 
@@ -34,14 +34,14 @@ data class Avvent private constructor(
             createdAt: OffsetDateTime,
             frist: LocalDate,
             createdBy: String,
-            personIdent: Personident,
+            personident: Personident,
             beskrivelse: String?,
         ) = Avvent(
             uuid = uuid,
             createdAt = createdAt,
             frist = frist,
             createdBy = createdBy,
-            personIdent = personIdent,
+            personident = personident,
             beskrivelse = beskrivelse,
         )
     }

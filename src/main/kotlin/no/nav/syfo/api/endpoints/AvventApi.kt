@@ -22,10 +22,10 @@ fun Route.registerAvventApi(
     route(avventApiBasePath) {
         post(avventApiPersonidentPath) {
             val createAvventDTO = call.receive<CreateAvventDTO>()
-            val personIdent = Personident(createAvventDTO.personIdent)
+            val personident = Personident(createAvventDTO.personident)
             validateVeilederAccess(
                 action = "Create avvent for person",
-                personIdentToAccess = personIdent,
+                personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 val avvent = createAvventDTO.toAvvent(
@@ -39,8 +39,8 @@ fun Route.registerAvventApi(
             }
         }
         get(avventApiPersonidentPath) {
-            val personident = personIdentHeader()?.let { personIdent ->
-                Personident(personIdent)
+            val personident = personIdentHeader()?.let { personident ->
+                Personident(personident)
             }
                 ?: throw IllegalArgumentException("Failed to get avvent for person: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(

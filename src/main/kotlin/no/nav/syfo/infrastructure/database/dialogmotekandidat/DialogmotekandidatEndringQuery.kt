@@ -50,9 +50,9 @@ const val queryGetDialogmotekandidatEndringForPerson =
     """
 
 fun Connection.getDialogmotekandidatEndringListForPerson(
-    personIdent: Personident,
+    personident: Personident,
 ): List<PDialogmotekandidatEndring> = prepareStatement(queryGetDialogmotekandidatEndringForPerson).use {
-    it.setString(1, personIdent.value)
+    it.setString(1, personident.value)
     it.executeQuery().toList { toPDialogmotekandidatEndringList() }
 }
 

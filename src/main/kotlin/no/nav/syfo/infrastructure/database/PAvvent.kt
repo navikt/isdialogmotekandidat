@@ -12,7 +12,7 @@ data class PAvvent(
     val createdAt: OffsetDateTime,
     val frist: LocalDate,
     val createdBy: String,
-    val personIdent: String,
+    val personident: String,
     val beskrivelse: String?,
 )
 
@@ -22,7 +22,7 @@ fun List<PAvvent>.toAvventList() = this.map { pAvvent ->
         createdAt = pAvvent.createdAt,
         frist = pAvvent.frist,
         createdBy = pAvvent.createdBy,
-        personIdent = Personident(pAvvent.personIdent),
+        personident = Personident(pAvvent.personident),
         beskrivelse = pAvvent.beskrivelse,
     )
 }

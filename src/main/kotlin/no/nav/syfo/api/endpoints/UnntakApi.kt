@@ -22,10 +22,10 @@ fun Route.registerUnntakApi(
     route(unntakApiBasePath) {
         post(unntakApiPersonidentPath) {
             val createUnntakDTO = call.receive<CreateUnntakDTO>()
-            val personIdent = Personident(createUnntakDTO.personIdent)
+            val personident = Personident(createUnntakDTO.personident)
             validateVeilederAccess(
                 action = "Create unntak for person",
-                personIdentToAccess = personIdent,
+                personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 val unntak = createUnntakDTO.toUnntak(
@@ -41,17 +41,17 @@ fun Route.registerUnntakApi(
             }
         }
         get(unntakApiPersonidentPath) {
-            val personIdent = personIdentHeader()?.let { personIdent ->
-                Personident(personIdent)
+            val personident = personIdentHeader()?.let { personident ->
+                Personident(personident)
             }
                 ?: throw IllegalArgumentException("Failed to get unntak for person: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(
                 action = "Get unntak for person",
-                personIdentToAccess = personIdent,
+                personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 val unntakDTOList = dialogmotekandidatVurderingService.getUnntakList(
-                    personIdent = personIdent
+                    personident = personident
                 ).toUnntakDTOList()
 
                 call.respond(unntakDTOList)

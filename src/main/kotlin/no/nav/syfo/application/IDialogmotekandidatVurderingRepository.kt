@@ -10,10 +10,10 @@ import no.nav.syfo.infrastructure.database.PUnntak
 import java.sql.Connection
 
 interface IDialogmotekandidatVurderingRepository {
-    suspend fun getIkkeAktuellListForPerson(personIdent: Personident): List<PIkkeAktuell>
+    suspend fun getIkkeAktuellListForPerson(personident: Personident): List<PIkkeAktuell>
     suspend fun createIkkeAktuell(connection: Connection, commit: Boolean, ikkeAktuell: IkkeAktuell)
     suspend fun createUnntak(connection: Connection, unntak: Unntak)
     suspend fun createAvvent(connection: Connection, avvent: Avvent)
-    suspend fun getUnntakList(personIdent: Personident): List<PUnntak>
-    suspend fun getAvventList(personIdent: Personident): List<PAvvent>
+    suspend fun getUnntakList(personident: Personident): List<PUnntak>
+    suspend fun getAvventList(personident: Personident): List<PAvvent>
 }

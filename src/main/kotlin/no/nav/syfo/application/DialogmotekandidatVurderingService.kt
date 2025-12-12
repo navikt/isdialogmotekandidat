@@ -22,7 +22,7 @@ class DialogmotekandidatVurderingService(
     ) {
         database.connection.use { connection ->
             val ikkeKandidat =
-                connection.getDialogmotekandidatEndringListForPerson(personIdent = ikkeAktuell.personIdent)
+                connection.getDialogmotekandidatEndringListForPerson(personident = ikkeAktuell.personident)
                     .toDialogmotekandidatEndringList()
                     .isLatestIkkeKandidat()
             if (ikkeKandidat) {
@@ -31,12 +31,12 @@ class DialogmotekandidatVurderingService(
 
             dialogmotekandidatVurderingRepository.createIkkeAktuell(connection = connection, commit = false, ikkeAktuell = ikkeAktuell)
             val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
-                arbeidstakerPersonIdent = ikkeAktuell.personIdent,
+                arbeidstakerPersonIdent = ikkeAktuell.personident,
                 veilederToken = veilederToken,
                 callId = callId,
             )
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.ikkeAktuell(
-                personIdentNumber = ikkeAktuell.personIdent,
+                personIdentNumber = ikkeAktuell.personident,
             )
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
@@ -48,8 +48,8 @@ class DialogmotekandidatVurderingService(
         }
     }
 
-    suspend fun getIkkeAktuellList(personIdent: Personident): List<IkkeAktuell> =
-        dialogmotekandidatVurderingRepository.getIkkeAktuellListForPerson(personIdent = personIdent).toIkkeAktuellList()
+    suspend fun getIkkeAktuellList(personident: Personident): List<IkkeAktuell> =
+        dialogmotekandidatVurderingRepository.getIkkeAktuellListForPerson(personident = personident).toIkkeAktuellList()
 
     suspend fun createUnntak(
         unntak: Unntak,
@@ -57,13 +57,13 @@ class DialogmotekandidatVurderingService(
         callId: String,
     ) {
         val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
-            arbeidstakerPersonIdent = unntak.personIdent,
+            arbeidstakerPersonIdent = unntak.personident,
             veilederToken = veilederToken,
             callId = callId,
         )
         database.connection.use { connection ->
             val ikkeKandidat =
-                connection.getDialogmotekandidatEndringListForPerson(personIdent = unntak.personIdent)
+                connection.getDialogmotekandidatEndringListForPerson(personident = unntak.personident)
                     .toDialogmotekandidatEndringList()
                     .isLatestIkkeKandidat()
             if (ikkeKandidat) {
@@ -71,7 +71,7 @@ class DialogmotekandidatVurderingService(
             }
             dialogmotekandidatVurderingRepository.createUnntak(connection = connection, unntak = unntak)
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.unntak(
-                personIdentNumber = unntak.personIdent,
+                personIdentNumber = unntak.personident,
             )
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
@@ -83,15 +83,15 @@ class DialogmotekandidatVurderingService(
         }
     }
 
-    suspend fun getUnntakList(personIdent: Personident): List<Unntak> =
-        dialogmotekandidatVurderingRepository.getUnntakList(personIdent = personIdent).toUnntakList()
+    suspend fun getUnntakList(personident: Personident): List<Unntak> =
+        dialogmotekandidatVurderingRepository.getUnntakList(personident = personident).toUnntakList()
 
     suspend fun createAvvent(
         avvent: Avvent,
     ) {
         database.connection.use { connection ->
             val ikkeKandidat =
-                connection.getDialogmotekandidatEndringListForPerson(personIdent = avvent.personIdent)
+                connection.getDialogmotekandidatEndringListForPerson(personident = avvent.personident)
                     .toDialogmotekandidatEndringList()
                     .isLatestIkkeKandidat()
             if (ikkeKandidat) {
@@ -103,7 +103,7 @@ class DialogmotekandidatVurderingService(
     }
 
     suspend fun getAvventList(personident: Personident): List<Avvent> {
-        val allAvvent = dialogmotekandidatVurderingRepository.getAvventList(personIdent = personident).toAvventList()
+        val allAvvent = dialogmotekandidatVurderingRepository.getAvventList(personident = personident).toAvventList()
         val latestEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
         return if (latestEndring?.kandidat == true) {
             allAvvent.filter { it.createdAt.isAfter(latestEndring.createdAt) }

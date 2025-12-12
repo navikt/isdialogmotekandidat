@@ -5,10 +5,10 @@ import no.nav.syfo.api.CreateUnntakDTO
 import no.nav.syfo.domain.UnntakArsak
 
 fun generateNewUnntakDTO(
-    personIdent: Personident,
+    personident: Personident,
     arsak: UnntakArsak = UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER,
 ) = CreateUnntakDTO(
-    personIdent = personIdent.value,
+    personident = personident.value,
     arsak = arsak.name,
     beskrivelse = "Dette er en beskrivelse",
 )

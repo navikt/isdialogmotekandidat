@@ -67,7 +67,7 @@ class IkkeAktuellApiTest {
         issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
         navIdent = UserConstants.VEILEDER_IDENT,
     )
-    private val newIkkeAktuellDTO = generateNewIkkeAktuellDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+    private val newIkkeAktuellDTO = generateNewIkkeAktuellDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
 
     @Test
     fun `creates IkkeAktuell and DialogmotekandidatEndring (not kandidat) when person is kandidat`() = testApplication {
@@ -108,7 +108,7 @@ class IkkeAktuellApiTest {
     @Test
     fun `returns status Forbidden if denied access to person`() = testApplication {
         val client = setupApiAndClient()
-        val dtoDenied = generateNewIkkeAktuellDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS)
+        val dtoDenied = generateNewIkkeAktuellDTO(personident = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS)
         val response = client.post(urlIkkeAktuellPersonIdent) {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -134,7 +134,7 @@ class IkkeAktuellApiTest {
         uuid = UUID.randomUUID(),
         createdAt = LocalDateTime.now().atOffset(ZoneOffset.UTC),
         createdBy = UserConstants.VEILEDER_IDENT,
-        personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+        personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
         arsak = IkkeAktuellArsak.ARBEIDSTAKER_AAP,
         beskrivelse = "Dette er en beskrivelse for hvorfor personen ikke er aktuell for dialogmøte",
     )
@@ -180,8 +180,8 @@ class IkkeAktuellApiTest {
     }
 }
 
-fun generateNewIkkeAktuellDTO(personIdent: Personident) = CreateIkkeAktuellDTO(
-    personIdent = personIdent.value,
+fun generateNewIkkeAktuellDTO(personident: Personident) = CreateIkkeAktuellDTO(
+    personident = personident.value,
     arsak = IkkeAktuellArsak.DIALOGMOTE_AVHOLDT.name,
     beskrivelse = "Dette er en beskrivelse",
 )

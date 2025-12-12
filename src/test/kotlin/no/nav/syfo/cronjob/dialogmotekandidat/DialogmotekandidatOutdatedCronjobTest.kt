@@ -33,7 +33,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     private val database = externalMockEnvironment.database
     private val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
     private val endringProducer = DialogmotekandidatEndringProducer(kafkaProducerDialogmotekandidatEndring = kafkaProducer)
-    private val personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+    private val personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
     private val cutoff = LocalDate.now()
     private val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = mockk(),
@@ -55,7 +55,7 @@ class DialogmotekandidatOutdatedCronjobTest {
 
     @Test
     fun `creates LUKKET endring for kandidat before cutoff with no other endring`() {
-        val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+        val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatBefore)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
@@ -63,7 +63,7 @@ class DialogmotekandidatOutdatedCronjobTest {
         val slotRecord = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
         verify(exactly = 1) { kafkaProducer.send(capture(slotRecord)) }
         assertFalse(slotRecord.captured.value().kandidat)
-        val endringer = getEndringer(personIdent)
+        val endringer = getEndringer(personident)
         assertEquals(2, endringer.size)
         val latest = endringer.first()
         assertEquals(DialogmotekandidatEndringArsak.LUKKET.name, latest.arsak)
@@ -72,7 +72,7 @@ class DialogmotekandidatOutdatedCronjobTest {
 
     @Test
     fun `updates kandidat before cutoff only once`() {
-        val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+        val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
         val otherKandidatBefore = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_OLD_KANDIDAT).copy(createdAt = cutoff.minusDays(100).toOffsetDatetime())
         val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(UserConstants.ARBEIDSTAKER_2_PERSONIDENTNUMBER).copy(createdAt = cutoff.minusDays(50).toOffsetDatetime())
         val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_3_PERSONIDENTNUMBER).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
@@ -89,89 +89,89 @@ class DialogmotekandidatOutdatedCronjobTest {
     fun `creates no endring for person with no endring`() {
         cronjob.runJob()
         verify(exactly = 0) { kafkaProducer.send(any()) }
-        assertTrue(getEndringer(personIdent).isEmpty())
+        assertTrue(getEndringer(personident).isEmpty())
     }
 
     @Test
     fun `creates no endring for not kandidat before cutoff`() {
-        val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(personIdent).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+        val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(personident).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(notKandidatBefore)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
         assertEquals(0, result.updated)
         verify(exactly = 0) { kafkaProducer.send(any()) }
-        val endringer = getEndringer(personIdent)
+        val endringer = getEndringer(personident)
         assertEquals(1, endringer.size)
         assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET.name })
     }
 
     @Test
     fun `creates no endring for not kandidat after cutoff`() {
-        val notKandidatAfter = generateDialogmotekandidatEndringFerdigstilt(personIdent).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+        val notKandidatAfter = generateDialogmotekandidatEndringFerdigstilt(personident).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(notKandidatAfter)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
         assertEquals(0, result.updated)
         verify(exactly = 0) { kafkaProducer.send(any()) }
-        val endringer = getEndringer(personIdent)
+        val endringer = getEndringer(personident)
         assertEquals(1, endringer.size)
         assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET.name })
     }
 
     @Test
     fun `creates no endring for kandidat after cutoff`() {
-        val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+        val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatAfter)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
         assertEquals(0, result.updated)
         verify(exactly = 0) { kafkaProducer.send(any()) }
-        val endringer = getEndringer(personIdent)
+        val endringer = getEndringer(personident)
         assertEquals(1, endringer.size)
         assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET.name })
     }
 
     @Test
     fun `creates no endring for kandidat before and not kandidat after cutoff`() {
-        val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
-        val notKandidatAfter = generateDialogmotekandidatEndringFerdigstilt(personIdent).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+        val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+        val notKandidatAfter = generateDialogmotekandidatEndringFerdigstilt(personident).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatBefore)
         database.createDialogmotekandidatEndring(notKandidatAfter)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
         assertEquals(0, result.updated)
         verify(exactly = 0) { kafkaProducer.send(any()) }
-        val endringer = getEndringer(personIdent)
+        val endringer = getEndringer(personident)
         assertEquals(2, endringer.size)
         assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET.name })
     }
 
     @Test
     fun `creates no endring for not kandidat before and kandidat after cutoff`() {
-        val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(personIdent).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
-        val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+        val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(personident).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+        val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(notKandidatBefore)
         database.createDialogmotekandidatEndring(kandidatAfter)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
         assertEquals(0, result.updated)
         verify(exactly = 0) { kafkaProducer.send(any()) }
-        val endringer = getEndringer(personIdent)
+        val endringer = getEndringer(personident)
         assertEquals(2, endringer.size)
         assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET.name })
     }
 
     @Test
     fun `creates no endring for kandidat before and kandidat after cutoff`() {
-        val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
-        val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+        val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident).copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+        val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatBefore)
         database.createDialogmotekandidatEndring(kandidatAfter)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
         assertEquals(0, result.updated)
         verify(exactly = 0) { kafkaProducer.send(any()) }
-        val endringer = getEndringer(personIdent)
+        val endringer = getEndringer(personident)
         assertEquals(2, endringer.size)
         assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET.name })
     }

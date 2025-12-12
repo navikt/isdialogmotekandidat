@@ -32,7 +32,7 @@ fun ResultSet.toPDialogmotekandidatEndringList() =
         id = getInt("id"),
         uuid = UUID.fromString(getString("uuid")),
         createdAt = getObject("created_at", OffsetDateTime::class.java),
-        personIdent = Personident(getString("personident")),
+        personident = Personident(getString("personident")),
         kandidat = getBoolean("kandidat"),
         arsak = getString("arsak"),
     )
