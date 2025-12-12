@@ -30,7 +30,7 @@ class OppfolgingstilfelleClient(
         "${clientEnvironment.baseUrl}$ISOPPFOLGINGSTILFELLE_OPPFOLGINGSTILFELLE_VEILEDER_PERSON_PATH"
 
     override suspend fun getOppfolgingstilfellePerson(
-        personIdent: Personident,
+        personident: Personident,
         veilederToken: String?,
         callId: String?,
     ): OppfolgingstilfellePersonDTO? {
@@ -42,7 +42,7 @@ class OppfolgingstilfelleClient(
             val response: HttpResponse = httpClient.get(path) {
                 header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
                 header(NAV_CALL_ID_HEADER, callIdToUse)
-                header(NAV_PERSONIDENT_HEADER, personIdent.value)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
                 accept(ContentType.Application.Json)
             }
             response.body<OppfolgingstilfellePersonDTO>().also {

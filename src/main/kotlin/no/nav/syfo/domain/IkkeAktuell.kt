@@ -15,7 +15,7 @@ data class IkkeAktuell(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val createdBy: String,
-    val personIdent: Personident,
+    val personident: Personident,
     val arsak: IkkeAktuellArsak,
     val beskrivelse: String?,
 )

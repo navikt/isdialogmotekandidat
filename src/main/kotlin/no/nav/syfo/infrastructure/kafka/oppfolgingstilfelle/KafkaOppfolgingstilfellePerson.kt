@@ -27,7 +27,7 @@ data class KafkaOppfolgingstilfelle(
 fun KafkaOppfolgingstilfellePerson.toOppfolgingstilfelle(
     tilfelle: KafkaOppfolgingstilfelle,
 ) = Oppfolgingstilfelle(
-    personIdent = Personident(this.personIdentNumber),
+    personident = Personident(this.personIdentNumber),
     tilfelleStart = tilfelle.start,
     tilfelleEnd = tilfelle.end,
     arbeidstakerAtTilfelleEnd = tilfelle.arbeidstakerAtTilfelleEnd,

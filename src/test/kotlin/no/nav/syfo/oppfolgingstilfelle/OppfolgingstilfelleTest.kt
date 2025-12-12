@@ -12,12 +12,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class OppfolgingstilfelleTest {
-    private val personIdent = ARBEIDSTAKER_PERSONIDENTNUMBER
+    private val personident = ARBEIDSTAKER_PERSONIDENTNUMBER
 
     @Test
     fun `isDialogmotekandidat returns false if duration is less than DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS and list of DialogmoteKandidatEndring is empty`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 1,
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -30,7 +30,7 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns true if duration is equal to DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS and list of DialogmoteKandidatEndring is empty`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -43,7 +43,7 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns true if duration is greater than DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS and list of DialogmoteKandidatEndring is empty`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1,
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -56,7 +56,7 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns false if latestDialogmoteFerdigstilt after tilfelle start`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1,
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -70,7 +70,7 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns true if latestDialogmoteFerdigstilt before tilfelle start`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 1,
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -83,10 +83,10 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns false if latest DialogmoteKandidatEndring is Kandidat and within oppfolgingstilfelle`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
         )
-        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(
+        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personident).copy(
             createdAt = latestOppfolgingstilfelle.tilfelleEnd.minusDays(1).atStartOfDay().atOffset(defaultZoneOffset)
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -99,10 +99,10 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns true if latest DialogmoteKandidatEndring is Kandidat, but is before tilfelleStart`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
         )
-        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(
+        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personident).copy(
             createdAt = latestOppfolgingstilfelle.tilfelleStart.minusDays(1).atStartOfDay().atOffset(defaultZoneOffset)
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -115,13 +115,13 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns false if latest DialogmoteKandidatEndring is Kandidat and is equal to tilfelleStart`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
         )
-        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(
+        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personident).copy(
             createdAt = latestOppfolgingstilfelle.tilfelleStart.atStartOfDay().atOffset(defaultZoneOffset)
         )
-        val ferdigstiltEndring = generateDialogmotekandidatEndringFerdigstilt(personIdent).copy(
+        val ferdigstiltEndring = generateDialogmotekandidatEndringFerdigstilt(personident).copy(
             createdAt = stoppunktEndring.createdAt.plusDays(1)
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -134,13 +134,13 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns false if latest DialogmoteKandidatEndring is Kandidat and is equal to tilfelleEnd`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
         )
-        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(
+        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personident).copy(
             createdAt = latestOppfolgingstilfelle.tilfelleEnd.atStartOfDay().atOffset(defaultZoneOffset)
         )
-        val ferdigstiltEndring = generateDialogmotekandidatEndringFerdigstilt(personIdent).copy(
+        val ferdigstiltEndring = generateDialogmotekandidatEndringFerdigstilt(personident).copy(
             createdAt = stoppunktEndring.createdAt.plusDays(1)
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -153,13 +153,13 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns true if latest DialogmoteKandidatEndring with kandidat==true is before tilfelleStart`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
         )
-        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(
+        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personident).copy(
             createdAt = latestOppfolgingstilfelle.tilfelleStart.minusDays(1).atStartOfDay().atOffset(defaultZoneOffset)
         )
-        val ferdigstiltEndring = generateDialogmotekandidatEndringFerdigstilt(personIdent).copy(
+        val ferdigstiltEndring = generateDialogmotekandidatEndringFerdigstilt(personident).copy(
             createdAt = stoppunktEndring.createdAt.plusDays(1)
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(
@@ -172,13 +172,13 @@ class OppfolgingstilfelleTest {
     @Test
     fun `isDialogmotekandidat returns false if latest DialogmoteKandidatEndring with kandidat==true is after tilfelleStart (and after tilfelleEnd)`() {
         val latestOppfolgingstilfelle = generateOppfolgingstilfelle(
-            arbeidstakerPersonIdent = personIdent,
+            arbeidstakerPersonIdent = personident,
             oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS,
         )
-        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personIdent).copy(
+        val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(personident).copy(
             createdAt = latestOppfolgingstilfelle.tilfelleEnd.plusDays(1).atStartOfDay().atOffset(defaultZoneOffset)
         )
-        val ferdigstiltEndring = generateDialogmotekandidatEndringFerdigstilt(personIdent).copy(
+        val ferdigstiltEndring = generateDialogmotekandidatEndringFerdigstilt(personident).copy(
             createdAt = stoppunktEndring.createdAt.plusDays(1)
         )
         val result = latestOppfolgingstilfelle.isDialogmotekandidat(

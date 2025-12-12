@@ -74,7 +74,7 @@ class KafkaDialogmoteStatusEndringService(
         )
 
         val latestDialogmotekandidatEndring =
-            connection.getDialogmotekandidatEndringListForPerson(personIdent = dialogmoteStatusEndring.personIdentNumber)
+            connection.getDialogmotekandidatEndringListForPerson(personident = dialogmoteStatusEndring.personIdentNumber)
                 .toDialogmotekandidatEndringList()
                 .latest()
 

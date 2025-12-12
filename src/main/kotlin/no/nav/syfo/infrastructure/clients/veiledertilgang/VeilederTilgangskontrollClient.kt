@@ -25,7 +25,7 @@ class VeilederTilgangskontrollClient(
 
     suspend fun hasAccess(
         callId: String,
-        personIdent: Personident,
+        personident: Personident,
         token: String,
     ): Boolean {
         val onBehalfOfToken = azureAdClient.getOnBehalfOfToken(
@@ -36,7 +36,7 @@ class VeilederTilgangskontrollClient(
         return try {
             val tilgang = httpClient.get(tilgangskontrollPersonUrl) {
                 header(HttpHeaders.Authorization, bearerHeader(onBehalfOfToken))
-                header(NAV_PERSONIDENT_HEADER, personIdent.value)
+                header(NAV_PERSONIDENT_HEADER, personident.value)
                 header(NAV_CALL_ID_HEADER, callId)
                 accept(ContentType.Application.Json)
             }

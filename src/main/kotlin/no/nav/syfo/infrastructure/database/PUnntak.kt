@@ -11,7 +11,7 @@ data class PUnntak(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val createdBy: String,
-    val personIdent: String,
+    val personident: String,
     val arsak: String,
     val beskrivelse: String?,
 )
@@ -21,7 +21,7 @@ fun List<PUnntak>.toUnntakList() = this.map { pUnntak ->
         uuid = pUnntak.uuid,
         createdAt = pUnntak.createdAt,
         createdBy = pUnntak.createdBy,
-        personIdent = Personident(pUnntak.personIdent),
+        personident = Personident(pUnntak.personident),
         arsak = UnntakArsak.valueOf(pUnntak.arsak),
         beskrivelse = pUnntak.beskrivelse,
     )

@@ -11,7 +11,7 @@ data class PIkkeAktuell(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val createdBy: String,
-    val personIdent: String,
+    val personident: String,
     val arsak: String,
     val beskrivelse: String?,
 )
@@ -21,7 +21,7 @@ fun List<PIkkeAktuell>.toIkkeAktuellList() = this.map {
         uuid = it.uuid,
         createdAt = it.createdAt,
         createdBy = it.createdBy,
-        personIdent = Personident(it.personIdent),
+        personident = Personident(it.personident),
         arsak = IkkeAktuellArsak.valueOf(it.arsak),
         beskrivelse = it.beskrivelse,
     )

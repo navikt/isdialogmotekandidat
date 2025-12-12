@@ -37,7 +37,7 @@ fun Connection.createDialogmotekandidatStoppunkt(
     val idList = this.prepareStatement(queryCreateDialogmotekandidatStoppunkt).use {
         it.setString(1, dialogmotekandidatStoppunkt.uuid.toString())
         it.setObject(2, dialogmotekandidatStoppunkt.createdAt)
-        it.setString(3, dialogmotekandidatStoppunkt.personIdent.value)
+        it.setString(3, dialogmotekandidatStoppunkt.personident.value)
         it.setDate(4, Date.valueOf(dialogmotekandidatStoppunkt.stoppunktPlanlagt))
         it.setString(5, dialogmotekandidatStoppunkt.status.name)
         it.executeQuery().toList { getInt("id") }
@@ -114,7 +114,7 @@ fun ResultSet.toPDialogmotekandidatStoppunktList(): PDialogmotekandidatStoppunkt
         id = getInt("id"),
         uuid = UUID.fromString(getString("uuid")),
         createdAt = getObject("created_at", OffsetDateTime::class.java),
-        personIdent = Personident(getString("personident")),
+        personident = Personident(getString("personident")),
         processedAt = getObject("processed_at", OffsetDateTime::class.java),
         status = getString("status"),
         stoppunktPlanlagt = getDate("stoppunkt_planlagt").toLocalDate(),

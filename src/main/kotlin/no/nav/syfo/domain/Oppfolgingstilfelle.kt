@@ -6,7 +6,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 
 data class Oppfolgingstilfelle(
-    val personIdent: Personident,
+    val personident: Personident,
     val tilfelleStart: LocalDate,
     val tilfelleEnd: LocalDate,
     val arbeidstakerAtTilfelleEnd: Boolean,
@@ -30,7 +30,7 @@ fun Oppfolgingstilfelle.isDialogmotekandidat(): Boolean {
 
 fun Oppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt() =
     DialogmotekandidatStoppunkt.planlagt(
-        arbeidstakerPersonIdent = this.personIdent,
+        arbeidstakerPersonIdent = this.personident,
         tilfelleStart = this.tilfelleStart,
         tilfelleEnd = this.tilfelleEnd,
     )

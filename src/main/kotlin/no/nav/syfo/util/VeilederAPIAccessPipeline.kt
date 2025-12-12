@@ -18,7 +18,7 @@ suspend fun RoutingContext.validateVeilederAccess(
 
     val hasVeilederAccess = veilederTilgangskontrollClient.hasAccess(
         callId = callId,
-        personIdent = personIdentToAccess,
+        personident = personIdentToAccess,
         token = token,
     )
     if (hasVeilederAccess) {

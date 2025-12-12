@@ -21,7 +21,7 @@ enum class DialogmotekandidatStoppunktStatus {
 data class DialogmotekandidatStoppunkt private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
-    val personIdent: Personident,
+    val personident: Personident,
     val processedAt: OffsetDateTime?,
     val status: DialogmotekandidatStoppunktStatus,
     val stoppunktPlanlagt: LocalDate,
@@ -45,7 +45,7 @@ data class DialogmotekandidatStoppunkt private constructor(
         ) = DialogmotekandidatStoppunkt(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
-            personIdent = arbeidstakerPersonIdent,
+            personident = arbeidstakerPersonIdent,
             processedAt = null,
             status = DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT,
             stoppunktPlanlagt = stoppunktPlanlagtDato(tilfelleStart, tilfelleEnd),
@@ -55,7 +55,7 @@ data class DialogmotekandidatStoppunkt private constructor(
             DialogmotekandidatStoppunkt(
                 uuid = pDialogmotekandidatStoppunkt.uuid,
                 createdAt = pDialogmotekandidatStoppunkt.createdAt,
-                personIdent = pDialogmotekandidatStoppunkt.personIdent,
+                personident = pDialogmotekandidatStoppunkt.personident,
                 processedAt = pDialogmotekandidatStoppunkt.processedAt,
                 status = DialogmotekandidatStoppunktStatus.valueOf(pDialogmotekandidatStoppunkt.status),
                 stoppunktPlanlagt = pDialogmotekandidatStoppunkt.stoppunktPlanlagt,
@@ -64,5 +64,5 @@ data class DialogmotekandidatStoppunkt private constructor(
 }
 
 fun DialogmotekandidatStoppunkt.toDialogmotekandidatEndring() = DialogmotekandidatEndring.stoppunktKandidat(
-    personIdentNumber = this.personIdent
+    personIdentNumber = this.personident
 )

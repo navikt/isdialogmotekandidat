@@ -6,7 +6,7 @@ import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.Oppfolgingstilfell
 interface IOppfolgingstilfelleClient {
 
     suspend fun getOppfolgingstilfellePerson(
-        personIdent: Personident,
+        personident: Personident,
         veilederToken: String? = null,
         callId: String?,
     ): OppfolgingstilfellePersonDTO?

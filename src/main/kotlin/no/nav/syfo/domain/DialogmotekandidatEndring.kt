@@ -37,7 +37,7 @@ data class DialogmotekandidatEndring private constructor(
             DialogmotekandidatEndring(
                 uuid = pDialogmotekandidatEndring.uuid,
                 createdAt = pDialogmotekandidatEndring.createdAt,
-                personIdentNumber = pDialogmotekandidatEndring.personIdent,
+                personIdentNumber = pDialogmotekandidatEndring.personident,
                 kandidat = pDialogmotekandidatEndring.kandidat,
                 arsak = DialogmotekandidatEndringArsak.valueOf(pDialogmotekandidatEndring.arsak),
             )
