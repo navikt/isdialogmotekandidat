@@ -10,7 +10,7 @@ data class PDialogmotekandidatStoppunkt(
     val id: Int,
     val uuid: UUID,
     val createdAt: OffsetDateTime,
-    val personIdent: Personident,
+    val personident: Personident,
     val processedAt: OffsetDateTime?,
     val status: String,
     val stoppunktPlanlagt: LocalDate,

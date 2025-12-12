@@ -13,10 +13,10 @@ import java.util.UUID
 
 class DialogmotekandidatVurderingRepository(private val database: DatabaseInterface) : IDialogmotekandidatVurderingRepository {
 
-    override suspend fun getIkkeAktuellListForPerson(personIdent: Personident): List<PIkkeAktuell> =
+    override suspend fun getIkkeAktuellListForPerson(personident: Personident): List<PIkkeAktuell> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_IKKE_AKTUELL_FOR_PERSON).use {
-                it.setString(1, personIdent.value)
+                it.setString(1, personident.value)
                 it.executeQuery().toList { toPIkkeAktuell() }
             }
         }
@@ -26,7 +26,7 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
             it.setString(1, ikkeAktuell.uuid.toString())
             it.setObject(2, ikkeAktuell.createdAt)
             it.setString(3, ikkeAktuell.createdBy)
-            it.setString(4, ikkeAktuell.personIdent.value)
+            it.setString(4, ikkeAktuell.personident.value)
             it.setString(5, ikkeAktuell.arsak.name)
             it.setString(6, ikkeAktuell.beskrivelse)
             it.executeQuery().toList { getInt("id") }
@@ -43,7 +43,7 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
             it.setString(1, unntak.uuid.toString())
             it.setObject(2, unntak.createdAt)
             it.setString(3, unntak.createdBy)
-            it.setString(4, unntak.personIdent.value)
+            it.setString(4, unntak.personident.value)
             it.setString(5, unntak.arsak.name)
             it.setString(6, unntak.beskrivelse)
             it.executeQuery().toList { getInt("id") }
@@ -60,7 +60,7 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
             it.setObject(2, avvent.createdAt)
             it.setDate(3, Date.valueOf(avvent.frist))
             it.setString(4, avvent.createdBy)
-            it.setString(5, avvent.personIdent.value)
+            it.setString(5, avvent.personident.value)
             it.setString(6, avvent.beskrivelse)
             it.executeQuery().toList { getInt("id") }
         }
@@ -70,18 +70,18 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
-    override suspend fun getUnntakList(personIdent: Personident): List<PUnntak> =
+    override suspend fun getUnntakList(personident: Personident): List<PUnntak> =
         database.connection.use { connection ->
             connection.prepareStatement(QUERY_GET_UNNTAK_FOR_PERSON).use {
-                it.setString(1, personIdent.value)
+                it.setString(1, personident.value)
                 it.executeQuery().toList { toPUnntakList() }
             }
         }
 
-    override suspend fun getAvventList(personIdent: Personident): List<PAvvent> =
+    override suspend fun getAvventList(personident: Personident): List<PAvvent> =
         database.connection.use { connection ->
             connection.prepareStatement(QUERY_GET_AVVENT_FOR_PERSON).use {
-                it.setString(1, personIdent.value)
+                it.setString(1, personident.value)
                 it.executeQuery().toList { toPAvventList() }
             }
         }
@@ -160,7 +160,7 @@ private fun ResultSet.toPIkkeAktuell() =
         uuid = UUID.fromString(getString("uuid")),
         createdAt = getObject("created_at", OffsetDateTime::class.java),
         createdBy = getString("created_by"),
-        personIdent = getString("personident"),
+        personident = getString("personident"),
         arsak = getString("arsak"),
         beskrivelse = getString("beskrivelse"),
     )
@@ -171,7 +171,7 @@ fun ResultSet.toPUnntakList() =
         uuid = UUID.fromString(getString("uuid")),
         createdAt = getObject("created_at", OffsetDateTime::class.java),
         createdBy = getString("created_by"),
-        personIdent = getString("personident"),
+        personident = getString("personident"),
         arsak = getString("arsak"),
         beskrivelse = getString("beskrivelse"),
     )
@@ -183,6 +183,6 @@ fun ResultSet.toPAvventList() =
         createdAt = getObject("created_at", OffsetDateTime::class.java),
         frist = getDate("frist").toLocalDate(),
         createdBy = getString("created_by"),
-        personIdent = getString("personident"),
+        personident = getString("personident"),
         beskrivelse = getString("beskrivelse"),
     )

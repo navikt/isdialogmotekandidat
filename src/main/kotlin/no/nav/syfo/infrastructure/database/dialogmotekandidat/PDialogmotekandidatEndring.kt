@@ -9,7 +9,7 @@ data class PDialogmotekandidatEndring(
     val id: Int,
     val uuid: UUID,
     val createdAt: OffsetDateTime,
-    val personIdent: Personident,
+    val personident: Personident,
     val kandidat: Boolean,
     val arsak: String,
 )

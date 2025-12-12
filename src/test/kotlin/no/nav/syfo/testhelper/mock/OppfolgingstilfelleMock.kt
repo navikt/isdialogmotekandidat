@@ -11,13 +11,13 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import java.time.LocalDate
 
 fun MockRequestHandleScope.oppfolgingstilfelleMockResponse(request: HttpRequestData): HttpResponseData {
-    val personIdent = request.headers[NAV_PERSONIDENT_HEADER]
-    return respond(oppfolgingstilfellePersonDTO(personIdent))
+    val personident = request.headers[NAV_PERSONIDENT_HEADER]
+    return respond(oppfolgingstilfellePersonDTO(personident))
 }
 
-private fun oppfolgingstilfellePersonDTO(personIdent: String?) =
+private fun oppfolgingstilfellePersonDTO(personident: String?) =
     OppfolgingstilfellePersonDTO(
-        oppfolgingstilfelleList = when (personIdent) {
+        oppfolgingstilfelleList = when (personident) {
             UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value -> {
                 listOf(
                     OppfolgingstilfelleDTO(
@@ -55,6 +55,6 @@ private fun oppfolgingstilfellePersonDTO(personIdent: String?) =
                 emptyList()
             }
         },
-        personIdent = personIdent!!,
-        dodsdato = if (personIdent == UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD.value) LocalDate.now() else null,
+        personident = personident!!,
+        dodsdato = if (personident == UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD.value) LocalDate.now() else null,
     )

@@ -14,7 +14,7 @@ import no.nav.syfo.testhelper.UserConstants
 
 suspend fun MockRequestHandleScope.pdlMockResponse(request: HttpRequestData): HttpResponseData {
     val pdlRequest = request.receiveBody<PdlHentIdenterRequest>()
-    return when (val personIdent = Personident(pdlRequest.variables.ident)) {
+    return when (val personident = Personident(pdlRequest.variables.ident)) {
         UserConstants.ARBEIDSTAKER_3_PERSONIDENTNUMBER -> {
             respond(generatePdlIdenterResponse(Personident("11111111111")))
         }
@@ -22,7 +22,7 @@ suspend fun MockRequestHandleScope.pdlMockResponse(request: HttpRequestData): Ht
             respond(HttpStatusCode.InternalServerError)
         }
         else -> {
-            respond(generatePdlIdenterResponse(personIdent))
+            respond(generatePdlIdenterResponse(personident))
         }
     }
 }

@@ -51,10 +51,10 @@ const val queryGetLatestDialogmoteFerdigstiltForPerson =
     """
 
 fun Connection.getLatestDialogmoteFerdigstiltForPerson(
-    personIdent: Personident,
+    personident: Personident,
 ): OffsetDateTime? {
     val dateTimeList = prepareStatement(queryGetLatestDialogmoteFerdigstiltForPerson).use {
-        it.setString(1, personIdent.value)
+        it.setString(1, personident.value)
         it.executeQuery().toList {
             getObject(1, OffsetDateTime::class.java)
         }

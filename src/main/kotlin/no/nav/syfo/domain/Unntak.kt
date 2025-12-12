@@ -21,21 +21,21 @@ data class Unntak private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val createdBy: String,
-    val personIdent: Personident,
+    val personident: Personident,
     val arsak: UnntakArsak,
     val beskrivelse: String?,
 ) {
 
     constructor(
         createdBy: String,
-        personIdent: Personident,
+        personident: Personident,
         arsak: UnntakArsak,
         beskrivelse: String?,
     ) : this(
         uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
         createdBy = createdBy,
-        personIdent = personIdent,
+        personident = personident,
         arsak = arsak,
         beskrivelse = beskrivelse,
     ) {
@@ -49,14 +49,14 @@ data class Unntak private constructor(
             uuid: UUID,
             createdAt: OffsetDateTime,
             createdBy: String,
-            personIdent: Personident,
+            personident: Personident,
             arsak: UnntakArsak,
             beskrivelse: String?,
         ) = Unntak(
             uuid = uuid,
             createdAt = createdAt,
             createdBy = createdBy,
-            personIdent = personIdent,
+            personident = personident,
             arsak = arsak,
             beskrivelse = beskrivelse,
         )

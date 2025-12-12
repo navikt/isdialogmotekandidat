@@ -56,7 +56,7 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         assertNotNull(stoppunkt)
         val latestTilfelleStart = person.oppfolgingstilfelleList.maxByOrNull { it.start }!!.start
         val expectedPlanlagt = latestTilfelleStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
-        assertEquals(person.personIdentNumber, stoppunkt!!.personIdent.value)
+        assertEquals(person.personIdentNumber, stoppunkt!!.personident.value)
         assertNull(stoppunkt.processedAt)
         assertEquals(DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT, stoppunkt.status)
         assertEquals(expectedPlanlagt, stoppunkt.stoppunktPlanlagt)
@@ -132,7 +132,7 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         assertPlanlagt(stoppunktList[0], combinedPerson)
         val currentTilfelle = combinedPerson.oppfolgingstilfelleList[0]
         val stoppunktCurrent = stoppunktList[1]
-        assertEquals(combinedPerson.personIdentNumber, stoppunktCurrent.personIdent.value)
+        assertEquals(combinedPerson.personIdentNumber, stoppunktCurrent.personident.value)
         assertNull(stoppunktCurrent.processedAt)
         assertEquals(DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT, stoppunktCurrent.status)
         assertEquals(currentTilfelle.start.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS), stoppunktCurrent.stoppunktPlanlagt)
@@ -202,7 +202,7 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         assertEquals(1, stoppunktList.size)
         val stoppunkt = stoppunktList.first()
         assertNotNull(stoppunkt)
-        assertEquals(tilbakedatertLast.personIdentNumber, stoppunkt.personIdent.value)
+        assertEquals(tilbakedatertLast.personIdentNumber, stoppunkt.personident.value)
         assertNull(stoppunkt.processedAt)
         assertEquals(DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT, stoppunkt.status)
         assertEquals(LocalDate.now(), stoppunkt.stoppunktPlanlagt)
@@ -240,7 +240,7 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         val stoppunkt = stoppunktList.first()
         assertNotNull(stoppunkt)
         val expectedPlanlagt = tilbakedatertLastStart.plusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS)
-        assertEquals(tilbakedatertLast.personIdentNumber, stoppunkt.personIdent.value)
+        assertEquals(tilbakedatertLast.personIdentNumber, stoppunkt.personident.value)
         assertNull(stoppunkt.processedAt)
         assertEquals(DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT, stoppunkt.status)
         assertEquals(expectedPlanlagt, stoppunkt.stoppunktPlanlagt)
