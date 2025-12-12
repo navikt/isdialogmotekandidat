@@ -200,4 +200,153 @@ class AvventApiTest {
         assertEquals(HttpStatusCode.Forbidden, response.status)
         verify(exactly = 0) { kafkaProducer.send(any()) }
     }
+
+    @Test
+    fun `returns only Avvent records created after latest kandidat status change`() = testApplication {
+        val client = setupApiAndClient()
+        
+        // Create initial kandidat status
+        val firstKandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = firstKandidatEndring)
+        Thread.sleep(100) // Ensure different timestamps
+        
+        // Create an Avvent while person is kandidat
+        val oldAvvent = no.nav.syfo.domain.Avvent(
+            frist = LocalDate.now().plusDays(7),
+            createdBy = UserConstants.VEILEDER_IDENT,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+            beskrivelse = "Old avvent",
+        )
+        database.connection.use { connection ->
+            externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(connection, oldAvvent)
+            connection.commit()
+        }
+        Thread.sleep(100)
+        
+        // Person stops being kandidat
+        val ikkeKandidatEndring = no.nav.syfo.domain.DialogmotekandidatEndring.ferdigstiltDialogmote(
+            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+        )
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = ikkeKandidatEndring)
+        Thread.sleep(100)
+        
+        // Person becomes kandidat again
+        val secondKandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = secondKandidatEndring)
+        Thread.sleep(100)
+        
+        // Create a new Avvent after person becomes kandidat again
+        val newAvvent = no.nav.syfo.domain.Avvent(
+            frist = LocalDate.now().plusDays(14),
+            createdBy = UserConstants.VEILEDER_IDENT,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+            beskrivelse = "New avvent",
+        )
+        database.connection.use { connection ->
+            externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(connection, newAvvent)
+            connection.commit()
+        }
+        
+        // Get avvent list - should only return the new one
+        val getResponse = client.get(urlAvventPersonIdent) {
+            bearerAuth(validToken)
+            header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        }
+        
+        val avventList = getResponse.body<List<AvventDTO>>()
+        assertEquals(1, avventList.size)
+        assertEquals("New avvent", avventList.first().beskrivelse)
+    }
+
+    @Test
+    fun `returns empty list when person is not currently kandidat`() = testApplication {
+        val client = setupApiAndClient()
+        
+        // Create initial kandidat status
+        val kandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = kandidatEndring)
+        Thread.sleep(100)
+        
+        // Create an Avvent while person is kandidat
+        val avvent = no.nav.syfo.domain.Avvent(
+            frist = LocalDate.now().plusDays(14),
+            createdBy = UserConstants.VEILEDER_IDENT,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+            beskrivelse = "Test avvent",
+        )
+        database.connection.use { connection ->
+            externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(connection, avvent)
+            connection.commit()
+        }
+        Thread.sleep(100)
+        
+        // Person stops being kandidat
+        val ikkeKandidatEndring = no.nav.syfo.domain.DialogmotekandidatEndring.ferdigstiltDialogmote(
+            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+        )
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = ikkeKandidatEndring)
+        
+        // Get avvent list - should return empty list
+        val getResponse = client.get(urlAvventPersonIdent) {
+            bearerAuth(validToken)
+            header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        }
+        
+        val avventList = getResponse.body<List<AvventDTO>>()
+        assertEquals(0, avventList.size)
+    }
+
+    @Test
+    fun `filters correctly when Avvent createdAt equals kandidat endring createdAt`() = testApplication {
+        val client = setupApiAndClient()
+        
+        // Create kandidat status
+        val kandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = kandidatEndring)
+        
+        // Get the exact timestamp of the kandidat endring
+        val latestDialogmotekandidatEndring = dialogmoteKandidatService.getDialogmotekandidatEndringer(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).firstOrNull()
+        assertNotNull(latestDialogmotekandidatEndring)
+        
+        // Create an Avvent with the exact same timestamp as kandidat endring
+        val avventWithSameTimestamp = no.nav.syfo.domain.Avvent.createFromDatabase(
+            uuid = java.util.UUID.randomUUID(),
+            createdAt = latestDialogmotekandidatEndring!!.createdAt,
+            frist = LocalDate.now().plusDays(14),
+            createdBy = UserConstants.VEILEDER_IDENT,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+            beskrivelse = "Same timestamp avvent",
+        )
+        database.connection.use { connection ->
+            externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(connection, avventWithSameTimestamp)
+            connection.commit()
+        }
+        
+        Thread.sleep(100)
+        
+        // Create an Avvent after the kandidat endring
+        val avventAfter = no.nav.syfo.domain.Avvent(
+            frist = LocalDate.now().plusDays(14),
+            createdBy = UserConstants.VEILEDER_IDENT,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+            beskrivelse = "After timestamp avvent",
+        )
+        database.connection.use { connection ->
+            externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(connection, avventAfter)
+            connection.commit()
+        }
+        
+        // Get avvent list - should only return the one created after (isAfter is exclusive)
+        val getResponse = client.get(urlAvventPersonIdent) {
+            bearerAuth(validToken)
+            header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        }
+        
+        val avventList = getResponse.body<List<AvventDTO>>()
+        assertEquals(1, avventList.size)
+        assertEquals("After timestamp avvent", avventList.first().beskrivelse)
+    }
 }

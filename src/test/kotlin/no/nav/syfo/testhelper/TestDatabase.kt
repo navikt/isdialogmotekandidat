@@ -50,6 +50,9 @@ fun DatabaseInterface.dropData() {
         """
         DELETE FROM IKKE_AKTUELL
         """.trimIndent(),
+        """
+        DELETE FROM AVVENT
+        """.trimIndent(),
     )
     this.connection.use { connection ->
         queryList.forEach { query ->
