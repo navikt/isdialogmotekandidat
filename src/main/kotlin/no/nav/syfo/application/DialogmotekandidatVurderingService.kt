@@ -90,11 +90,11 @@ class DialogmotekandidatVurderingService(
         avvent: Avvent,
     ) {
         database.connection.use { connection ->
-            val ikkeKandidat =
+            val isPersonIkkeKandidat =
                 connection.getDialogmotekandidatEndringListForPerson(personident = avvent.personident)
                     .toDialogmotekandidatEndringList()
                     .isLatestIkkeKandidat()
-            if (ikkeKandidat) {
+            if (isPersonIkkeKandidat) {
                 throw ConflictException("Failed to create Avvent: Person is not kandidat")
             }
             dialogmotekandidatVurderingRepository.createAvvent(connection = connection, avvent = avvent)
