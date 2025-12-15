@@ -16,6 +16,8 @@ import no.nav.syfo.api.CreateAvventDTO
 import no.nav.syfo.api.endpoints.avventApiBasePath
 import no.nav.syfo.api.endpoints.avventApiPersonidentPath
 import no.nav.syfo.application.DialogmotekandidatService
+import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
@@ -37,6 +39,8 @@ class AvventApiTest {
 
     private val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
     private val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(kafkaProducerDialogmotekandidatEndring = kafkaProducer)
+
+    val dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database)
 
     private val dialogmoteKandidatService = DialogmotekandidatService(
         database = database,
@@ -112,6 +116,87 @@ class AvventApiTest {
         assertEquals(createAvventDTO.personIdent, avventDTO.personIdent)
         assertEquals(createAvventDTO.frist, avventDTO.frist)
         assertEquals(createAvventDTO.beskrivelse, avventDTO.beskrivelse)
+    }
+
+    @Test
+    fun `returns only Avvent records created after latest kandidat status change`() = testApplication {
+        val client = setupApiAndClient()
+
+        val firstKandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = firstKandidatEndring)
+
+        val oldAvvent = no.nav.syfo.domain.Avvent(
+            frist = LocalDate.now().plusDays(7),
+            createdBy = UserConstants.VEILEDER_IDENT,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+            beskrivelse = "Old avvent",
+        )
+        database.connection.use { connection ->
+            dialogmotekandidatVurderingRepository.createAvvent(connection, oldAvvent)
+            connection.commit()
+        }
+
+        val ikkeKandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
+            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+        )
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = ikkeKandidatEndring)
+
+        val secondKandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = secondKandidatEndring)
+
+        val newAvvent = no.nav.syfo.domain.Avvent(
+            frist = LocalDate.now().plusDays(14),
+            createdBy = UserConstants.VEILEDER_IDENT,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+            beskrivelse = "New avvent",
+        )
+        database.connection.use { connection ->
+            externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(connection, newAvvent)
+            connection.commit()
+        }
+
+        val getResponse = client.get(urlAvventPersonIdent) {
+            bearerAuth(validToken)
+            header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        }
+
+        val avventList = getResponse.body<List<AvventDTO>>()
+        assertEquals(1, avventList.size)
+        assertEquals("New avvent", avventList.first().beskrivelse)
+    }
+
+    @Test
+    fun `returns empty list when person is not currently kandidat`() = testApplication {
+        val client = setupApiAndClient()
+
+        val kandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = kandidatEndring)
+
+        val avvent = no.nav.syfo.domain.Avvent(
+            frist = LocalDate.now().plusDays(14),
+            createdBy = UserConstants.VEILEDER_IDENT,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+            beskrivelse = "Test avvent",
+        )
+        database.connection.use { connection ->
+            dialogmotekandidatVurderingRepository.createAvvent(connection, avvent)
+            connection.commit()
+        }
+
+        val ikkeKandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
+            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+        )
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndring = ikkeKandidatEndring)
+
+        val getResponse = client.get(urlAvventPersonIdent) {
+            bearerAuth(validToken)
+            header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        }
+
+        val avventList = getResponse.body<List<AvventDTO>>()
+        assertEquals(0, avventList.size)
     }
 
     @Test
