@@ -181,7 +181,7 @@ class IkkeAktuellApiTest {
 }
 
 fun generateNewIkkeAktuellDTO(personident: Personident) = CreateIkkeAktuellDTO(
-    personident = personident.value,
+    personIdent = personident.value,
     arsak = IkkeAktuellArsak.DIALOGMOTE_AVHOLDT.name,
     beskrivelse = "Dette er en beskrivelse",
 )

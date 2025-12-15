@@ -84,7 +84,7 @@ class UnntakApiTest {
         val dto = list.first()
         assertNotNull(dto.createdAt)
         assertNotNull(dto.uuid)
-        assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, dto.personident)
+        assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, dto.personIdent)
         assertEquals(UserConstants.VEILEDER_IDENT, dto.createdBy)
         assertEquals(newUnntakDTO.arsak, dto.arsak)
         assertEquals(newUnntakDTO.beskrivelse, dto.beskrivelse)

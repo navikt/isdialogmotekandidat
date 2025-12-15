@@ -22,7 +22,7 @@ fun Route.registerUnntakApi(
     route(unntakApiBasePath) {
         post(unntakApiPersonidentPath) {
             val createUnntakDTO = call.receive<CreateUnntakDTO>()
-            val personident = Personident(createUnntakDTO.personident)
+            val personident = Personident(createUnntakDTO.personIdent)
             validateVeilederAccess(
                 action = "Create unntak for person",
                 personIdentToAccess = personident,

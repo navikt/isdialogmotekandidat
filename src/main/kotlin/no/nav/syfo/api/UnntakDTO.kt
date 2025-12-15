@@ -7,7 +7,7 @@ data class UnntakDTO(
     val uuid: String,
     val createdAt: LocalDateTime,
     val createdBy: String,
-    val personident: String,
+    val personIdent: String,
     val arsak: String,
     val beskrivelse: String?,
 )
@@ -17,7 +17,7 @@ fun List<Unntak>.toUnntakDTOList() = this.map { unntak ->
         uuid = unntak.uuid.toString(),
         createdAt = unntak.createdAt.toLocalDateTime(),
         createdBy = unntak.createdBy,
-        personident = unntak.personident.value,
+        personIdent = unntak.personident.value,
         arsak = unntak.arsak.name,
         beskrivelse = unntak.beskrivelse,
     )

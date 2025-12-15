@@ -20,7 +20,7 @@ fun Route.registerIkkeAktuellApi(
     route(ikkeAktuellApiBasePath) {
         post("/personident") {
             val createIkkeAktuellDTO = call.receive<CreateIkkeAktuellDTO>()
-            val personident = Personident(createIkkeAktuellDTO.personident)
+            val personident = Personident(createIkkeAktuellDTO.personIdent)
             validateVeilederAccess(
                 action = "Create ikke-aktuell for person",
                 personIdentToAccess = personident,

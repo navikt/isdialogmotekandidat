@@ -5,7 +5,7 @@ import no.nav.syfo.domain.Personident
 import java.time.LocalDate
 
 data class CreateAvventDTO(
-    val personident: String,
+    val personIdent: String,
     val frist: LocalDate,
     val beskrivelse: String?,
 )
@@ -15,6 +15,6 @@ fun CreateAvventDTO.toAvvent(
 ) = Avvent(
     frist = this.frist,
     createdBy = createdByIdent,
-    personident = Personident(this.personident),
+    personident = Personident(this.personIdent),
     beskrivelse = this.beskrivelse,
 )

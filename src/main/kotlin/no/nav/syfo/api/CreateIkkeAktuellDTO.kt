@@ -7,7 +7,7 @@ import no.nav.syfo.util.nowUTC
 import java.util.*
 
 data class CreateIkkeAktuellDTO(
-    val personident: String,
+    val personIdent: String,
     val arsak: String,
     val beskrivelse: String?,
 )
@@ -18,7 +18,7 @@ fun CreateIkkeAktuellDTO.toIkkeAktuell(
     uuid = UUID.randomUUID(),
     createdAt = nowUTC(),
     createdBy = createdByIdent,
-    personident = Personident(this.personident),
+    personident = Personident(this.personIdent),
     arsak = IkkeAktuellArsak.valueOf(this.arsak),
     beskrivelse = this.beskrivelse,
 )
