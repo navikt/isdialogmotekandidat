@@ -102,7 +102,7 @@ class DialogmotekandidatVurderingService(
         }
     }
 
-    suspend fun getAvventList(personident: Personident): List<Avvent> {
+    suspend fun getAvvent(personident: Personident): List<Avvent> {
         val allAvvent = dialogmotekandidatVurderingRepository.getAvventList(personident = personident).toAvventList()
         val latestEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
         return if (latestEndring?.kandidat == true) {

@@ -48,7 +48,7 @@ fun Route.registerAvventApi(
                 personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val avventDTOList = dialogmotekandidatVurderingService.getAvventList(
+                val avventDTOList = dialogmotekandidatVurderingService.getAvvent(
                     personident = personident
                 ).toAvventDTOList()
 
