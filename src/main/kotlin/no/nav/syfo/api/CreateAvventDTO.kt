@@ -1,20 +1,20 @@
 package no.nav.syfo.api
 
+import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Unntak
-import no.nav.syfo.domain.UnntakArsak
+import java.time.LocalDate
 
-data class CreateUnntakDTO(
+data class CreateAvventDTO(
     val personIdent: String,
-    val arsak: String,
+    val frist: LocalDate,
     val beskrivelse: String?,
 )
 
-fun CreateUnntakDTO.toUnntak(
+fun CreateAvventDTO.toAvvent(
     createdByIdent: String,
-) = Unntak(
+) = Avvent(
+    frist = this.frist,
     createdBy = createdByIdent,
     personident = Personident(this.personIdent),
-    arsak = UnntakArsak.valueOf(this.arsak),
     beskrivelse = this.beskrivelse,
 )

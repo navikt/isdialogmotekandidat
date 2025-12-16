@@ -17,7 +17,7 @@ fun List<Unntak>.toUnntakDTOList() = this.map { unntak ->
         uuid = unntak.uuid.toString(),
         createdAt = unntak.createdAt.toLocalDateTime(),
         createdBy = unntak.createdBy,
-        personIdent = unntak.personIdent.value,
+        personIdent = unntak.personident.value,
         arsak = unntak.arsak.name,
         beskrivelse = unntak.beskrivelse,
     )

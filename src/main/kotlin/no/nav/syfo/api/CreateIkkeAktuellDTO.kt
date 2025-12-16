@@ -18,7 +18,7 @@ fun CreateIkkeAktuellDTO.toIkkeAktuell(
     uuid = UUID.randomUUID(),
     createdAt = nowUTC(),
     createdBy = createdByIdent,
-    personIdent = Personident(this.personIdent),
+    personident = Personident(this.personIdent),
     arsak = IkkeAktuellArsak.valueOf(this.arsak),
     beskrivelse = this.beskrivelse,
 )

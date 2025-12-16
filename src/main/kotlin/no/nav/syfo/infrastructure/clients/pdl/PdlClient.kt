@@ -25,7 +25,7 @@ class PdlClient(
 ) {
 
     suspend fun getPdlIdenter(
-        personIdent: Personident,
+        personident: Personident,
         callId: String? = null,
     ): PdlHentIdenter? {
         val token = azureAdClient.getSystemToken(pdlEnvironment.clientId)
@@ -38,7 +38,7 @@ class PdlClient(
         val request = PdlHentIdenterRequest(
             query = query,
             variables = PdlHentIdenterRequestVariables(
-                ident = personIdent.value,
+                ident = personident.value,
                 historikk = true,
                 grupper = listOf(
                     IdentType.FOLKEREGISTERIDENT,

@@ -20,10 +20,10 @@ fun Route.registerIkkeAktuellApi(
     route(ikkeAktuellApiBasePath) {
         post("/personident") {
             val createIkkeAktuellDTO = call.receive<CreateIkkeAktuellDTO>()
-            val personIdent = Personident(createIkkeAktuellDTO.personIdent)
+            val personident = Personident(createIkkeAktuellDTO.personIdent)
             validateVeilederAccess(
                 action = "Create ikke-aktuell for person",
-                personIdentToAccess = personIdent,
+                personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 val ikkeAktuell = createIkkeAktuellDTO.toIkkeAktuell(
@@ -39,15 +39,15 @@ fun Route.registerIkkeAktuellApi(
             }
         }
         get("/personident") {
-            val personIdent = personIdentHeader()?.let { Personident(it) }
+            val personident = personIdentHeader()?.let { Personident(it) }
                 ?: throw IllegalArgumentException("Failed to get ikke-aktuell for person: No $NAV_PERSONIDENT_HEADER supplied in request header")
             validateVeilederAccess(
                 action = "Get ikke-aktuell for person",
-                personIdentToAccess = personIdent,
+                personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 call.respond(
-                    dialogmotekandidatVurderingService.getIkkeAktuellList(personIdent = personIdent)
+                    dialogmotekandidatVurderingService.getIkkeAktuellList(personident = personident)
                 )
             }
         }

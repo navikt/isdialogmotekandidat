@@ -21,10 +21,10 @@ data class OppfolgingstilfelleDTO(
 )
 
 fun OppfolgingstilfelleDTO.toOppfolgingstilfelle(
-    personIdent: Personident,
+    personident: Personident,
     dodsdato: LocalDate?,
 ) = Oppfolgingstilfelle(
-    personIdent = personIdent,
+    personident = personident,
     tilfelleStart = start,
     tilfelleEnd = end,
     arbeidstakerAtTilfelleEnd = arbeidstakerAtTilfelleEnd,
@@ -32,12 +32,12 @@ fun OppfolgingstilfelleDTO.toOppfolgingstilfelle(
     dodsdato = dodsdato,
 )
 
-fun OppfolgingstilfellePersonDTO?.toOppfolgingstilfelleList(personIdent: Personident): List<Oppfolgingstilfelle> =
+fun OppfolgingstilfellePersonDTO?.toOppfolgingstilfelleList(personident: Personident): List<Oppfolgingstilfelle> =
     this?.oppfolgingstilfelleList
         ?.filter { it.start.isBeforeOrEqual(tomorrow()) }
         ?.map {
             it.toOppfolgingstilfelle(
-                personIdent = personIdent,
+                personident = personident,
                 dodsdato = this.dodsdato,
             )
         } ?: emptyList()

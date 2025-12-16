@@ -9,7 +9,7 @@ fun generateOppfolgingstilfelle(
     oppfolgingstilfelleDurationInDays: Long,
     backdatedNumberOfDays: Long = 0,
 ) = Oppfolgingstilfelle(
-    personIdent = arbeidstakerPersonIdent,
+    personident = arbeidstakerPersonIdent,
     tilfelleStart = LocalDate.now().minusDays(oppfolgingstilfelleDurationInDays + backdatedNumberOfDays),
     tilfelleEnd = LocalDate.now().minusDays(backdatedNumberOfDays),
     arbeidstakerAtTilfelleEnd = true,

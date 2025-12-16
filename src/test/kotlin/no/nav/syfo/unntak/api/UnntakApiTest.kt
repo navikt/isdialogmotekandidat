@@ -64,7 +64,7 @@ class UnntakApiTest {
         issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
         navIdent = UserConstants.VEILEDER_IDENT,
     )
-    private val newUnntakDTO = generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+    private val newUnntakDTO = generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
 
     @Test
     fun `returns unntak for person if request is successful`() = testApplication {
@@ -163,7 +163,7 @@ class UnntakApiTest {
 
         val latestUnntak = dialogmotekandidatVurderingRepository.getUnntakList(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertNotNull(latestUnntak.createdAt)
-        assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, latestUnntak.personIdent)
+        assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, latestUnntak.personident)
         assertEquals(UserConstants.VEILEDER_IDENT, latestUnntak.createdBy)
         assertEquals(newUnntakDTO.arsak, latestUnntak.arsak)
         assertEquals(newUnntakDTO.beskrivelse, latestUnntak.beskrivelse)
@@ -185,14 +185,14 @@ class UnntakApiTest {
         val friskmeldtResponse = client.post(urlUnntakPersonIdent) {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.FRISKMELDT))
+            setBody(generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.FRISKMELDT))
         }
         assertEquals(HttpStatusCode.BadRequest, friskmeldtResponse.status)
 
         val arbeidsforholdResponse = client.post(urlUnntakPersonIdent) {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(generateNewUnntakDTO(personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.ARBEIDSFORHOLD_OPPHORT))
+            setBody(generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.ARBEIDSFORHOLD_OPPHORT))
         }
         assertEquals(HttpStatusCode.BadRequest, arbeidsforholdResponse.status)
     }
@@ -223,7 +223,7 @@ class UnntakApiTest {
     @Test
     fun `returns status Forbidden if denied access to person when creating unntak`() = testApplication {
         val client = setupApiAndClient()
-        val newUnntakDTOWithDeniedAccess = generateNewUnntakDTO(personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS)
+        val newUnntakDTOWithDeniedAccess = generateNewUnntakDTO(personident = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS)
         val response = client.post(urlUnntakPersonIdent) {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())

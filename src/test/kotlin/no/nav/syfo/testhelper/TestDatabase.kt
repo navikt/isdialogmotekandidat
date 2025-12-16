@@ -67,7 +67,7 @@ fun DatabaseInterface.createDialogmotekandidatEndring(dialogmotekandidatEndring:
 }
 
 fun DatabaseInterface.isIkkeKandidat(personIdentNumber: Personident) =
-    connection.getDialogmotekandidatEndringListForPerson(personIdent = personIdentNumber)
+    connection.getDialogmotekandidatEndringListForPerson(personident = personIdentNumber)
         .toDialogmotekandidatEndringList()
         .isLatestIkkeKandidat()
 
