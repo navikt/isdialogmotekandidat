@@ -55,6 +55,6 @@ private fun oppfolgingstilfellePersonDTO(personident: String?) =
                 emptyList()
             }
         },
-        personident = personident!!,
+        personIdent = personident!!,
         dodsdato = if (personident == UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD.value) LocalDate.now() else null,
     )
