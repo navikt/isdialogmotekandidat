@@ -101,7 +101,7 @@ dependencies {
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
-                require("1.28")
+                require("1.28.0")
             }
         }
     }
