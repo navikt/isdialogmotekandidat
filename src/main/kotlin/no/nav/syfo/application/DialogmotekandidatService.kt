@@ -133,6 +133,33 @@ class DialogmotekandidatService(
         return dialogmotekandidatRepository.getDialogmotekandidatEndring(uuid = uuid)?.toDialogmotekandidatEndring()
     }
 
+    suspend fun getAvventForPersons(personidenter: List<Personident>): Map<Personident, Avvent> {
+        val avventForPersons = dialogmotekandidatRepository.getAvventForPersons(personidenter = personidenter)
+        return avventForPersons
+            .groupBy { it.personident }
+            .mapValues { it.value.maxBy { avvent -> avvent.createdAt } }
+    }
+
+    suspend fun getDialogmotekandidater(personidenter: List<Personident>): Map<Personident, Pair<DialogmotekandidatEndring, Avvent?>> {
+        val latestDialogmotekandidatEndringerForPersons =
+            dialogmotekandidatRepository.getDialogmotekandidatEndringForPersons(personidenter = personidenter)
+                .groupBy { endring -> endring.personIdentNumber }
+                .mapValues { entry -> entry.value.maxBy { it.createdAt } }
+        val aktiveKandidaterIdenter = latestDialogmotekandidatEndringerForPersons.keys.toList()
+        val aktiveKandidaterAvventList = getAvventForPersons(aktiveKandidaterIdenter)
+        return latestDialogmotekandidatEndringerForPersons.entries.associate { entry ->
+            val personident = entry.key
+            val dialogmotekandidatEndring = entry.value
+            val avvent = aktiveKandidaterAvventList[personident]
+            val isAvventValidForLatestKandidat = avvent?.createdAt?.isAfter(dialogmotekandidatEndring.createdAt) == true
+
+            personident to Pair(
+                first = dialogmotekandidatEndring,
+                second = if (isAvventValidForLatestKandidat) avvent else null,
+            )
+        }
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(DialogmotekandidatService::class.java)
     }

@@ -1,8 +1,12 @@
 package no.nav.syfo.infrastructure.database.dialogmotekandidat
 
+import no.nav.syfo.domain.Avvent
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.toAvventList
 import no.nav.syfo.infrastructure.database.toList
+import no.nav.syfo.infrastructure.database.toPAvventList
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.*
@@ -17,12 +21,46 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
             }
         }.firstOrNull()
 
+    suspend fun getDialogmotekandidatEndringForPersons(personidenter: List<Personident>): List<DialogmotekandidatEndring> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_DIALOGMOTEENDRING_FOR_PERSONS_QUERY).use {
+                it.setString(1, personidenter.joinToString(transform = { personident -> personident.value }, separator = ","))
+                it.executeQuery()
+                    .toList { toPDialogmotekandidatEndringList() }
+                    .toDialogmotekandidatEndringList()
+            }
+        }
+
+    suspend fun getAvventForPersons(personidenter: List<Personident>): List<Avvent> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_AVVENT_FOR_PERSONS).use {
+                it.setString(1, personidenter.joinToString(transform = { personident -> personident.value }, separator = ","))
+                it.executeQuery()
+                    .toList { toPAvventList() }
+                    .toAvventList()
+            }
+        }
+
     companion object {
         private const val GET_DIALOGMOTEENDRING_QUERY =
             """
                 SELECT * 
                 FROM DIALOGMOTEKANDIDAT_ENDRING
                 WHERE uuid = ?
+            """
+
+        private const val GET_DIALOGMOTEENDRING_FOR_PERSONS_QUERY =
+            """
+                SELECT *
+                FROM DIALOGMOTEKANDIDAT_ENDRING
+                WHERE kandidat AND personident = ANY (string_to_array(?, ','))
+            """
+
+        private const val GET_AVVENT_FOR_PERSONS: String =
+            """
+                SELECT *
+                FROM AVVENT
+                WHERE personident = ANY (string_to_array(?, ','))
             """
     }
 }

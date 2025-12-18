@@ -1,8 +1,10 @@
 package no.nav.syfo.api.endpoints
 
+import io.ktor.http.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.syfo.api.HistorikkDTO
+import no.nav.syfo.api.*
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.domain.Personident
@@ -58,6 +60,50 @@ fun Route.registerDialogmotekandidatApi(
                     ikkeAktuell = ikkeAktuell,
                 )
                 call.respond(historikkDTOs)
+            }
+        }
+
+        post("/get-kandidater") {
+            val token = call.getBearerHeader()
+                ?: throw IllegalArgumentException("Failed to get vurderinger for personer. No Authorization header supplied.")
+            val requestBody = call.receive<GetDialogmotekandidaterRequestDTO>()
+            val personidenter = requestBody.personidenter.map { Personident(it) }
+
+            val personerVeilederHasAccessTo = veilederTilgangskontrollClient.veilederPersonerAccess(
+                personidenter = personidenter,
+                token = token,
+                callId = call.getCallId(),
+            )
+            if (personerVeilederHasAccessTo.isNullOrEmpty()) {
+                call.respond(HttpStatusCode.NoContent)
+            } else {
+                val kandidater = dialogmotekandidatService.getDialogmotekandidater(personerVeilederHasAccessTo)
+
+                if (kandidater.isEmpty()) {
+                    call.respond(HttpStatusCode.NoContent)
+                } else {
+                    val responseDTO = GetDialogmotekandidatForPersonsResponseDTO(
+                        dialogmotekandidater = kandidater.entries.associate { (personident, pair) ->
+                            personident.value to DialogmotekandidatResponseDTO(
+                                uuid = pair.first.uuid,
+                                createdAt = pair.first.createdAt.toLocalDateTime(),
+                                personident = pair.first.personIdentNumber.value,
+                                isKandidat = pair.first.kandidat,
+                                avvent = pair.second?.let {
+                                    AvventDTO(
+                                        uuid = it.uuid.toString(),
+                                        createdAt = it.createdAt.toLocalDateTime(),
+                                        frist = it.frist,
+                                        createdBy = it.createdBy,
+                                        personident = it.personident.value,
+                                        beskrivelse = it.beskrivelse,
+                                    )
+                                }
+                            )
+                        }
+                    )
+                    call.respond(responseDTO)
+                }
             }
         }
     }
