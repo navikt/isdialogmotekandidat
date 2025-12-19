@@ -22,7 +22,7 @@ fun Route.registerAvventApi(
     route(avventApiBasePath) {
         post(avventApiPersonidentPath) {
             val createAvventDTO = call.receive<CreateAvventDTO>()
-            val personident = Personident(createAvventDTO.personIdent)
+            val personident = Personident(createAvventDTO.personident)
             validateVeilederAccess(
                 action = "Create avvent for person",
                 personIdentToAccess = personident,

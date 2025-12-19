@@ -9,7 +9,7 @@ data class AvventDTO(
     val createdAt: LocalDateTime,
     val frist: LocalDate,
     val createdBy: String,
-    val personIdent: String,
+    val personident: String,
     val beskrivelse: String?,
 )
 
@@ -19,7 +19,7 @@ fun List<Avvent>.toAvventDTOList() = this.map { avvent ->
         createdAt = avvent.createdAt.toLocalDateTime(),
         frist = avvent.frist,
         createdBy = avvent.createdBy,
-        personIdent = avvent.personident.value,
+        personident = avvent.personident.value,
         beskrivelse = avvent.beskrivelse,
     )
 }
