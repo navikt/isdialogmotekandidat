@@ -253,7 +253,7 @@ class DialogmotekandidatApiTest {
                 frist = LocalDate.now().plusDays(1),
                 createdBy = VEILEDER_IDENT,
                 personident = ARBEIDSTAKER_2_PERSONIDENTNUMBER,
-                beskrivelse = null,
+                beskrivelse = "Beskrivelse av avvent 2",
             )
 
             database.connection.use { connection ->
@@ -338,8 +338,8 @@ class DialogmotekandidatApiTest {
             assertTrue(responseBody.dialogmotekandidater.containsKey(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
             assertTrue(responseBody.dialogmotekandidater.values.all { it.isKandidat })
             assertEquals(1, responseBody.dialogmotekandidater.values.size)
-            assertEquals("Beskrivelse av avvent", responseBody.dialogmotekandidater.values.first().avvent?.beskrivelse)
-            assertEquals(LocalDate.now().plusDays(1), responseBody.dialogmotekandidater.values.first().avvent?.frist)
+            assertEquals("Beskrivelse av avvent", responseBody.dialogmotekandidater.values.single().avvent?.beskrivelse)
+            assertEquals(LocalDate.now().plusDays(1), responseBody.dialogmotekandidater.values.single().avvent?.frist)
         }
 
         @Test

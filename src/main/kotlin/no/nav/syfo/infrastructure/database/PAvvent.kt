@@ -13,7 +13,7 @@ data class PAvvent(
     val frist: LocalDate,
     val createdBy: String,
     val personident: String,
-    val beskrivelse: String?,
+    val beskrivelse: String,
 )
 
 fun List<PAvvent>.toAvventList() = this.map { pAvvent ->
