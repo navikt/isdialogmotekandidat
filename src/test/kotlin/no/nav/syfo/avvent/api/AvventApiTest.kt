@@ -85,7 +85,7 @@ class AvventApiTest {
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
 
         val createAvventDTO = CreateAvventDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value,
             frist = LocalDate.now().plusDays(14),
             beskrivelse = "beskrivelse",
         )
@@ -113,7 +113,7 @@ class AvventApiTest {
         assertEquals(1, avventList.size)
 
         val avventDTO = avventList.first()
-        assertEquals(createAvventDTO.personIdent, avventDTO.personIdent)
+        assertEquals(createAvventDTO.personident, avventDTO.personident)
         assertEquals(createAvventDTO.frist, avventDTO.frist)
         assertEquals(createAvventDTO.beskrivelse, avventDTO.beskrivelse)
     }
@@ -203,7 +203,7 @@ class AvventApiTest {
     fun `returns status Conflict when person is not kandidat`() = testApplication {
         val client = setupApiAndClient()
         val createAvventDTO = CreateAvventDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value,
             frist = LocalDate.now().plusDays(14),
             beskrivelse = "beskrivelse",
         )
@@ -255,7 +255,7 @@ class AvventApiTest {
     fun `returns status Unauthorized if no token is supplied when creating avvent`() = testApplication {
         val client = setupApiAndClient()
         val createAvventDTO = CreateAvventDTO(
-            personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value,
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value,
             frist = LocalDate.now().plusDays(14),
             beskrivelse = "beskrivelse",
         )
@@ -272,7 +272,7 @@ class AvventApiTest {
     fun `returns status Forbidden if denied access to person when creating avvent`() = testApplication {
         val client = setupApiAndClient()
         val createAvventDTO = CreateAvventDTO(
-            personIdent = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value,
+            personident = UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS.value,
             frist = LocalDate.now().plusDays(14),
             beskrivelse = "beskrivelse",
         )
