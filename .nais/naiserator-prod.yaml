@@ -43,8 +43,7 @@ spec:
     inbound:
       rules:
         - application: syfomodiaperson
-          namespace: teamsykefravr
-          cluster: prod-gcp
+        - application: syfooversiktsrv
     outbound:
       external:
         - host: "pdl-api.prod-fss-pub.nais.io"
