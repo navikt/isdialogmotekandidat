@@ -7,7 +7,7 @@ import java.time.LocalDate
 data class CreateAvventDTO(
     val personident: String,
     val frist: LocalDate,
-    val beskrivelse: String?,
+    val beskrivelse: String,
 )
 
 fun CreateAvventDTO.toAvvent(

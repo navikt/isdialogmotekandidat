@@ -10,7 +10,7 @@ data class AvventDTO(
     val frist: LocalDate,
     val createdBy: String,
     val personident: String,
-    val beskrivelse: String?,
+    val beskrivelse: String,
 )
 
 fun List<Avvent>.toAvventDTOList() = this.map { avvent ->
