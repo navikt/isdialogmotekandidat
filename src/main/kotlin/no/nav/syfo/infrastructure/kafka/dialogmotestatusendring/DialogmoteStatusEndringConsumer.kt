@@ -1,37 +1,35 @@
 package no.nav.syfo.infrastructure.kafka.dialogmotestatusendring
 
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.application.DialogmotekandidatService
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
-import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.latest
-import no.nav.syfo.infrastructure.database.createDialogmoteStatus
+import no.nav.syfo.application.OppfolgingstilfelleService
+import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmoteStatusEndringType
-import no.nav.syfo.application.OppfolgingstilfelleService
+import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.domain.latest
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.createDialogmoteStatus
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.Duration
 
-class KafkaDialogmoteStatusEndringService(
+class DialogmoteStatusEndringConsumer(
     private val database: DatabaseInterface,
+    private val dialogmotekandidatRepository: DialogmotekandidatRepository,
     private val dialogmotekandidatService: DialogmotekandidatService,
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
 ) {
     fun pollAndProcessRecords(
-        kafkaConsumerDialogmoteStatusEndring: KafkaConsumer<String, KDialogmoteStatusEndring>,
+        consumer: KafkaConsumer<String, KDialogmoteStatusEndring>,
     ) {
-        val consumerRecords = kafkaConsumerDialogmoteStatusEndring.poll(Duration.ofSeconds(POLL_DURATION_SECONDS))
+        val consumerRecords = consumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS))
         if (consumerRecords.count() > 0) {
-            processRecords(
-                consumerRecords = consumerRecords,
-            )
-            kafkaConsumerDialogmoteStatusEndring.commitSync()
+            processRecords(consumerRecords = consumerRecords)
+            consumer.commitSync()
         }
     }
 
@@ -74,8 +72,10 @@ class KafkaDialogmoteStatusEndringService(
         )
 
         val latestDialogmotekandidatEndring =
-            connection.getDialogmotekandidatEndringListForPerson(personident = dialogmoteStatusEndring.personIdentNumber)
-                .toDialogmotekandidatEndringList()
+            dialogmotekandidatRepository.getDialogmotekandidatEndringer(
+                personident = dialogmoteStatusEndring.personIdentNumber,
+                connection = connection
+            )
                 .latest()
 
         val isStatusendringAfterKandidat =
@@ -113,7 +113,7 @@ class KafkaDialogmoteStatusEndringService(
         this.type == DialogmoteStatusEndringType.FERDIGSTILT || this.type == DialogmoteStatusEndringType.LUKKET
 
     companion object {
-        private val log = LoggerFactory.getLogger(KafkaDialogmoteStatusEndringService::class.java)
+        private val log = LoggerFactory.getLogger(DialogmoteStatusEndringConsumer::class.java)
         private const val POLL_DURATION_SECONDS = 1L
     }
 }

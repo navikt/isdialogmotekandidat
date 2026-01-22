@@ -1,13 +1,9 @@
 package no.nav.syfo.testhelper
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
-import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.isLatestIkkeKandidat
-import no.nav.syfo.domain.Personident
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 
@@ -65,11 +61,6 @@ fun DatabaseInterface.createDialogmotekandidatEndring(dialogmotekandidatEndring:
         connection.commit()
     }
 }
-
-fun DatabaseInterface.isIkkeKandidat(personIdentNumber: Personident) =
-    connection.getDialogmotekandidatEndringListForPerson(personident = personIdentNumber)
-        .toDialogmotekandidatEndringList()
-        .isLatestIkkeKandidat()
 
 class TestDatabaseNotResponding : DatabaseInterface {
 

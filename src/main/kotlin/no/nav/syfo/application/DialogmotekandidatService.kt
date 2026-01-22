@@ -40,9 +40,7 @@ class DialogmotekandidatService(
 
     fun getDialogmotekandidatEndringer(
         personident: Personident,
-    ) = database.connection.use { connection ->
-        connection.getDialogmotekandidatEndringListForPerson(personident = personident)
-    }.toDialogmotekandidatEndringList()
+    ) = dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = personident)
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
@@ -57,11 +55,11 @@ class DialogmotekandidatService(
             arbeidstakerPersonIdent = dialogmotekandidatStoppunkt.personident,
             date = dialogmotekandidatStoppunkt.stoppunktPlanlagt,
         )
+        val dialogmotekandidatEndringList = dialogmotekandidatRepository.getDialogmotekandidatEndringer(
+            personident = dialogmotekandidatStoppunkt.personident
+        )
 
         database.connection.use { connection ->
-            val dialogmotekandidatEndringList = connection.getDialogmotekandidatEndringListForPerson(
-                personident = dialogmotekandidatStoppunkt.personident
-            ).toDialogmotekandidatEndringList()
             val latestDialogmoteFerdigstilt = connection.getLatestDialogmoteFerdigstiltForPerson(
                 personident = dialogmotekandidatStoppunkt.personident
             )

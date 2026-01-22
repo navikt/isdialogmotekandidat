@@ -20,6 +20,7 @@ import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontro
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 
 fun Application.apiModule(
     applicationState: ApplicationState,
@@ -28,6 +29,7 @@ fun Application.apiModule(
     wellKnownInternalAzureAD: WellKnown,
     oppfolgingstilfelleService: OppfolgingstilfelleService,
     dialogmotekandidatService: DialogmotekandidatService,
+    dialogmotekandidatRepository: DialogmotekandidatRepository,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
 ) {
     installMetrics()
@@ -45,6 +47,7 @@ fun Application.apiModule(
     installStatusPages()
     val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
         database = database,
+        dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmotekandidatService = dialogmotekandidatService,
         dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database),
         oppfolgingstilfelleService = oppfolgingstilfelleService,
