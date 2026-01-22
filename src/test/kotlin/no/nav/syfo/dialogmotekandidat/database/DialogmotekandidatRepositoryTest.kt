@@ -1,20 +1,19 @@
 package no.nav.syfo.dialogmotekandidat.database
 
-import io.ktor.server.testing.testApplication
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import io.ktor.server.testing.*
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class DialogmotekandidatRepositoryTest {
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
-    private val repository = DialogmotekandidatRepository(database)
+    private val repository = externalMockEnvironment.dialogmotekandidatRepository
 
     @AfterEach
     fun cleanup() {

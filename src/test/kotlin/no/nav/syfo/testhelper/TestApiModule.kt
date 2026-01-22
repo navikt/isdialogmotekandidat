@@ -25,20 +25,20 @@ fun Application.testApiModule(
         clientEnvironment = externalMockEnvironment.environment.clients.oppfolgingstilfelle,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
-    val oppfolgingstilfelleService = OppfolgingstilfelleService(
-        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-    )
+    val oppfolgingstilfelleService = OppfolgingstilfelleService(oppfolgingstilfelleClient = oppfolgingstilfelleClient)
+    val dialogmotekandidatRepository = DialogmotekandidatRepository(externalMockEnvironment.database)
     val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         database = externalMockEnvironment.database,
-        dialogmotekandidatRepository = DialogmotekandidatRepository(externalMockEnvironment.database),
+        dialogmotekandidatRepository = dialogmotekandidatRepository,
     )
     val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
         database = externalMockEnvironment.database,
         dialogmotekandidatService = dialogmotekandidatService,
-        dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(externalMockEnvironment.database),
         oppfolgingstilfelleService = oppfolgingstilfelleService,
+        dialogmotekandidatRepository = dialogmotekandidatRepository,
+        dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(externalMockEnvironment.database),
     )
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,

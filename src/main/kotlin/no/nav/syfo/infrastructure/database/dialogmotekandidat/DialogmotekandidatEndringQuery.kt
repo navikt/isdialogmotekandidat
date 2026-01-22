@@ -1,10 +1,9 @@
 package no.nav.syfo.infrastructure.database.dialogmotekandidat
 
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.NoElementInsertedException
 import no.nav.syfo.infrastructure.database.toList
-import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.Personident
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.Instant
@@ -39,21 +38,6 @@ fun Connection.createDialogmotekandidatEndring(
     if (idList.size != 1) {
         throw NoElementInsertedException("Creating DIALOGMOTEKANDIDAT_ENDRING failed, no rows affected.")
     }
-}
-
-const val queryGetDialogmotekandidatEndringForPerson =
-    """
-        SELECT * 
-        FROM DIALOGMOTEKANDIDAT_ENDRING
-        WHERE personident = ?
-        ORDER BY created_at DESC;
-    """
-
-fun Connection.getDialogmotekandidatEndringListForPerson(
-    personident: Personident,
-): List<PDialogmotekandidatEndring> = prepareStatement(queryGetDialogmotekandidatEndringForPerson).use {
-    it.setString(1, personident.value)
-    it.executeQuery().toList { toPDialogmotekandidatEndringList() }
 }
 
 const val queryFindOutdatedDialogmotekandidater =

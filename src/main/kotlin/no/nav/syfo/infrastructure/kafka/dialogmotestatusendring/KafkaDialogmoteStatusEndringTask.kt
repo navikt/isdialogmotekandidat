@@ -1,9 +1,9 @@
 package no.nav.syfo.infrastructure.kafka.dialogmotestatusendring
 
-import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.ApplicationState
-import no.nav.syfo.launchBackgroundTask
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
+import no.nav.syfo.launchBackgroundTask
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -15,7 +15,7 @@ const val DIALOGMOTE_STATUS_ENDRING_TOPIC = "teamsykefravr.isdialogmote-dialogmo
 fun launchKafkaTaskDialogmoteStatusEndring(
     applicationState: ApplicationState,
     kafkaEnvironment: KafkaEnvironment,
-    kafkaDialogmoteStatusEndringService: KafkaDialogmoteStatusEndringService,
+    dialogmoteStatusEndringConsumer: DialogmoteStatusEndringConsumer,
 ) {
     launchBackgroundTask(
         applicationState = applicationState
@@ -23,7 +23,7 @@ fun launchKafkaTaskDialogmoteStatusEndring(
         blockingApplicationLogicDialogmoteStatusEndring(
             applicationState = applicationState,
             kafkaEnvironment = kafkaEnvironment,
-            kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService
+            dialogmoteStatusEndringConsumer = dialogmoteStatusEndringConsumer
         )
     }
 }
@@ -31,7 +31,7 @@ fun launchKafkaTaskDialogmoteStatusEndring(
 fun blockingApplicationLogicDialogmoteStatusEndring(
     applicationState: ApplicationState,
     kafkaEnvironment: KafkaEnvironment,
-    kafkaDialogmoteStatusEndringService: KafkaDialogmoteStatusEndringService,
+    dialogmoteStatusEndringConsumer: DialogmoteStatusEndringConsumer,
 ) {
     log.info("Setting up kafka consumer for ${KDialogmoteStatusEndring::class.java.simpleName}")
 
@@ -46,8 +46,8 @@ fun blockingApplicationLogicDialogmoteStatusEndring(
     )
 
     while (applicationState.ready) {
-        kafkaDialogmoteStatusEndringService.pollAndProcessRecords(
-            kafkaConsumerDialogmoteStatusEndring = kafkaConsumerDialogmoteStatusEndring
+        dialogmoteStatusEndringConsumer.pollAndProcessRecords(
+            consumer = kafkaConsumerDialogmoteStatusEndring
         )
     }
 }

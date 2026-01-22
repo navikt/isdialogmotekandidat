@@ -7,28 +7,14 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
+import io.mockk.*
 import no.nav.syfo.api.CreateIkkeAktuellDTO
 import no.nav.syfo.api.endpoints.ikkeAktuellApiBasePath
-import no.nav.syfo.domain.DialogmotekandidatEndringArsak
-import no.nav.syfo.domain.IkkeAktuell
-import no.nav.syfo.domain.IkkeAktuellArsak
-import no.nav.syfo.domain.Personident
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
-import no.nav.syfo.testhelper.ExternalMockEnvironment
-import no.nav.syfo.testhelper.UserConstants
-import no.nav.syfo.testhelper.createDialogmotekandidatEndring
-import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWT
+import no.nav.syfo.testhelper.*
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
-import no.nav.syfo.testhelper.isIkkeKandidat
-import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -44,9 +30,10 @@ class IkkeAktuellApiTest {
     private val urlIkkeAktuellPersonIdent = "$ikkeAktuellApiBasePath/personident"
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
+    private val dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository
     private val repository = externalMockEnvironment.dialogmotekandidatVurderingRepository
     private val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
-    private val endringProducer = DialogmotekandidatEndringProducer(kafkaProducerDialogmotekandidatEndring = kafkaProducer)
+    private val endringProducer = DialogmotekandidatEndringProducer(producer = kafkaProducer)
 
     private fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
         application {
@@ -74,7 +61,10 @@ class IkkeAktuellApiTest {
         val client = setupApiAndClient()
         val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(stoppunktEndring)
-        assertFalse(database.isIkkeKandidat(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER))
+        assertFalse(
+            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+                .isLatestIkkeKandidat()
+        )
 
         val response = client.post(urlIkkeAktuellPersonIdent) {
             bearerAuth(validToken)
@@ -84,11 +74,16 @@ class IkkeAktuellApiTest {
         assertEquals(HttpStatusCode.Created, response.status)
         val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
         verify(exactly = 1) { kafkaProducer.send(capture(producerRecordSlot)) }
-        assertTrue(database.isIkkeKandidat(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER))
-        val latestEndring = database.connection.use { it.getDialogmotekandidatEndringListForPerson(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).firstOrNull() }
+        assertTrue(
+            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+                .isLatestIkkeKandidat()
+        )
+        val latestEndring =
+            dialogmotekandidatRepository.getDialogmotekandidatEndringer(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+                .firstOrNull()
         assertNotNull(latestEndring)
         assertFalse(latestEndring!!.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.IKKE_AKTUELL.name, latestEndring.arsak)
+        assertEquals(DialogmotekandidatEndringArsak.IKKE_AKTUELL, latestEndring.arsak)
         val kafkaValue = producerRecordSlot.captured.value()
         assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, kafkaValue.personIdentNumber)
         assertEquals(DialogmotekandidatEndringArsak.IKKE_AKTUELL.name, kafkaValue.arsak)
