@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.application.DialogmotekandidatService
+import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
 import no.nav.syfo.domain.DialogmotekandidatEndring
@@ -21,6 +22,7 @@ import java.time.Duration
 class KafkaDialogmoteStatusEndringService(
     private val database: DatabaseInterface,
     private val dialogmotekandidatService: DialogmotekandidatService,
+    private val dialogmotekandidatVurderingService: DialogmotekandidatVurderingService,
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
 ) {
     fun pollAndProcessRecords(
@@ -81,17 +83,24 @@ class KafkaDialogmoteStatusEndringService(
         val isStatusendringAfterKandidat =
             latestDialogmotekandidatEndring?.kandidat == true && dialogmoteStatusEndring.createdAt.isAfter(latestDialogmotekandidatEndring.createdAt)
         if (isStatusendringAfterKandidat) {
-            val latestOppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
-                arbeidstakerPersonIdent = dialogmoteStatusEndring.personIdentNumber,
-            )
-            val newDialogmotekandidatEndring = dialogmoteStatusEndring.toDialogmotekandidatEndring()
-            dialogmotekandidatService.createDialogmotekandidatEndring(
-                connection = connection,
-                dialogmotekandidatEndring = newDialogmotekandidatEndring,
-                tilfelleStart = latestOppfolgingstilfelle?.tilfelleStart,
-                unntak = null,
-            )
-            COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_CREATED_KANDIDATENDRING.increment()
+            if (dialogmoteStatusEndring.type == DialogmoteStatusEndringType.INNKALT) {
+                val avventList = dialogmotekandidatVurderingService.getAvvent(dialogmoteStatusEndring.personIdentNumber)
+                avventList.forEach { avvent ->
+                    dialogmotekandidatVurderingService.lukkAvvent(connection, avvent)
+                }
+            } else {
+                val latestOppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
+                    arbeidstakerPersonIdent = dialogmoteStatusEndring.personIdentNumber,
+                )
+                val newDialogmotekandidatEndring = dialogmoteStatusEndring.toDialogmotekandidatEndring()
+                dialogmotekandidatService.createDialogmotekandidatEndring(
+                    connection = connection,
+                    dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                    tilfelleStart = latestOppfolgingstilfelle?.tilfelleStart,
+                    unntak = null,
+                )
+                COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_CREATED_KANDIDATENDRING.increment()
+            }
         } else {
             COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_SKIPPED_NOT_KANDIDATENDRING.increment()
             log.info("Processed ${KDialogmoteStatusEndring::class.java.simpleName} record, no DialogmotekandidatEndring created")
@@ -110,7 +119,7 @@ class KafkaDialogmoteStatusEndringService(
         }
 
     private fun DialogmoteStatusEndring.isRelevant() =
-        this.type == DialogmoteStatusEndringType.FERDIGSTILT || this.type == DialogmoteStatusEndringType.LUKKET
+        this.type == DialogmoteStatusEndringType.FERDIGSTILT || this.type == DialogmoteStatusEndringType.LUKKET || this.type == DialogmoteStatusEndringType.INNKALT
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaDialogmoteStatusEndringService::class.java)

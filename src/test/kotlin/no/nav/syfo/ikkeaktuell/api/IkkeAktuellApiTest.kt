@@ -85,7 +85,7 @@ class IkkeAktuellApiTest {
         val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
         verify(exactly = 1) { kafkaProducer.send(capture(producerRecordSlot)) }
         assertTrue(database.isIkkeKandidat(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER))
-        val latestEndring = database.connection.getDialogmotekandidatEndringListForPerson(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).firstOrNull()
+        val latestEndring = database.connection.use { it.getDialogmotekandidatEndringListForPerson(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).firstOrNull() }
         assertNotNull(latestEndring)
         assertFalse(latestEndring!!.kandidat)
         assertEquals(DialogmotekandidatEndringArsak.IKKE_AKTUELL.name, latestEndring.arsak)
@@ -141,8 +141,10 @@ class IkkeAktuellApiTest {
 
     @Test
     fun `Successfully retrieves ikke aktuell vurderinger for person`() = testApplication {
-        repository.createIkkeAktuell(database.connection, true, newIkkeAktuellVurdering())
-        repository.createIkkeAktuell(database.connection, true, newIkkeAktuellVurdering())
+        database.connection.use { connection ->
+            repository.createIkkeAktuell(connection, true, newIkkeAktuellVurdering())
+            repository.createIkkeAktuell(connection, true, newIkkeAktuellVurdering())
+        }
         val client = setupApiAndClient()
         val response = client.get(urlIkkeAktuellPersonIdent) {
             bearerAuth(validToken)
@@ -156,7 +158,10 @@ class IkkeAktuellApiTest {
 
     @Test
     fun `Fails to retrieves ikke aktuell vurderinger for person when another person has vurdering`() = testApplication {
-        repository.createIkkeAktuell(database.connection, true, newIkkeAktuellVurdering())
+        database.connection.use { connection ->
+            repository.createIkkeAktuell(connection, true, newIkkeAktuellVurdering())
+            repository.createIkkeAktuell(connection, true, newIkkeAktuellVurdering())
+        }
         val client = setupApiAndClient()
         val response = client.get(urlIkkeAktuellPersonIdent) {
             bearerAuth(validToken)

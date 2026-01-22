@@ -8,6 +8,7 @@ import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandid
 import no.nav.syfo.infrastructure.database.toAvventList
 import no.nav.syfo.infrastructure.database.toIkkeAktuellList
 import no.nav.syfo.infrastructure.database.toUnntakList
+import java.sql.Connection
 
 class DialogmotekandidatVurderingService(
     private val database: DatabaseInterface,
@@ -103,10 +104,26 @@ class DialogmotekandidatVurderingService(
     }
 
     suspend fun getAvvent(personident: Personident): List<Avvent> {
-        val allAvvent = dialogmotekandidatVurderingRepository.getAvventList(personident = personident).toAvventList()
-        val latestEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
-        return if (latestEndring?.kandidat == true) {
-            allAvvent.filter { it.createdAt.isAfter(latestEndring.createdAt) }
+        val latestKandidatEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
+
+        val latestAvvent = dialogmotekandidatVurderingRepository.getAvventList(personident = personident)
+            .toAvventList()
+            .maxByOrNull { it.createdAt }
+
+        return if (
+            latestAvvent != null &&
+            !latestAvvent.lukket &&
+            latestKandidatEndring?.kandidat == true &&
+            latestAvvent.createdAt.isAfter(latestKandidatEndring.createdAt)
+        ) {
+            listOf(latestAvvent)
         } else emptyList()
+    }
+
+    suspend fun lukkAvvent(connection: Connection, avvent: Avvent) {
+        dialogmotekandidatVurderingRepository.lukkAvvent(
+            connection = connection,
+            avvent = avvent,
+        )
     }
 }

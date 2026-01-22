@@ -62,11 +62,23 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
             it.setString(4, avvent.createdBy)
             it.setString(5, avvent.personident.value)
             it.setString(6, avvent.beskrivelse)
+            it.setBoolean(7, avvent.lukket)
             it.executeQuery().toList { getInt("id") }
         }
 
         if (idList.size != 1) {
             throw NoElementInsertedException("Creating AVVENT failed, no rows affected.")
+        }
+    }
+
+    override suspend fun lukkAvvent(connection: Connection, avvent: Avvent) {
+        val updated = connection.prepareStatement(QUERY_LUKK_AVVENT).use {
+            it.setString(1, avvent.uuid.toString())
+            it.executeUpdate()
+        }
+
+        if (updated != 1) {
+            throw NoElementInsertedException("Updating AVVENT failed, no rows affected.")
         }
     }
 
@@ -131,9 +143,15 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
                     frist,
                     created_by,
                     personident,
-                    beskrivelse
-                ) values (DEFAULT, ?, ?, ?, ?, ?, ?)
+                    beskrivelse,
+                    lukket
+                ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
                 RETURNING id
+            """
+
+        private const val QUERY_LUKK_AVVENT =
+            """
+                UPDATE AVVENT SET lukket=true WHERE uuid=?
             """
 
         private const val QUERY_GET_UNNTAK_FOR_PERSON: String =
@@ -185,4 +203,5 @@ fun ResultSet.toPAvventList() =
         createdBy = getString("created_by"),
         personident = getString("personident"),
         beskrivelse = getString("beskrivelse"),
+        lukket = getBoolean("lukket"),
     )

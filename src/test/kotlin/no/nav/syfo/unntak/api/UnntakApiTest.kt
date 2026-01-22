@@ -156,7 +156,7 @@ class UnntakApiTest {
         val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
         verify(exactly = 1) { kafkaProducer.send(capture(producerRecordSlot)) }
 
-        val latestEndring = database.connection.getDialogmotekandidatEndringListForPerson(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).firstOrNull()
+        val latestEndring = database.connection.use { it.getDialogmotekandidatEndringListForPerson(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).firstOrNull() }
         assertNotNull(latestEndring)
         assertFalse(latestEndring!!.kandidat)
         assertEquals(DialogmotekandidatEndringArsak.UNNTAK.name, latestEndring.arsak)
