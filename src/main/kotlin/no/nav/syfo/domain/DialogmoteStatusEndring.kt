@@ -12,7 +12,7 @@ enum class DialogmoteStatusEndringType {
     LUKKET,
 }
 
-data class DialogmoteStatusEndring private constructor(
+data class DialogmoteStatusEndring(
     val personIdentNumber: Personident,
     val type: DialogmoteStatusEndringType,
     val createdAt: OffsetDateTime,

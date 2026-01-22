@@ -3,14 +3,14 @@ package no.nav.syfo.application
 import no.nav.syfo.api.exception.ConflictException
 import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.toAvventList
 import no.nav.syfo.infrastructure.database.toIkkeAktuellList
 import no.nav.syfo.infrastructure.database.toUnntakList
 
 class DialogmotekandidatVurderingService(
     private val database: DatabaseInterface,
+    private val dialogmotekandidatRepository: DialogmotekandidatRepository,
     private val dialogmotekandidatService: DialogmotekandidatService,
     private val dialogmotekandidatVurderingRepository: IDialogmotekandidatVurderingRepository,
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
@@ -20,15 +20,14 @@ class DialogmotekandidatVurderingService(
         veilederToken: String,
         callId: String,
     ) {
-        database.connection.use { connection ->
-            val ikkeKandidat =
-                connection.getDialogmotekandidatEndringListForPerson(personident = ikkeAktuell.personident)
-                    .toDialogmotekandidatEndringList()
-                    .isLatestIkkeKandidat()
-            if (ikkeKandidat) {
-                throw ConflictException("Failed to create IkkeAktuell: Person is not kandidat")
-            }
+        val ikkeKandidat =
+            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = ikkeAktuell.personident)
+                .isLatestIkkeKandidat()
+        if (ikkeKandidat) {
+            throw ConflictException("Failed to create IkkeAktuell: Person is not kandidat")
+        }
 
+        database.connection.use { connection ->
             dialogmotekandidatVurderingRepository.createIkkeAktuell(connection = connection, commit = false, ikkeAktuell = ikkeAktuell)
             val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                 arbeidstakerPersonIdent = ikkeAktuell.personident,
@@ -61,14 +60,14 @@ class DialogmotekandidatVurderingService(
             veilederToken = veilederToken,
             callId = callId,
         )
+        val ikkeKandidat =
+            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = unntak.personident)
+                .isLatestIkkeKandidat()
+        if (ikkeKandidat) {
+            throw ConflictException("Failed to create Unntak: Person is not kandidat")
+        }
+
         database.connection.use { connection ->
-            val ikkeKandidat =
-                connection.getDialogmotekandidatEndringListForPerson(personident = unntak.personident)
-                    .toDialogmotekandidatEndringList()
-                    .isLatestIkkeKandidat()
-            if (ikkeKandidat) {
-                throw ConflictException("Failed to create Unntak: Person is not kandidat")
-            }
             dialogmotekandidatVurderingRepository.createUnntak(connection = connection, unntak = unntak)
             val newDialogmotekandidatEndring = DialogmotekandidatEndring.unntak(
                 personIdentNumber = unntak.personident,
@@ -89,14 +88,14 @@ class DialogmotekandidatVurderingService(
     suspend fun createAvvent(
         avvent: Avvent,
     ) {
+        val isPersonIkkeKandidat =
+            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = avvent.personident)
+                .isLatestIkkeKandidat()
+        if (isPersonIkkeKandidat) {
+            throw ConflictException("Failed to create Avvent: Person is not kandidat")
+        }
+
         database.connection.use { connection ->
-            val isPersonIkkeKandidat =
-                connection.getDialogmotekandidatEndringListForPerson(personident = avvent.personident)
-                    .toDialogmotekandidatEndringList()
-                    .isLatestIkkeKandidat()
-            if (isPersonIkkeKandidat) {
-                throw ConflictException("Failed to create Avvent: Person is not kandidat")
-            }
             dialogmotekandidatVurderingRepository.createAvvent(connection = connection, avvent = avvent)
             connection.commit()
         }
@@ -104,7 +103,7 @@ class DialogmotekandidatVurderingService(
 
     suspend fun getAvvent(personident: Personident): List<Avvent> {
         val allAvvent = dialogmotekandidatVurderingRepository.getAvventList(personident = personident).toAvventList()
-        val latestEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
+        val latestEndring = dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = personident).latest()
         return if (latestEndring?.kandidat == true) {
             allAvvent.filter { it.createdAt.isAfter(latestEndring.createdAt) }
         } else emptyList()

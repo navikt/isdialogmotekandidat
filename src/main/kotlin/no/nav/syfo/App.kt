@@ -20,7 +20,7 @@ import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.kafkaDialogmotekandidatEndringProducerConfig
-import no.nav.syfo.infrastructure.kafka.dialogmotestatusendring.KafkaDialogmoteStatusEndringService
+import no.nav.syfo.infrastructure.kafka.dialogmotestatusendring.DialogmoteStatusEndringConsumer
 import no.nav.syfo.infrastructure.kafka.dialogmotestatusendring.launchKafkaTaskDialogmoteStatusEndring
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumerService
 import no.nav.syfo.infrastructure.kafka.identhendelse.launchKafkaTaskIdenthendelse
@@ -52,7 +52,7 @@ fun main() {
     )
 
     val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
-        kafkaProducerDialogmotekandidatEndring = KafkaProducer(
+        producer = KafkaProducer(
             kafkaDialogmotekandidatEndringProducerConfig(
                 kafkaEnvironment = environment.kafka
             )
@@ -88,11 +88,12 @@ fun main() {
             oppfolgingstilfelleService = OppfolgingstilfelleService(
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
             )
+            val dialogmotekandidatRepository = DialogmotekandidatRepository(applicationDatabase)
             dialogmotekandidatService = DialogmotekandidatService(
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
                 database = applicationDatabase,
-                dialogmotekandidatRepository = DialogmotekandidatRepository(applicationDatabase)
+                dialogmotekandidatRepository = dialogmotekandidatRepository,
             )
             apiModule(
                 applicationState = applicationState,
@@ -101,6 +102,7 @@ fun main() {
                 wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatService = dialogmotekandidatService,
+                dialogmotekandidatRepository = dialogmotekandidatRepository,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             )
             monitor.subscribe(ApplicationStarted) {
@@ -110,8 +112,9 @@ fun main() {
                 val kafkaOppfolgingstilfellePersonService = KafkaOppfolgingstilfellePersonService(
                     database = applicationDatabase,
                 )
-                val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(
+                val dialogmoteStatusEndringConsumer = DialogmoteStatusEndringConsumer(
                     database = applicationDatabase,
+                    dialogmotekandidatRepository = dialogmotekandidatRepository,
                     dialogmotekandidatService = dialogmotekandidatService,
                     oppfolgingstilfelleService = oppfolgingstilfelleService,
                 )
@@ -124,7 +127,7 @@ fun main() {
                 launchKafkaTaskDialogmoteStatusEndring(
                     applicationState = applicationState,
                     kafkaEnvironment = environment.kafka,
-                    kafkaDialogmoteStatusEndringService = kafkaDialogmoteStatusEndringService,
+                    dialogmoteStatusEndringConsumer = dialogmoteStatusEndringConsumer,
                 )
 
                 val identhendelseService = IdenthendelseService(

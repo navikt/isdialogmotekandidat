@@ -1,8 +1,8 @@
 package no.nav.syfo.infrastructure.kafka.dialogmotekandidat
 
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.toKafkaDialogmotekandidatEndring
 import no.nav.syfo.domain.Unntak
+import no.nav.syfo.domain.toKafkaDialogmotekandidatEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
@@ -10,7 +10,7 @@ import java.time.LocalDate
 import java.util.*
 
 class DialogmotekandidatEndringProducer(
-    private val kafkaProducerDialogmotekandidatEndring: KafkaProducer<String, KafkaDialogmotekandidatEndring>,
+    private val producer: KafkaProducer<String, KafkaDialogmotekandidatEndring>,
 ) {
     fun sendDialogmotekandidatEndring(
         dialogmotekandidatEndring: DialogmotekandidatEndring,
@@ -23,7 +23,7 @@ class DialogmotekandidatEndringProducer(
         )
         val key = UUID.nameUUIDFromBytes(kafkaDialogmotekandidatEndring.personIdentNumber.toByteArray()).toString()
         try {
-            kafkaProducerDialogmotekandidatEndring.send(
+            producer.send(
                 ProducerRecord(
                     DIALOGMOTEKANDIDAT_TOPIC,
                     key,
@@ -40,7 +40,7 @@ class DialogmotekandidatEndringProducer(
     }
 
     companion object {
-        const val DIALOGMOTEKANDIDAT_TOPIC = "teamsykefravr.isdialogmotekandidat-dialogmotekandidat"
+        private const val DIALOGMOTEKANDIDAT_TOPIC = "teamsykefravr.isdialogmotekandidat-dialogmotekandidat"
         private val log = LoggerFactory.getLogger(DialogmotekandidatEndringProducer::class.java)
     }
 }

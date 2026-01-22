@@ -3,6 +3,7 @@ package no.nav.syfo.testhelper
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.testhelper.mock.mockHttpClient
 import java.nio.file.Paths
 
@@ -21,6 +22,7 @@ class ExternalMockEnvironment private constructor() {
     val environment = testEnvironment()
     val mockHttpClient = mockHttpClient(environment = environment)
     val wellKnownInternalAzureAD = wellKnownInternalAzureAD()
+    val dialogmotekandidatRepository = DialogmotekandidatRepository(database = database)
     val dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database = database)
 
     companion object {

@@ -23,14 +23,13 @@ fun Application.testApiModule(
         clientEnvironment = externalMockEnvironment.environment.clients.oppfolgingstilfelle,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
-    val oppfolgingstilfelleService = OppfolgingstilfelleService(
-        oppfolgingstilfelleClient = oppfolgingstilfelleClient,
-    )
+    val oppfolgingstilfelleService = OppfolgingstilfelleService(oppfolgingstilfelleClient = oppfolgingstilfelleClient)
+    val dialogmotekandidatRepository = DialogmotekandidatRepository(externalMockEnvironment.database)
     val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         database = externalMockEnvironment.database,
-        dialogmotekandidatRepository = DialogmotekandidatRepository(externalMockEnvironment.database),
+        dialogmotekandidatRepository = dialogmotekandidatRepository,
     )
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
@@ -39,6 +38,7 @@ fun Application.testApiModule(
         wellKnownInternalAzureAD = externalMockEnvironment.wellKnownInternalAzureAD,
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatService = dialogmotekandidatService,
+        dialogmotekandidatRepository = dialogmotekandidatRepository,
         veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
             azureAdClient = azureAdClient,
             clientEnvironment = externalMockEnvironment.environment.clients.istilgangskontroll,

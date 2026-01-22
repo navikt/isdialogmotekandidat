@@ -18,7 +18,6 @@ import no.nav.syfo.api.endpoints.avventApiPersonidentPath
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
 import no.nav.syfo.testhelper.*
@@ -38,16 +37,18 @@ class AvventApiTest {
     private val database = externalMockEnvironment.database
 
     private val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
-    private val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(kafkaProducerDialogmotekandidatEndring = kafkaProducer)
+    private val dialogmotekandidatEndringProducer =
+        DialogmotekandidatEndringProducer(producer = kafkaProducer)
 
     val dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database)
 
     private val dialogmoteKandidatService = DialogmotekandidatService(
         database = database,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
-        dialogmotekandidatRepository = DialogmotekandidatRepository(database),
+        dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository,
         oppfolgingstilfelleService = mockk(relaxed = true),
     )
+
     private fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
         application {
             testApiModule(
@@ -81,7 +82,8 @@ class AvventApiTest {
     @Test
     fun `creates Avvent when person is kandidat`() = testApplication {
         val client = setupApiAndClient()
-        val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        val dialogmotekandidatEndring =
+            generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
 
         val createAvventDTO = CreateAvventDTO(
@@ -122,7 +124,8 @@ class AvventApiTest {
     fun `returns only Avvent records created after latest kandidat status change`() = testApplication {
         val client = setupApiAndClient()
 
-        val firstKandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        val firstKandidatEndring =
+            generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = firstKandidatEndring)
 
         val oldAvvent = no.nav.syfo.domain.Avvent(
@@ -141,7 +144,8 @@ class AvventApiTest {
         )
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = ikkeKandidatEndring)
 
-        val secondKandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        val secondKandidatEndring =
+            generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = secondKandidatEndring)
 
         val newAvvent = no.nav.syfo.domain.Avvent(
