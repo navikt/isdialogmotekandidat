@@ -160,7 +160,6 @@ class IkkeAktuellApiTest {
     fun `Fails to retrieves ikke aktuell vurderinger for person when another person has vurdering`() = testApplication {
         database.connection.use { connection ->
             repository.createIkkeAktuell(connection, true, newIkkeAktuellVurdering())
-            repository.createIkkeAktuell(connection, true, newIkkeAktuellVurdering())
         }
         val client = setupApiAndClient()
         val response = client.get(urlIkkeAktuellPersonIdent) {
