@@ -38,7 +38,7 @@ data class Avvent private constructor(
             createdBy: String,
             personident: Personident,
             beskrivelse: String,
-            lukket: Boolean,
+            isLukket: Boolean,
         ) = Avvent(
             uuid = uuid,
             createdAt = createdAt,
@@ -46,7 +46,7 @@ data class Avvent private constructor(
             createdBy = createdBy,
             personident = personident,
             beskrivelse = beskrivelse,
-            isLukket = lukket,
+            isLukket = isLukket,
         )
     }
 }

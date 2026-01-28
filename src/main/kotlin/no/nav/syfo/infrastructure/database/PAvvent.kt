@@ -14,7 +14,7 @@ data class PAvvent(
     val createdBy: String,
     val personident: String,
     val beskrivelse: String,
-    val lukket: Boolean,
+    val isLukket: Boolean,
 )
 
 fun List<PAvvent>.toAvventList() = this.map { pAvvent ->
@@ -25,6 +25,6 @@ fun List<PAvvent>.toAvventList() = this.map { pAvvent ->
         createdBy = pAvvent.createdBy,
         personident = Personident(pAvvent.personident),
         beskrivelse = pAvvent.beskrivelse,
-        lukket = pAvvent.lukket,
+        isLukket = pAvvent.isLukket,
     )
 }

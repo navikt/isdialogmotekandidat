@@ -144,14 +144,14 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
                     created_by,
                     personident,
                     beskrivelse,
-                    lukket
+                    is_lukket
                 ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
                 RETURNING id
             """
 
         private const val QUERY_LUKK_AVVENT =
             """
-                UPDATE AVVENT SET lukket=true WHERE uuid=?
+                UPDATE AVVENT SET is_lukket=true WHERE uuid=?
             """
 
         private const val QUERY_GET_UNNTAK_FOR_PERSON: String =
@@ -203,5 +203,5 @@ fun ResultSet.toPAvventList() =
         createdBy = getString("created_by"),
         personident = getString("personident"),
         beskrivelse = getString("beskrivelse"),
-        lukket = getBoolean("lukket"),
+        isLukket = getBoolean("is_lukket"),
     )
