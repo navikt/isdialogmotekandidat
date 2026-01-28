@@ -61,8 +61,8 @@ class DialogmotekandidatStoppunktCronjobTest {
         every { kafkaProducer.send(any()) } returns mockk(relaxed = true)
     }
 
-    private fun createStoppunkt(stoppunkt: DialogmotekandidatStoppunkt) = database.connection.createDialogmotekandidatStoppunkt(true, stoppunkt)
-    private fun createStatus(dialogmoteStatusEndring: DialogmoteStatusEndring) = database.connection.createDialogmoteStatus(true, dialogmoteStatusEndring)
+    private fun createStoppunkt(stoppunkt: DialogmotekandidatStoppunkt) = database.connection.use { it.createDialogmotekandidatStoppunkt(true, stoppunkt) }
+    private fun createStatus(dialogmoteStatusEndring: DialogmoteStatusEndring) = database.connection.use { it.createDialogmoteStatus(true, dialogmoteStatusEndring) }
 
     private val kandidatFirstPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
     private val kandidatSecondPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_NOT_KANDIDAT
@@ -189,7 +189,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val latestEndring = database.connection.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident).firstOrNull()
+        val latestEndring = database.connection.use { it.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident).firstOrNull() }
         assertNotNull(latestEndring)
         assertTrue(latestEndring!!.kandidat)
         assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, latestEndring.arsak)
@@ -215,7 +215,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val latestEndring = database.connection.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident).firstOrNull()
+        val latestEndring = database.connection.use { it.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident).firstOrNull() }
         assertNull(latestEndring)
     }
 
@@ -240,7 +240,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val list = database.connection.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident)
+        val list = database.connection.use { it.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident) }
         assertEquals(1, list.size)
         val firstEndring = list[0]
         assertTrue(firstEndring.kandidat)
@@ -276,7 +276,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val list = database.connection.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident)
+        val list = database.connection.use { it.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident) }
         assertEquals(3, list.size)
         val stoppunktKandidatFirst = list[2]
         assertTrue(stoppunktKandidatFirst.kandidat)
@@ -302,7 +302,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val latestEndring = database.connection.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident).firstOrNull()
+        val latestEndring = database.connection.use { it.getDialogmotekandidatEndringListForPerson(kandidatFirstPersonident).firstOrNull() }
         assertEquals(dialogmotekandidatEndring.uuid, latestEndring?.uuid)
     }
 }

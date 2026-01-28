@@ -37,7 +37,7 @@ class IdenthendelseServiceTest {
     private fun populateDatabase(oldIdent: Personident, database: DatabaseInterface, updateInAllTables: Boolean = true) {
         val stoppunkt = generateDialogmotekandidatStoppunktPlanlagt(oldIdent, LocalDate.now())
         val endring = generateDialogmotekandidatEndringStoppunkt(oldIdent)
-        database.connection.createDialogmotekandidatStoppunkt(true, stoppunkt)
+        database.connection.use { it.createDialogmotekandidatStoppunkt(true, stoppunkt) }
         database.createDialogmotekandidatEndring(endring)
         if (updateInAllTables) {
             val unntak = generateNewUnntakDTO(oldIdent).toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
@@ -45,7 +45,7 @@ class IdenthendelseServiceTest {
             val kStatusEndring = generateKDialogmoteStatusEndring(oldIdent, DialogmoteStatusEndringType.INNKALT, moteTidspunkt, moteTidspunkt)
             val statusEndring = DialogmoteStatusEndring.create(kStatusEndring)
             runBlocking { database.connection.use { vurderingRepository.createUnntak(it, unntak); it.commit() } }
-            database.connection.createDialogmoteStatus(true, statusEndring)
+            database.connection.use { it.createDialogmoteStatus(true, statusEndring) }
         }
     }
 

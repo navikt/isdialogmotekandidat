@@ -343,6 +343,47 @@ class DialogmotekandidatApiTest {
         }
 
         @Test
+        fun `returns no avvent-vurdering for person when lukket (innkalling sendt)`() = testApplication {
+            val client = setupApiAndClient()
+
+            val stoppunktKandidat = generateDialogmotekandidatEndringStoppunkt(ARBEIDSTAKER_PERSONIDENTNUMBER)
+            database.createDialogmotekandidatEndring(stoppunktKandidat)
+
+            val avvent = Avvent(
+                frist = LocalDate.now().plusDays(1),
+                createdBy = VEILEDER_IDENT,
+                personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
+                beskrivelse = "Beskrivelse av avvent",
+            ).copy(
+                isLukket = true,
+            )
+
+            database.connection.use { connection ->
+                dialogmotekandidatVurderingRepository.createAvvent(
+                    connection = connection,
+                    avvent = avvent,
+                )
+                connection.commit()
+            }
+
+            val requestDTO = GetDialogmotekandidaterRequestDTO(personidenter = listOf(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
+
+            val response = client.post(urlGetKandidater) {
+                bearerAuth(validToken)
+                contentType(ContentType.Application.Json)
+                setBody(requestDTO)
+            }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val responseBody = response.body<GetDialogmotekandidatForPersonsResponseDTO>()
+
+            assertTrue(responseBody.dialogmotekandidater.containsKey(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
+            assertTrue(responseBody.dialogmotekandidater.values.all { it.isKandidat })
+            assertEquals(1, responseBody.dialogmotekandidater.values.size)
+            assertTrue(responseBody.dialogmotekandidater.values.all { it.avvent == null })
+        }
+
+        @Test
         fun `returns no dialogmotekandidat when no longer kandidat`() = testApplication {
             val client = setupApiAndClient()
 

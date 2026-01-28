@@ -14,6 +14,7 @@ interface IDialogmotekandidatVurderingRepository {
     suspend fun createIkkeAktuell(connection: Connection, commit: Boolean, ikkeAktuell: IkkeAktuell)
     suspend fun createUnntak(connection: Connection, unntak: Unntak)
     suspend fun createAvvent(connection: Connection, avvent: Avvent)
+    suspend fun lukkAvvent(connection: Connection, avvent: Avvent)
     suspend fun getUnntakList(personident: Personident): List<PUnntak>
     suspend fun getAvventList(personident: Personident): List<PAvvent>
 }
