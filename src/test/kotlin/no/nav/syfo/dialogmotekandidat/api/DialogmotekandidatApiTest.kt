@@ -355,7 +355,7 @@ class DialogmotekandidatApiTest {
                 personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
                 beskrivelse = "Beskrivelse av avvent",
             ).copy(
-                lukket = true,
+                isLukket = true,
             )
 
             database.connection.use { connection ->

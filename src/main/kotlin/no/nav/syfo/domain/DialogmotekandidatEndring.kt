@@ -117,6 +117,9 @@ fun DialogmotekandidatEndring.isBeforeStartOfOppfolgingstilfelle(
     return stoppunktKandidatAt.isBefore(tilfelleStart)
 }
 
+fun DialogmotekandidatEndring.isAvventValidForDialogmotekandidatEndring(avvent: Avvent) =
+    this.kandidat && avvent.createdAt.isAfter(this.createdAt) == true && !avvent.isLukket
+
 private fun DialogmotekandidatEndring?.ikkeKandidat(): Boolean = this == null || !this.kandidat
 
 fun List<DialogmotekandidatEndring>.latest() = maxByOrNull { it.createdAt }

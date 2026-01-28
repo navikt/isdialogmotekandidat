@@ -112,9 +112,7 @@ class DialogmotekandidatVurderingService(
 
         return if (
             latestAvvent != null &&
-            !latestAvvent.lukket &&
-            latestKandidatEndring?.kandidat == true &&
-            latestAvvent.createdAt.isAfter(latestKandidatEndring.createdAt)
+            latestKandidatEndring?.isAvventValidForDialogmotekandidatEndring(latestAvvent) == true
         ) {
             listOf(latestAvvent)
         } else emptyList()

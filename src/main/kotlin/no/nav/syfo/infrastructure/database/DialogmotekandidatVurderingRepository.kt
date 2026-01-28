@@ -62,7 +62,7 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
             it.setString(4, avvent.createdBy)
             it.setString(5, avvent.personident.value)
             it.setString(6, avvent.beskrivelse)
-            it.setBoolean(7, avvent.lukket)
+            it.setBoolean(7, avvent.isLukket)
             it.executeQuery().toList { getInt("id") }
         }
 

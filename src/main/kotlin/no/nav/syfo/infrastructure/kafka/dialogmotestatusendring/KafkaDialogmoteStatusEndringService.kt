@@ -85,9 +85,10 @@ class KafkaDialogmoteStatusEndringService(
         if (isStatusendringAfterKandidat) {
             if (dialogmoteStatusEndring.type == DialogmoteStatusEndringType.INNKALT) {
                 val avventList = dialogmotekandidatVurderingService.getAvvent(dialogmoteStatusEndring.personIdentNumber)
-                avventList.forEach { avvent ->
-                    dialogmotekandidatVurderingService.lukkAvvent(connection, avvent)
-                }
+                avventList.filter { !it.isLukket }
+                    .forEach { avvent ->
+                        dialogmotekandidatVurderingService.lukkAvvent(connection, avvent)
+                    }
             } else {
                 val latestOppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                     arbeidstakerPersonIdent = dialogmoteStatusEndring.personIdentNumber,
@@ -117,9 +118,6 @@ class KafkaDialogmoteStatusEndringService(
             )
             else -> throw IllegalArgumentException("Cannot create DialogmotekandidatEndring for ${this.type}")
         }
-
-    private fun DialogmoteStatusEndring.isRelevant() =
-        this.type == DialogmoteStatusEndringType.FERDIGSTILT || this.type == DialogmoteStatusEndringType.LUKKET || this.type == DialogmoteStatusEndringType.INNKALT
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaDialogmoteStatusEndringService::class.java)

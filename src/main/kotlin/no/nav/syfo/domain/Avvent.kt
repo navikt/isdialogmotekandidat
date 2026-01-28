@@ -12,7 +12,7 @@ data class Avvent private constructor(
     val createdBy: String,
     val personident: Personident,
     val beskrivelse: String,
-    val lukket: Boolean,
+    val isLukket: Boolean,
 ) {
 
     constructor(
@@ -27,7 +27,7 @@ data class Avvent private constructor(
         createdBy = createdBy,
         personident = personident,
         beskrivelse = beskrivelse,
-        lukket = false,
+        isLukket = false,
     )
 
     companion object {
@@ -46,7 +46,7 @@ data class Avvent private constructor(
             createdBy = createdBy,
             personident = personident,
             beskrivelse = beskrivelse,
-            lukket = lukket,
+            isLukket = lukket,
         )
     }
 }
