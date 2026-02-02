@@ -89,7 +89,7 @@ class KafkaDialogmoteStatusEndringService(
                     .forEach { avvent ->
                         dialogmotekandidatVurderingService.lukkAvvent(connection, avvent)
                     }
-            } else {
+            } else { // dialogmoteStatusEndring.type == DialogmoteStatusEndringType.FERDIGSTILT || dialogmoteStatusEndring.type == DialogmoteStatusEndringType.LUKKET
                 val latestOppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                     arbeidstakerPersonIdent = dialogmoteStatusEndring.personIdentNumber,
                 )
