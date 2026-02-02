@@ -7,6 +7,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.DialogmotekandidatService
+import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.application.IdenthendelseService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
@@ -15,6 +16,7 @@ import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.cronjob.launchCronjobModule
+import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
@@ -59,6 +61,7 @@ fun main() {
         )
     )
     lateinit var dialogmotekandidatService: DialogmotekandidatService
+    lateinit var dialogmotekandidatVurderingService: DialogmotekandidatVurderingService
     lateinit var oppfolgingstilfelleService: OppfolgingstilfelleService
 
     val applicationEngineEnvironment = applicationEnvironment {
@@ -94,13 +97,19 @@ fun main() {
                 database = applicationDatabase,
                 dialogmotekandidatRepository = DialogmotekandidatRepository(applicationDatabase)
             )
+            dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
+                database = applicationDatabase,
+                dialogmotekandidatService = dialogmotekandidatService,
+                dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(applicationDatabase),
+                oppfolgingstilfelleService = oppfolgingstilfelleService,
+            )
             apiModule(
                 applicationState = applicationState,
                 database = applicationDatabase,
                 environment = environment,
                 wellKnownInternalAzureAD = wellKnownInternalAzureAD,
-                oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatService = dialogmotekandidatService,
+                dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             )
             monitor.subscribe(ApplicationStarted) {
@@ -113,6 +122,7 @@ fun main() {
                 val kafkaDialogmoteStatusEndringService = KafkaDialogmoteStatusEndringService(
                     database = applicationDatabase,
                     dialogmotekandidatService = dialogmotekandidatService,
+                    dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
                     oppfolgingstilfelleService = oppfolgingstilfelleService,
                 )
 

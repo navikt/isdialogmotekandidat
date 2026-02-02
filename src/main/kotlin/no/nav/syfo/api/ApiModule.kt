@@ -14,20 +14,18 @@ import no.nav.syfo.api.endpoints.registerIkkeAktuellApi
 import no.nav.syfo.api.endpoints.registerUnntakApi
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
-import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.application.metric.registerMetricApi
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 
 fun Application.apiModule(
     applicationState: ApplicationState,
     database: DatabaseInterface,
     environment: Environment,
     wellKnownInternalAzureAD: WellKnown,
-    oppfolgingstilfelleService: OppfolgingstilfelleService,
     dialogmotekandidatService: DialogmotekandidatService,
+    dialogmotekandidatVurderingService: DialogmotekandidatVurderingService,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
 ) {
     installMetrics()
@@ -43,12 +41,6 @@ fun Application.apiModule(
         ),
     )
     installStatusPages()
-    val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
-        database = database,
-        dialogmotekandidatService = dialogmotekandidatService,
-        dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database),
-        oppfolgingstilfelleService = oppfolgingstilfelleService,
-    )
 
     routing {
         registerPodApi(

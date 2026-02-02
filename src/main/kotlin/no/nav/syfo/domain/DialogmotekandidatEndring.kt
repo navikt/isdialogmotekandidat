@@ -24,6 +24,30 @@ data class DialogmotekandidatEndring private constructor(
     val kandidat: Boolean,
     val arsak: DialogmotekandidatEndringArsak,
 ) {
+    fun toKafkaDialogmotekandidatEndring(
+        unntak: Unntak?,
+        tilfelleStart: LocalDate?,
+    ) = KafkaDialogmotekandidatEndring(
+        uuid = this.uuid.toString(),
+        createdAt = this.createdAt,
+        personIdentNumber = this.personIdentNumber.value,
+        kandidat = this.kandidat,
+        arsak = this.arsak.name,
+        unntakArsak = unntak?.arsak?.name,
+        tilfelleStart = tilfelleStart,
+        unntakVeilederident = unntak?.createdBy,
+    )
+
+    fun isBeforeStartOfOppfolgingstilfelle(
+        tilfelleStart: LocalDate,
+    ): Boolean {
+        val stoppunktKandidatAt = createdAt.toLocalDateOslo()
+        return stoppunktKandidatAt.isBefore(tilfelleStart)
+    }
+
+    fun isAvventValidForDialogmotekandidatEndring(avvent: Avvent) =
+        this.kandidat && avvent.createdAt.isAfter(this.createdAt) == true && !avvent.isLukket
+
     companion object {
         fun stoppunktKandidat(
             personIdentNumber: Personident,
@@ -94,27 +118,6 @@ data class DialogmotekandidatEndring private constructor(
             arsak = arsak
         )
     }
-}
-
-fun DialogmotekandidatEndring.toKafkaDialogmotekandidatEndring(
-    unntak: Unntak?,
-    tilfelleStart: LocalDate?,
-) = KafkaDialogmotekandidatEndring(
-    uuid = this.uuid.toString(),
-    createdAt = this.createdAt,
-    personIdentNumber = this.personIdentNumber.value,
-    kandidat = this.kandidat,
-    arsak = this.arsak.name,
-    unntakArsak = unntak?.arsak?.name,
-    tilfelleStart = tilfelleStart,
-    unntakVeilederident = unntak?.createdBy,
-)
-
-fun DialogmotekandidatEndring.isBeforeStartOfOppfolgingstilfelle(
-    tilfelleStart: LocalDate,
-): Boolean {
-    val stoppunktKandidatAt = createdAt.toLocalDateOslo()
-    return stoppunktKandidatAt.isBefore(tilfelleStart)
 }
 
 private fun DialogmotekandidatEndring?.ikkeKandidat(): Boolean = this == null || !this.kandidat

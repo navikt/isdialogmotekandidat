@@ -19,6 +19,13 @@ data class DialogmoteStatusEndring private constructor(
     val moteTidspunkt: OffsetDateTime,
     val statusTidspunkt: OffsetDateTime,
 ) {
+
+    /**
+     * Returnerer true hvis endringstypen for dialogmøte er relevant for dialogmøtekandidatstatusen
+     */
+    fun isRelevant() =
+        this.type == DialogmoteStatusEndringType.FERDIGSTILT || this.type == DialogmoteStatusEndringType.LUKKET || this.type == DialogmoteStatusEndringType.INNKALT
+
     companion object {
         fun create(kafkaDialogmoteStatusEndring: KDialogmoteStatusEndring) = DialogmoteStatusEndring(
             personIdentNumber = Personident(kafkaDialogmoteStatusEndring.getPersonIdent()),

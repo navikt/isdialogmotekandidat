@@ -151,7 +151,7 @@ class DialogmotekandidatService(
             val personident = entry.key
             val dialogmotekandidatEndring = entry.value
             val avvent = aktiveKandidaterAvventList[personident]
-            val isAvventValidForLatestKandidat = avvent?.createdAt?.isAfter(dialogmotekandidatEndring.createdAt) == true
+            val isAvventValidForLatestKandidat = avvent != null && dialogmotekandidatEndring.isAvventValidForDialogmotekandidatEndring(avvent)
 
             personident to Pair(
                 first = dialogmotekandidatEndring,

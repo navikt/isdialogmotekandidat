@@ -1,7 +1,6 @@
 package no.nav.syfo.infrastructure.kafka.dialogmotekandidat
 
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.toKafkaDialogmotekandidatEndring
 import no.nav.syfo.domain.Unntak
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord

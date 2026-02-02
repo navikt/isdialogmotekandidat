@@ -3,10 +3,12 @@ package no.nav.syfo.testhelper
 import io.ktor.server.application.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.DialogmotekandidatService
+import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 
@@ -32,13 +34,19 @@ fun Application.testApiModule(
         database = externalMockEnvironment.database,
         dialogmotekandidatRepository = DialogmotekandidatRepository(externalMockEnvironment.database),
     )
+    val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
+        database = externalMockEnvironment.database,
+        dialogmotekandidatService = dialogmotekandidatService,
+        dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(externalMockEnvironment.database),
+        oppfolgingstilfelleService = oppfolgingstilfelleService,
+    )
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
         database = externalMockEnvironment.database,
         environment = externalMockEnvironment.environment,
         wellKnownInternalAzureAD = externalMockEnvironment.wellKnownInternalAzureAD,
-        oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatService = dialogmotekandidatService,
+        dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
         veilederTilgangskontrollClient = VeilederTilgangskontrollClient(
             azureAdClient = azureAdClient,
             clientEnvironment = externalMockEnvironment.environment.clients.istilgangskontroll,
