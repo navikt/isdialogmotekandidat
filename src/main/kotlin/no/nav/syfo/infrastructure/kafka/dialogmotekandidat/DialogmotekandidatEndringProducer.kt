@@ -9,7 +9,7 @@ import java.time.LocalDate
 import java.util.*
 
 class DialogmotekandidatEndringProducer(
-    private val kafkaProducerDialogmotekandidatEndring: KafkaProducer<String, KafkaDialogmotekandidatEndring>,
+    private val producer: KafkaProducer<String, KafkaDialogmotekandidatEndring>,
 ) {
     fun sendDialogmotekandidatEndring(
         dialogmotekandidatEndring: DialogmotekandidatEndring,
@@ -22,7 +22,7 @@ class DialogmotekandidatEndringProducer(
         )
         val key = UUID.nameUUIDFromBytes(kafkaDialogmotekandidatEndring.personIdentNumber.toByteArray()).toString()
         try {
-            kafkaProducerDialogmotekandidatEndring.send(
+            producer.send(
                 ProducerRecord(
                     DIALOGMOTEKANDIDAT_TOPIC,
                     key,
@@ -39,7 +39,7 @@ class DialogmotekandidatEndringProducer(
     }
 
     companion object {
-        const val DIALOGMOTEKANDIDAT_TOPIC = "teamsykefravr.isdialogmotekandidat-dialogmotekandidat"
+        private const val DIALOGMOTEKANDIDAT_TOPIC = "teamsykefravr.isdialogmotekandidat-dialogmotekandidat"
         private val log = LoggerFactory.getLogger(DialogmotekandidatEndringProducer::class.java)
     }
 }

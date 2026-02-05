@@ -7,18 +7,13 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
-import io.mockk.clearMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
+import io.mockk.*
 import no.nav.syfo.api.UnntakDTO
 import no.nav.syfo.api.endpoints.unntakApiBasePath
 import no.nav.syfo.api.endpoints.unntakApiPersonidentPath
 import no.nav.syfo.api.toUnntak
 import no.nav.syfo.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.domain.UnntakArsak
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatEndringListForPerson
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
 import no.nav.syfo.testhelper.*
@@ -28,17 +23,19 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class UnntakApiTest {
     private val urlUnntakPersonIdent = "$unntakApiBasePath/$unntakApiPersonidentPath"
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
+    private val dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository
     private val dialogmotekandidatVurderingRepository = externalMockEnvironment.dialogmotekandidatVurderingRepository
     private val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
-    private val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(kafkaProducerDialogmotekandidatEndring = kafkaProducer)
+    private val dialogmotekandidatEndringProducer =
+        DialogmotekandidatEndringProducer(producer = kafkaProducer)
 
     private fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
         application {
@@ -145,7 +142,8 @@ class UnntakApiTest {
     @Test
     fun `creates Unntak and DialogmotekandidatEndring (not kandidat) when person is kandidat`() = testApplication {
         val client = setupApiAndClient()
-        val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        val dialogmotekandidatEndring =
+            generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
         val response = client.post(urlUnntakPersonIdent) {
             bearerAuth(validToken)
@@ -156,10 +154,12 @@ class UnntakApiTest {
         val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
         verify(exactly = 1) { kafkaProducer.send(capture(producerRecordSlot)) }
 
-        val latestEndring = database.connection.use { it.getDialogmotekandidatEndringListForPerson(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).firstOrNull() }
+        val latestEndring =
+            dialogmotekandidatRepository.getDialogmotekandidatEndringer(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+                .firstOrNull()
         assertNotNull(latestEndring)
         assertFalse(latestEndring!!.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.UNNTAK.name, latestEndring.arsak)
+        assertEquals(DialogmotekandidatEndringArsak.UNNTAK, latestEndring.arsak)
 
         val latestUnntak = dialogmotekandidatVurderingRepository.getUnntakList(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertNotNull(latestUnntak.createdAt)
@@ -179,7 +179,8 @@ class UnntakApiTest {
     @Test
     fun `returns status BadRequest when arsak is FRISKMELDT or ARBEIDSFORHOLD_OPPHORT`() = testApplication {
         val client = setupApiAndClient()
-        val dialogmotekandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+        val dialogmotekandidatEndring =
+            generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmotekandidatEndring)
 
         val friskmeldtResponse = client.post(urlUnntakPersonIdent) {
@@ -192,7 +193,12 @@ class UnntakApiTest {
         val arbeidsforholdResponse = client.post(urlUnntakPersonIdent) {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.ARBEIDSFORHOLD_OPPHORT))
+            setBody(
+                generateNewUnntakDTO(
+                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                    arsak = UnntakArsak.ARBEIDSFORHOLD_OPPHORT
+                )
+            )
         }
         assertEquals(HttpStatusCode.BadRequest, arbeidsforholdResponse.status)
     }

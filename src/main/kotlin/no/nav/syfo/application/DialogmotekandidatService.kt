@@ -1,8 +1,23 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.Avvent
+import no.nav.syfo.domain.Dialogmotekandidat
+import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.domain.DialogmotekandidatStoppunkt
+import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
+import no.nav.syfo.domain.Personident
+import no.nav.syfo.domain.Unntak
+import no.nav.syfo.domain.isDialogmotekandidat
+import no.nav.syfo.domain.toDialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.*
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.findOutdatedDialogmotekandidater
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidaterWithStoppunktTodayOrYesterday
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndring
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatStoppunktList
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.updateDialogmotekandidatStoppunktStatus
 import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.util.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING
@@ -40,9 +55,7 @@ class DialogmotekandidatService(
 
     fun getDialogmotekandidatEndringer(
         personident: Personident,
-    ) = database.connection.use { connection ->
-        connection.getDialogmotekandidatEndringListForPerson(personident = personident)
-    }.toDialogmotekandidatEndringList()
+    ) = dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = personident)
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
@@ -57,11 +70,12 @@ class DialogmotekandidatService(
             arbeidstakerPersonIdent = dialogmotekandidatStoppunkt.personident,
             date = dialogmotekandidatStoppunkt.stoppunktPlanlagt,
         )
-
         database.connection.use { connection ->
-            val dialogmotekandidatEndringList = connection.getDialogmotekandidatEndringListForPerson(
-                personident = dialogmotekandidatStoppunkt.personident
-            ).toDialogmotekandidatEndringList()
+            val dialogmotekandidatEndringList = dialogmotekandidatRepository.getDialogmotekandidatEndringer(
+                personident = dialogmotekandidatStoppunkt.personident,
+                connection = connection
+            )
+
             val latestDialogmoteFerdigstilt = connection.getLatestDialogmoteFerdigstiltForPerson(
                 personident = dialogmotekandidatStoppunkt.personident
             )
@@ -151,7 +165,8 @@ class DialogmotekandidatService(
             val personident = entry.key
             val dialogmotekandidatEndring = entry.value
             val avvent = aktiveKandidaterAvventList[personident]
-            val isAvventValidForLatestKandidat = avvent != null && dialogmotekandidatEndring.isAvventValidForDialogmotekandidatEndring(avvent)
+            val isAvventValidForLatestKandidat =
+                avvent != null && dialogmotekandidatEndring.isAvventValidForDialogmotekandidatEndring(avvent)
 
             personident to Pair(
                 first = dialogmotekandidatEndring,

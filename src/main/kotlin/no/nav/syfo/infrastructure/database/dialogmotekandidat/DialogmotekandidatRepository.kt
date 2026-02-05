@@ -7,6 +7,7 @@ import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toAvventList
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.infrastructure.database.toPAvventList
+import java.sql.Connection
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.*
@@ -20,6 +21,19 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
                 it.executeQuery().toList { toPDialogmotekandidatEndringList() }
             }
         }.firstOrNull()
+
+    fun getDialogmotekandidatEndringer(personident: Personident, connection: Connection? = null): List<DialogmotekandidatEndring> =
+        connection?.getDialogmotekandidatEndringer(personident) ?: database.connection.use { connection ->
+            connection.getDialogmotekandidatEndringer(personident)
+        }
+
+    private fun Connection.getDialogmotekandidatEndringer(personident: Personident): List<DialogmotekandidatEndring> =
+        this.prepareStatement(GET_DIALOGMOTEENDRING_FOR_PERSON_QUERY).use {
+            it.setString(1, personident.value)
+            it.executeQuery()
+                .toList { toPDialogmotekandidatEndringList() }
+                .toDialogmotekandidatEndringList()
+        }
 
     suspend fun getDialogmotekandidatEndringForPersons(personidenter: List<Personident>): List<DialogmotekandidatEndring> =
         database.connection.use { connection ->
@@ -47,6 +61,14 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
                 SELECT * 
                 FROM DIALOGMOTEKANDIDAT_ENDRING
                 WHERE uuid = ?
+            """
+
+        private const val GET_DIALOGMOTEENDRING_FOR_PERSON_QUERY =
+            """
+                SELECT * 
+                FROM DIALOGMOTEKANDIDAT_ENDRING
+                WHERE personident = ?
+                ORDER BY created_at DESC
             """
 
         private const val GET_DIALOGMOTEENDRING_FOR_PERSONS_QUERY =
