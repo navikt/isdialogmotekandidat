@@ -1,7 +1,6 @@
 package no.nav.syfo.domain
 
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.PDialogmotekandidatEndring
-import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
 import no.nav.syfo.util.nowUTC
 import no.nav.syfo.util.toLocalDateOslo
 import java.time.LocalDate
@@ -24,20 +23,6 @@ data class DialogmotekandidatEndring private constructor(
     val kandidat: Boolean,
     val arsak: DialogmotekandidatEndringArsak,
 ) {
-    fun toKafkaDialogmotekandidatEndring(
-        unntak: Unntak?,
-        tilfelleStart: LocalDate?,
-    ) = KafkaDialogmotekandidatEndring(
-        uuid = this.uuid.toString(),
-        createdAt = this.createdAt,
-        personIdentNumber = this.personIdentNumber.value,
-        kandidat = this.kandidat,
-        arsak = this.arsak.name,
-        unntakArsak = unntak?.arsak?.name,
-        tilfelleStart = tilfelleStart,
-        unntakVeilederident = unntak?.createdBy,
-    )
-
     fun isBeforeStartOfOppfolgingstilfelle(
         tilfelleStart: LocalDate,
     ): Boolean {

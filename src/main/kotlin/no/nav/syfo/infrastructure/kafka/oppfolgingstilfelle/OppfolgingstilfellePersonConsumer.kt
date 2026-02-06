@@ -1,34 +1,41 @@
 package no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle
 
-import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatStoppunkt
 import no.nav.syfo.domain.Oppfolgingstilfelle
 import no.nav.syfo.domain.isDialogmotekandidat
 import no.nav.syfo.domain.toDialogmotekandidatStoppunktPlanlagt
-import org.apache.kafka.clients.consumer.*
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatStoppunkt
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
+import no.nav.syfo.infrastructure.kafka.commonKafkaAivenConsumerConfig
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.Duration
+import java.util.*
 
-class KafkaOppfolgingstilfellePersonService(
+class OppfolgingstilfellePersonConsumer(
     val database: DatabaseInterface,
 ) {
     fun pollAndProcessRecords(
-        kafkaConsumerOppfolgingstilfellePerson: KafkaConsumer<String, KafkaOppfolgingstilfellePerson>,
+        consumer: KafkaConsumer<String, KafkaOppfolgingstilfellePerson>,
     ) {
-        val records = kafkaConsumerOppfolgingstilfellePerson.poll(Duration.ofMillis(1000))
+        val records = consumer.poll(Duration.ofMillis(1000))
         if (records.count() > 0) {
             processRecords(
-                consumerRecords = records,
+                records = records,
             )
-            kafkaConsumerOppfolgingstilfellePerson.commitSync()
+            consumer.commitSync()
         }
     }
 
     private fun processRecords(
-        consumerRecords: ConsumerRecords<String, KafkaOppfolgingstilfellePerson>,
+        records: ConsumerRecords<String, KafkaOppfolgingstilfellePerson>,
     ) {
-        val (tombstoneRecordList, recordsValid) = consumerRecords.partition {
+        val (tombstoneRecordList, recordsValid) = records.partition {
             it.value() == null
         }
 
@@ -36,7 +43,7 @@ class KafkaOppfolgingstilfellePersonService(
             tombstoneRecordList = tombstoneRecordList,
         )
         processRelevantRecordList(
-            consumerRecords = recordsValid,
+            records = recordsValid,
         )
     }
 
@@ -51,10 +58,10 @@ class KafkaOppfolgingstilfellePersonService(
     }
 
     private fun processRelevantRecordList(
-        consumerRecords: List<ConsumerRecord<String, KafkaOppfolgingstilfellePerson>>,
+        records: List<ConsumerRecord<String, KafkaOppfolgingstilfellePerson>>,
     ) {
         database.connection.use { connection ->
-            consumerRecords.forEach { consumerRecord ->
+            records.forEach { consumerRecord ->
                 COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_READ.increment()
 
                 receiveKafkaOppfolgingstilfellePerson(
@@ -103,6 +110,14 @@ class KafkaOppfolgingstilfellePersonService(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(KafkaOppfolgingstilfellePersonService::class.java)
+        private val log = LoggerFactory.getLogger(OppfolgingstilfellePersonConsumer::class.java)
+
+        fun config(kafkaEnvironment: KafkaEnvironment): Properties =
+            Properties().apply {
+                putAll(commonKafkaAivenConsumerConfig(kafkaEnvironment))
+                this[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.canonicalName
+                this[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] =
+                    KafkaOppfolgingstilfellePersonDeserializer::class.java.canonicalName
+            }
     }
 }

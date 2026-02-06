@@ -13,19 +13,19 @@ import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandi
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatStoppunktList
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfelle
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePerson
-import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePersonService
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.OPPFOLGINGSTILFELLE_PERSON_TOPIC
+import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.OppfolgingstilfellePersonConsumer
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.generateKafkaOppfolgingstilfellePerson
-import org.junit.jupiter.api.Assertions.*
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
@@ -35,7 +35,7 @@ class KafkaOppfolgingstilfellePersonServiceTest {
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
     private lateinit var kafkaConsumer: KafkaConsumer<String, KafkaOppfolgingstilfellePerson>
-    private lateinit var service: KafkaOppfolgingstilfellePersonService
+    private lateinit var service: OppfolgingstilfellePersonConsumer
 
     private val partition = 0
     private val topicPartition = TopicPartition(OPPFOLGINGSTILFELLE_PERSON_TOPIC, partition)
@@ -44,7 +44,7 @@ class KafkaOppfolgingstilfellePersonServiceTest {
     fun setup() {
         database.dropData()
         kafkaConsumer = mockk(relaxed = true)
-        service = KafkaOppfolgingstilfellePersonService(database = database)
+        service = OppfolgingstilfellePersonConsumer(database = database)
         clearMocks(kafkaConsumer)
         every { kafkaConsumer.commitSync() } returns Unit
     }
@@ -83,7 +83,7 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         )
         every { kafkaConsumer.poll(any<Duration>()) } returns records
 
-        service.pollAndProcessRecords(kafkaConsumerOppfolgingstilfellePerson = kafkaConsumer)
+        service.pollAndProcessRecords(consumer = kafkaConsumer)
 
         verify(exactly = 1) { kafkaConsumer.commitSync() }
         val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(currentPerson.personIdentNumber))
@@ -123,7 +123,7 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         )
         every { kafkaConsumer.poll(any<Duration>()) } returns records
 
-        service.pollAndProcessRecords(kafkaConsumerOppfolgingstilfellePerson = kafkaConsumer)
+        service.pollAndProcessRecords(consumer = kafkaConsumer)
 
         verify(exactly = 1) { kafkaConsumer.commitSync() }
         val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(combinedPerson.personIdentNumber))
@@ -163,10 +163,11 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         )
         every { kafkaConsumer.poll(any<Duration>()) } returns records
 
-        service.pollAndProcessRecords(kafkaConsumerOppfolgingstilfellePerson = kafkaConsumer)
+        service.pollAndProcessRecords(consumer = kafkaConsumer)
 
         verify(exactly = 1) { kafkaConsumer.commitSync() }
-        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(first.personIdentNumber)).toDialogmotekandidatStoppunktList()
+        val stoppunktList =
+            database.getDialogmotekandidatStoppunktList(Personident(first.personIdentNumber)).toDialogmotekandidatStoppunktList()
         assertEquals(2, stoppunktList.size)
         assertPlanlagt(stoppunktList.first(), last)
         assertPlanlagt(stoppunktList.last(), first)
@@ -195,10 +196,11 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         )
         every { kafkaConsumer.poll(any<Duration>()) } returns records
 
-        service.pollAndProcessRecords(kafkaConsumerOppfolgingstilfellePerson = kafkaConsumer)
+        service.pollAndProcessRecords(consumer = kafkaConsumer)
 
         verify(exactly = 1) { kafkaConsumer.commitSync() }
-        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(tilbakedatertLast.personIdentNumber)).toDialogmotekandidatStoppunktList()
+        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(tilbakedatertLast.personIdentNumber))
+            .toDialogmotekandidatStoppunktList()
         assertEquals(1, stoppunktList.size)
         val stoppunkt = stoppunktList.first()
         assertNotNull(stoppunkt)
@@ -232,10 +234,11 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         )
         every { kafkaConsumer.poll(any<Duration>()) } returns records
 
-        service.pollAndProcessRecords(kafkaConsumerOppfolgingstilfellePerson = kafkaConsumer)
+        service.pollAndProcessRecords(consumer = kafkaConsumer)
 
         verify(exactly = 1) { kafkaConsumer.commitSync() }
-        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(tilbakedatertLast.personIdentNumber)).toDialogmotekandidatStoppunktList()
+        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(tilbakedatertLast.personIdentNumber))
+            .toDialogmotekandidatStoppunktList()
         assertEquals(1, stoppunktList.size)
         val stoppunkt = stoppunktList.first()
         assertNotNull(stoppunkt)
@@ -262,10 +265,11 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         )
         every { kafkaConsumer.poll(any<Duration>()) } returns records
 
-        service.pollAndProcessRecords(kafkaConsumerOppfolgingstilfellePerson = kafkaConsumer)
+        service.pollAndProcessRecords(consumer = kafkaConsumer)
 
         verify(exactly = 1) { kafkaConsumer.commitSync() }
-        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(ARBEIDSTAKER_PERSONIDENTNUMBER.value)).toDialogmotekandidatStoppunktList()
+        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
+            .toDialogmotekandidatStoppunktList()
         assertEquals(0, stoppunktList.size)
     }
 
@@ -286,10 +290,11 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         )
         every { kafkaConsumer.poll(any<Duration>()) } returns records
 
-        service.pollAndProcessRecords(kafkaConsumerOppfolgingstilfellePerson = kafkaConsumer)
+        service.pollAndProcessRecords(consumer = kafkaConsumer)
 
         verify(exactly = 1) { kafkaConsumer.commitSync() }
-        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(withDodsdato.personIdentNumber)).toDialogmotekandidatStoppunktList()
+        val stoppunktList =
+            database.getDialogmotekandidatStoppunktList(Personident(withDodsdato.personIdentNumber)).toDialogmotekandidatStoppunktList()
         assertEquals(0, stoppunktList.size)
     }
 
@@ -327,10 +332,11 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         )
         every { kafkaConsumer.poll(any<Duration>()) } returns records
 
-        service.pollAndProcessRecords(kafkaConsumerOppfolgingstilfellePerson = kafkaConsumer)
+        service.pollAndProcessRecords(consumer = kafkaConsumer)
 
         verify(exactly = 1) { kafkaConsumer.commitSync() }
-        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(previousOnly.personIdentNumber)).toDialogmotekandidatStoppunktList()
+        val stoppunktList =
+            database.getDialogmotekandidatStoppunktList(Personident(previousOnly.personIdentNumber)).toDialogmotekandidatStoppunktList()
         assertEquals(1, stoppunktList.size)
         assertPlanlagt(stoppunktList.first(), previousOnly)
     }
@@ -365,10 +371,11 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         )
         every { kafkaConsumer.poll(any<Duration>()) } returns records
 
-        service.pollAndProcessRecords(kafkaConsumerOppfolgingstilfellePerson = kafkaConsumer)
+        service.pollAndProcessRecords(consumer = kafkaConsumer)
 
         verify(exactly = 1) { kafkaConsumer.commitSync() }
-        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(notArbeidstakerLatest.personIdentNumber)).toDialogmotekandidatStoppunktList()
+        val stoppunktList = database.getDialogmotekandidatStoppunktList(Personident(notArbeidstakerLatest.personIdentNumber))
+            .toDialogmotekandidatStoppunktList()
         assertEquals(0, stoppunktList.size)
     }
 }

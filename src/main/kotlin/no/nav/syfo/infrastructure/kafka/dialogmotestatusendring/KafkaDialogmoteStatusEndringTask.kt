@@ -36,7 +36,7 @@ fun blockingApplicationLogicDialogmoteStatusEndring(
     log.info("Setting up kafka consumer for ${KDialogmoteStatusEndring::class.java.simpleName}")
 
     val kafkaConsumerDialogmoteStatusEndring = KafkaConsumer<String, KDialogmoteStatusEndring>(
-        kafkaDialogmoteStatusEndringConsumerConfig(
+        DialogmoteStatusEndringConsumer.config(
             kafkaEnvironment = kafkaEnvironment
         )
     )

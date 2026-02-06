@@ -1,9 +1,8 @@
 package no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle
 
-import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.ApplicationState
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.launchBackgroundTask
-import no.nav.syfo.infrastructure.kafka.kafkaOppfolgingstilfellePersonConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,7 +15,7 @@ const val OPPFOLGINGSTILFELLE_PERSON_TOPIC =
 fun launchKafkaTaskOppfolgingstilfellePerson(
     applicationState: ApplicationState,
     kafkaEnvironment: KafkaEnvironment,
-    kafkaOppfolgingstilfellePersonService: KafkaOppfolgingstilfellePersonService,
+    oppfolgingstilfellePersonConsumer: OppfolgingstilfellePersonConsumer,
 ) {
     launchBackgroundTask(
         applicationState = applicationState,
@@ -24,7 +23,7 @@ fun launchKafkaTaskOppfolgingstilfellePerson(
         blockingApplicationLogicOppfolgingstilfellePerson(
             applicationState = applicationState,
             kafkaEnvironment = kafkaEnvironment,
-            kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
+            oppfolgingstilfellePersonConsumer = oppfolgingstilfellePersonConsumer,
         )
     }
 }
@@ -32,22 +31,19 @@ fun launchKafkaTaskOppfolgingstilfellePerson(
 fun blockingApplicationLogicOppfolgingstilfellePerson(
     applicationState: ApplicationState,
     kafkaEnvironment: KafkaEnvironment,
-    kafkaOppfolgingstilfellePersonService: KafkaOppfolgingstilfellePersonService,
+    oppfolgingstilfellePersonConsumer: OppfolgingstilfellePersonConsumer,
 ) {
     log.info("Setting up kafka consumer for ${KafkaOppfolgingstilfellePerson::class.java.simpleName}")
 
-    val consumerProperties = kafkaOppfolgingstilfellePersonConsumerConfig(
-        kafkaEnvironment = kafkaEnvironment,
-    )
     val kafkaConsumerOppfolgingstilfellePerson =
-        KafkaConsumer<String, KafkaOppfolgingstilfellePerson>(consumerProperties)
+        KafkaConsumer<String, KafkaOppfolgingstilfellePerson>(OppfolgingstilfellePersonConsumer.config(kafkaEnvironment = kafkaEnvironment))
 
     kafkaConsumerOppfolgingstilfellePerson.subscribe(
         listOf(OPPFOLGINGSTILFELLE_PERSON_TOPIC)
     )
     while (applicationState.ready) {
-        kafkaOppfolgingstilfellePersonService.pollAndProcessRecords(
-            kafkaConsumerOppfolgingstilfellePerson = kafkaConsumerOppfolgingstilfellePerson,
+        oppfolgingstilfellePersonConsumer.pollAndProcessRecords(
+            consumer = kafkaConsumerOppfolgingstilfellePerson,
         )
     }
 }
