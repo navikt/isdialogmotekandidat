@@ -11,8 +11,8 @@ import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.domain.Avvent
-import no.nav.syfo.domain.DialogmoteStatusEndringType
-import no.nav.syfo.domain.DialogmotekandidatEndringArsak
+import no.nav.syfo.domain.DialogmoteStatusEndring
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
@@ -80,25 +80,25 @@ class KafkaDialogmoteStatusEndringServiceTest {
             .copy(createdAt = statusEndringTidspunkt.minusDays(1))
     private val kDialogmoteStatusEndringOldFerdigstilt = generateKDialogmoteStatusEndring(
         personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
-        statusEndringType = DialogmoteStatusEndringType.FERDIGSTILT,
+        statusEndringType = DialogmoteStatusEndring.Type.FERDIGSTILT,
         moteTidspunkt = moteTidspunkt.minusYears(1),
         endringsTidspunkt = statusEndringTidspunkt.minusYears(1),
     )
     private val kDialogmoteStatusEndringInnkalt = generateKDialogmoteStatusEndring(
         personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
-        statusEndringType = DialogmoteStatusEndringType.INNKALT,
+        statusEndringType = DialogmoteStatusEndring.Type.INNKALT,
         moteTidspunkt = moteTidspunkt,
         endringsTidspunkt = moteTidspunkt,
     )
     private val kDialogmoteStatusEndringFerdigstilt = generateKDialogmoteStatusEndring(
         personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
-        statusEndringType = DialogmoteStatusEndringType.FERDIGSTILT,
+        statusEndringType = DialogmoteStatusEndring.Type.FERDIGSTILT,
         moteTidspunkt = moteTidspunkt,
         endringsTidspunkt = statusEndringTidspunkt,
     )
     private val kDialogmoteStatusEndringLukket = generateKDialogmoteStatusEndring(
         personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
-        statusEndringType = DialogmoteStatusEndringType.LUKKET,
+        statusEndringType = DialogmoteStatusEndring.Type.LUKKET,
         moteTidspunkt = moteTidspunkt,
         endringsTidspunkt = statusEndringTidspunkt,
     )
@@ -165,11 +165,11 @@ class KafkaDialogmoteStatusEndringServiceTest {
         val latest =
             dialogmotekandidatRepository.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertFalse(latest.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT, latest.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.DIALOGMOTE_FERDIGSTILT, latest.arsak)
         val kafkaValue = slot.captured.value()
         assertEquals(ARBEIDSTAKER_PERSONIDENTNUMBER.value, kafkaValue.personIdentNumber)
         assertFalse(kafkaValue.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT.name, kafkaValue.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.DIALOGMOTE_FERDIGSTILT.name, kafkaValue.arsak)
         assertNull(kafkaValue.unntakArsak)
     }
 
@@ -260,9 +260,9 @@ class KafkaDialogmoteStatusEndringServiceTest {
         val latest =
             dialogmotekandidatRepository.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertFalse(latest.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.DIALOGMOTE_LUKKET, latest.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.DIALOGMOTE_LUKKET, latest.arsak)
         val kafkaValue = slot.captured.value()
-        assertEquals(DialogmotekandidatEndringArsak.DIALOGMOTE_LUKKET.name, kafkaValue.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.DIALOGMOTE_LUKKET.name, kafkaValue.arsak)
         assertFalse(kafkaValue.kandidat)
         assertNull(kafkaValue.unntakArsak)
     }

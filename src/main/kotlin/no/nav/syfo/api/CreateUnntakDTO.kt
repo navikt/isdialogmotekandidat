@@ -2,7 +2,6 @@ package no.nav.syfo.api
 
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.Unntak
-import no.nav.syfo.domain.UnntakArsak
 
 data class CreateUnntakDTO(
     val personIdent: String,
@@ -15,6 +14,6 @@ fun CreateUnntakDTO.toUnntak(
 ) = Unntak(
     createdBy = createdByIdent,
     personident = Personident(this.personIdent),
-    arsak = UnntakArsak.valueOf(this.arsak),
+    arsak = Unntak.Arsak.valueOf(this.arsak),
     beskrivelse = this.beskrivelse,
 )

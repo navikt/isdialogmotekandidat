@@ -1,8 +1,7 @@
 package no.nav.syfo.api
 
-import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.IkkeAktuell
-import no.nav.syfo.domain.IkkeAktuellArsak
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.util.nowUTC
 import java.util.*
 
@@ -19,6 +18,6 @@ fun CreateIkkeAktuellDTO.toIkkeAktuell(
     createdAt = nowUTC(),
     createdBy = createdByIdent,
     personident = Personident(this.personIdent),
-    arsak = IkkeAktuellArsak.valueOf(this.arsak),
+    arsak = IkkeAktuell.Arsak.valueOf(this.arsak),
     beskrivelse = this.beskrivelse,
 )

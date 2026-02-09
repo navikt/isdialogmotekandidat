@@ -1,12 +1,12 @@
 package no.nav.syfo.testhelper.generator
 
-import no.nav.syfo.domain.Personident
 import no.nav.syfo.api.CreateUnntakDTO
-import no.nav.syfo.domain.UnntakArsak
+import no.nav.syfo.domain.Personident
+import no.nav.syfo.domain.Unntak
 
 fun generateNewUnntakDTO(
     personident: Personident,
-    arsak: UnntakArsak = UnntakArsak.FORVENTET_FRISKMELDING_INNEN_28UKER,
+    arsak: Unntak.Arsak = Unntak.Arsak.FORVENTET_FRISKMELDING_INNEN_28UKER,
 ) = CreateUnntakDTO(
     personIdent = personident.value,
     arsak = arsak.name,

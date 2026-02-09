@@ -7,21 +7,12 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-enum class DialogmotekandidatEndringArsak {
-    STOPPUNKT,
-    DIALOGMOTE_FERDIGSTILT,
-    DIALOGMOTE_LUKKET,
-    UNNTAK,
-    IKKE_AKTUELL,
-    LUKKET,
-}
-
 data class DialogmotekandidatEndring private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val personIdentNumber: Personident,
     val kandidat: Boolean,
-    val arsak: DialogmotekandidatEndringArsak,
+    val arsak: Arsak,
 ) {
     fun isBeforeStartOfOppfolgingstilfelle(
         tilfelleStart: LocalDate,
@@ -33,13 +24,22 @@ data class DialogmotekandidatEndring private constructor(
     fun isAvventValidForDialogmotekandidatEndring(avvent: Avvent) =
         this.kandidat && avvent.createdAt.isAfter(this.createdAt) == true && !avvent.isLukket
 
+    enum class Arsak {
+        STOPPUNKT,
+        DIALOGMOTE_FERDIGSTILT,
+        DIALOGMOTE_LUKKET,
+        UNNTAK,
+        IKKE_AKTUELL,
+        LUKKET,
+    }
+
     companion object {
         fun stoppunktKandidat(
             personIdentNumber: Personident,
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = true,
-            arsak = DialogmotekandidatEndringArsak.STOPPUNKT,
+            arsak = Arsak.STOPPUNKT,
         )
 
         fun create(pDialogmotekandidatEndring: PDialogmotekandidatEndring) =
@@ -48,7 +48,7 @@ data class DialogmotekandidatEndring private constructor(
                 createdAt = pDialogmotekandidatEndring.createdAt,
                 personIdentNumber = pDialogmotekandidatEndring.personident,
                 kandidat = pDialogmotekandidatEndring.kandidat,
-                arsak = DialogmotekandidatEndringArsak.valueOf(pDialogmotekandidatEndring.arsak),
+                arsak = Arsak.valueOf(pDialogmotekandidatEndring.arsak),
             )
 
         fun ferdigstiltDialogmote(
@@ -56,7 +56,7 @@ data class DialogmotekandidatEndring private constructor(
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
-            arsak = DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT
+            arsak = Arsak.DIALOGMOTE_FERDIGSTILT
         )
 
         fun lukketDialogmote(
@@ -64,7 +64,7 @@ data class DialogmotekandidatEndring private constructor(
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
-            arsak = DialogmotekandidatEndringArsak.DIALOGMOTE_LUKKET
+            arsak = Arsak.DIALOGMOTE_LUKKET
         )
 
         fun unntak(
@@ -72,7 +72,7 @@ data class DialogmotekandidatEndring private constructor(
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
-            arsak = DialogmotekandidatEndringArsak.UNNTAK
+            arsak = Arsak.UNNTAK
         )
 
         fun ikkeAktuell(
@@ -80,7 +80,7 @@ data class DialogmotekandidatEndring private constructor(
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
-            arsak = DialogmotekandidatEndringArsak.IKKE_AKTUELL,
+            arsak = Arsak.IKKE_AKTUELL,
         )
 
         fun lukket(
@@ -88,13 +88,13 @@ data class DialogmotekandidatEndring private constructor(
         ) = create(
             personIdentNumber = personIdentNumber,
             kandidat = false,
-            arsak = DialogmotekandidatEndringArsak.LUKKET
+            arsak = Arsak.LUKKET
         )
 
         private fun create(
             personIdentNumber: Personident,
             kandidat: Boolean,
-            arsak: DialogmotekandidatEndringArsak,
+            arsak: Arsak,
         ) = DialogmotekandidatEndring(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
@@ -113,7 +113,7 @@ fun List<DialogmotekandidatEndring>.isLatestIkkeKandidat() = this.latest().ikkeK
 
 private fun List<DialogmotekandidatEndring>.latestStoppunktKandidat() =
     filter {
-        it.arsak == DialogmotekandidatEndringArsak.STOPPUNKT && it.kandidat
+        it.arsak == DialogmotekandidatEndring.Arsak.STOPPUNKT && it.kandidat
     }.latest()
 
 fun List<DialogmotekandidatEndring>.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(

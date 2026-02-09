@@ -14,9 +14,8 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.syfo.api.CreateIkkeAktuellDTO
 import no.nav.syfo.api.endpoints.ikkeAktuellApiBasePath
-import no.nav.syfo.domain.DialogmotekandidatEndringArsak
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.IkkeAktuell
-import no.nav.syfo.domain.IkkeAktuellArsak
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.isLatestIkkeKandidat
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
@@ -96,10 +95,10 @@ class IkkeAktuellApiTest {
                 .firstOrNull()
         assertNotNull(latestEndring)
         assertFalse(latestEndring!!.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.IKKE_AKTUELL, latestEndring.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.IKKE_AKTUELL, latestEndring.arsak)
         val kafkaValue = producerRecordSlot.captured.value()
         assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, kafkaValue.personIdentNumber)
-        assertEquals(DialogmotekandidatEndringArsak.IKKE_AKTUELL.name, kafkaValue.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.IKKE_AKTUELL.name, kafkaValue.arsak)
         assertFalse(kafkaValue.kandidat)
         assertNull(kafkaValue.unntakArsak)
         assertNull(kafkaValue.unntakVeilederident)
@@ -143,7 +142,7 @@ class IkkeAktuellApiTest {
         createdAt = LocalDateTime.now().atOffset(ZoneOffset.UTC),
         createdBy = UserConstants.VEILEDER_IDENT,
         personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
-        arsak = IkkeAktuellArsak.ARBEIDSTAKER_AAP,
+        arsak = IkkeAktuell.Arsak.ARBEIDSTAKER_AAP,
         beskrivelse = "Dette er en beskrivelse for hvorfor personen ikke er aktuell for dialogmøte",
     )
 
@@ -194,6 +193,6 @@ class IkkeAktuellApiTest {
 
 fun generateNewIkkeAktuellDTO(personident: Personident) = CreateIkkeAktuellDTO(
     personIdent = personident.value,
-    arsak = IkkeAktuellArsak.DIALOGMOTE_AVHOLDT.name,
+    arsak = IkkeAktuell.Arsak.DIALOGMOTE_AVHOLDT.name,
     beskrivelse = "Dette er en beskrivelse",
 )

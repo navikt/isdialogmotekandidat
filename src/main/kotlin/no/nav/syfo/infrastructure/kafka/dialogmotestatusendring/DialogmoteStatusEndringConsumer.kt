@@ -8,7 +8,6 @@ import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmoteStatusEndring
-import no.nav.syfo.domain.DialogmoteStatusEndringType
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.latest
 import no.nav.syfo.infrastructure.database.DatabaseInterface
@@ -88,13 +87,13 @@ class DialogmoteStatusEndringConsumer(
         val isStatusendringAfterKandidat =
             latestDialogmotekandidatEndring?.kandidat == true && dialogmoteStatusEndring.createdAt.isAfter(latestDialogmotekandidatEndring.createdAt)
         if (isStatusendringAfterKandidat) {
-            if (dialogmoteStatusEndring.type == DialogmoteStatusEndringType.INNKALT) {
+            if (dialogmoteStatusEndring.type == DialogmoteStatusEndring.Type.INNKALT) {
                 val avventList = dialogmotekandidatVurderingService.getAvvent(dialogmoteStatusEndring.personIdentNumber)
                 avventList.filter { !it.isLukket }
                     .forEach { avvent ->
                         dialogmotekandidatVurderingService.lukkAvvent(connection, avvent)
                     }
-            } else { // dialogmoteStatusEndring.type == DialogmoteStatusEndringType.FERDIGSTILT || dialogmoteStatusEndring.type == DialogmoteStatusEndringType.LUKKET
+            } else {
                 val latestOppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                     arbeidstakerPersonIdent = dialogmoteStatusEndring.personIdentNumber,
                 )
@@ -115,10 +114,10 @@ class DialogmoteStatusEndringConsumer(
 
     private fun DialogmoteStatusEndring.toDialogmotekandidatEndring() =
         when (this.type) {
-            DialogmoteStatusEndringType.FERDIGSTILT -> DialogmotekandidatEndring.ferdigstiltDialogmote(
+            DialogmoteStatusEndring.Type.FERDIGSTILT -> DialogmotekandidatEndring.ferdigstiltDialogmote(
                 personIdentNumber = this.personIdentNumber,
             )
-            DialogmoteStatusEndringType.LUKKET -> DialogmotekandidatEndring.lukketDialogmote(
+            DialogmoteStatusEndring.Type.LUKKET -> DialogmotekandidatEndring.lukketDialogmote(
                 personIdentNumber = this.personIdentNumber,
             )
             else -> throw IllegalArgumentException("Cannot create DialogmotekandidatEndring for ${this.type}")
