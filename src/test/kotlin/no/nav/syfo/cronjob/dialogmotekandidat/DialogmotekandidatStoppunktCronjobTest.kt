@@ -1,10 +1,19 @@
 package no.nav.syfo.cronjob.dialogmotekandidat
 
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.OppfolgingstilfelleService
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
+import no.nav.syfo.domain.DialogmoteStatusEndring
+import no.nav.syfo.domain.DialogmoteStatusEndringType
+import no.nav.syfo.domain.DialogmotekandidatEndringArsak
+import no.nav.syfo.domain.DialogmotekandidatStoppunkt
+import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.cronjob.dialogmotekandidat.DialogmotekandidatStoppunktCronjob
@@ -12,7 +21,7 @@ import no.nav.syfo.infrastructure.database.createDialogmoteStatus
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatStoppunkt
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatStoppunktList
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
-import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
@@ -36,7 +45,7 @@ class DialogmotekandidatStoppunktCronjobTest {
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
     private val dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository
-    private val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
+    private val kafkaProducer = mockk<KafkaProducer<String, DialogmotekandidatEndringRecord>>()
     private val endringProducer = DialogmotekandidatEndringProducer(producer = kafkaProducer)
     private val azureAdClient = AzureAdClient(externalMockEnvironment.environment.azure, externalMockEnvironment.mockHttpClient)
     private val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
@@ -61,8 +70,11 @@ class DialogmotekandidatStoppunktCronjobTest {
         every { kafkaProducer.send(any()) } returns mockk(relaxed = true)
     }
 
-    private fun createStoppunkt(stoppunkt: DialogmotekandidatStoppunkt) = database.connection.use { it.createDialogmotekandidatStoppunkt(true, stoppunkt) }
-    private fun createStatus(dialogmoteStatusEndring: DialogmoteStatusEndring) = database.connection.use { it.createDialogmoteStatus(true, dialogmoteStatusEndring) }
+    private fun createStoppunkt(stoppunkt: DialogmotekandidatStoppunkt) =
+        database.connection.use { it.createDialogmotekandidatStoppunkt(true, stoppunkt) }
+
+    private fun createStatus(dialogmoteStatusEndring: DialogmoteStatusEndring) =
+        database.connection.use { it.createDialogmoteStatus(true, dialogmoteStatusEndring) }
 
     private val kandidatFirstPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
     private val kandidatSecondPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_NOT_KANDIDAT
@@ -77,7 +89,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val result = runBlocking { cronjob.runJob() }
         assertEquals(0, result.failed)
         assertEquals(2, result.updated)
-        val slotRecord = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+        val slotRecord = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(slotRecord)) }
         val stoppunktKandidatFirst = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         val stoppunktKandidatSecond = database.getDialogmotekandidatStoppunktList(kandidatSecondPersonident).first()
@@ -105,7 +117,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val result = runBlocking { cronjob.runJob() }
         assertEquals(0, result.failed)
         assertEquals(2, result.updated)
-        val slotRecord = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+        val slotRecord = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(slotRecord)) }
         val stoppunktKandidatFirst = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         val stoppunktKandidatSecond = database.getDialogmotekandidatStoppunktList(kandidatSecondPersonident).first()
@@ -146,7 +158,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         assertEquals(0, result.failed)
         assertEquals(10, result.updated)
 
-        val slotRecord = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+        val slotRecord = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(slotRecord)) }
         val list = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident)
         assertEquals(10, list.size)
@@ -185,7 +197,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         createStoppunkt(stoppunktPlanlagtIDag)
         val result = runBlocking { cronjob.runJob() }
         assertEquals(1, result.updated)
-        val slotRecord = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+        val slotRecord = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(slotRecord)) }
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.KANDIDAT.name, stoppunkt.status)
@@ -236,7 +248,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         )
         val result = runBlocking { cronjob.runJob() }
         assertEquals(1, result.updated)
-        val slotRecord = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+        val slotRecord = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(slotRecord)) }
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.KANDIDAT.name, stoppunkt.status)

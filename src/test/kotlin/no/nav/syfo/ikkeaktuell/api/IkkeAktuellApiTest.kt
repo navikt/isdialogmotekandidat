@@ -7,14 +7,27 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import no.nav.syfo.api.CreateIkkeAktuellDTO
 import no.nav.syfo.api.endpoints.ikkeAktuellApiBasePath
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.DialogmotekandidatEndringArsak
+import no.nav.syfo.domain.IkkeAktuell
+import no.nav.syfo.domain.IkkeAktuellArsak
+import no.nav.syfo.domain.Personident
+import no.nav.syfo.domain.isLatestIkkeKandidat
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
-import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
+import no.nav.syfo.testhelper.ExternalMockEnvironment
+import no.nav.syfo.testhelper.UserConstants
+import no.nav.syfo.testhelper.createDialogmotekandidatEndring
+import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.generateJWT
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
+import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -32,7 +45,7 @@ class IkkeAktuellApiTest {
     private val database = externalMockEnvironment.database
     private val dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository
     private val repository = externalMockEnvironment.dialogmotekandidatVurderingRepository
-    private val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
+    private val kafkaProducer = mockk<KafkaProducer<String, DialogmotekandidatEndringRecord>>()
     private val endringProducer = DialogmotekandidatEndringProducer(producer = kafkaProducer)
 
     private fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
@@ -72,7 +85,7 @@ class IkkeAktuellApiTest {
             setBody(newIkkeAktuellDTO)
         }
         assertEquals(HttpStatusCode.Created, response.status)
-        val producerRecordSlot = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+        val producerRecordSlot = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(producerRecordSlot)) }
         assertTrue(
             dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)

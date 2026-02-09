@@ -1,8 +1,8 @@
 package no.nav.syfo.infrastructure.kafka.identhendelse
 
 import no.nav.syfo.ApplicationState
-import no.nav.syfo.launchBackgroundTask
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
+import no.nav.syfo.launchBackgroundTask
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
@@ -14,26 +14,23 @@ private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.identhendelse")
 fun launchKafkaTaskIdenthendelse(
     applicationState: ApplicationState,
     kafkaEnvironment: KafkaEnvironment,
-    kafkaIdenthendelseConsumerService: IdenthendelseConsumerService,
+    identhendelseConsumer: IdenthendelseConsumer,
 ) {
     launchBackgroundTask(
         applicationState = applicationState
     ) {
         log.info("Setting up kafka consumer for ${KafkaIdenthendelseDTO::class.java.simpleName}")
 
-        val kafkaConfig = kafkaIdenthendelseConsumerConfig(kafkaEnvironment)
-        val kafkaConsumer = KafkaConsumer<String, GenericRecord>(kafkaConfig)
-        kafkaConsumer.subscribe(
+        val consumer = KafkaConsumer<String, GenericRecord>(IdenthendelseConsumer.config(kafkaEnvironment))
+        consumer.subscribe(
             listOf(PDL_AKTOR_TOPIC)
         )
 
         while (applicationState.ready) {
-            if (kafkaConsumer.subscription().isEmpty()) {
-                kafkaConsumer.subscribe(listOf(PDL_AKTOR_TOPIC))
+            if (consumer.subscription().isEmpty()) {
+                consumer.subscribe(listOf(PDL_AKTOR_TOPIC))
             }
-            kafkaIdenthendelseConsumerService.pollAndProcessRecords(
-                kafkaConsumer = kafkaConsumer,
-            )
+            identhendelseConsumer.pollAndProcessRecords(consumer = consumer)
         }
     }
 }

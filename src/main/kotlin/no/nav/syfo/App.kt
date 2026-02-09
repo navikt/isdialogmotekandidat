@@ -21,12 +21,11 @@ import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
-import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.kafkaDialogmotekandidatEndringProducerConfig
 import no.nav.syfo.infrastructure.kafka.dialogmotestatusendring.DialogmoteStatusEndringConsumer
 import no.nav.syfo.infrastructure.kafka.dialogmotestatusendring.launchKafkaTaskDialogmoteStatusEndring
-import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumerService
+import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumer
 import no.nav.syfo.infrastructure.kafka.identhendelse.launchKafkaTaskIdenthendelse
-import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePersonService
+import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.OppfolgingstilfellePersonConsumer
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.launchKafkaTaskOppfolgingstilfellePerson
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
@@ -55,9 +54,7 @@ fun main() {
 
     val dialogmotekandidatEndringProducer = DialogmotekandidatEndringProducer(
         producer = KafkaProducer(
-            kafkaDialogmotekandidatEndringProducerConfig(
-                kafkaEnvironment = environment.kafka
-            )
+            DialogmotekandidatEndringProducer.config(kafkaEnvironment = environment.kafka)
         )
     )
     lateinit var dialogmotekandidatService: DialogmotekandidatService
@@ -118,7 +115,7 @@ fun main() {
                 applicationState.ready = true
                 logger.info("Application is ready, running Java VM ${Runtime.version()}")
 
-                val kafkaOppfolgingstilfellePersonService = KafkaOppfolgingstilfellePersonService(
+                val oppfolgingstilfellePersonConsumer = OppfolgingstilfellePersonConsumer(
                     database = applicationDatabase,
                 )
                 val dialogmoteStatusEndringConsumer = DialogmoteStatusEndringConsumer(
@@ -132,7 +129,7 @@ fun main() {
                 launchKafkaTaskOppfolgingstilfellePerson(
                     applicationState = applicationState,
                     kafkaEnvironment = environment.kafka,
-                    kafkaOppfolgingstilfellePersonService = kafkaOppfolgingstilfellePersonService,
+                    oppfolgingstilfellePersonConsumer = oppfolgingstilfellePersonConsumer,
                 )
                 launchKafkaTaskDialogmoteStatusEndring(
                     applicationState = applicationState,
@@ -144,13 +141,13 @@ fun main() {
                     database = applicationDatabase,
                     pdlClient = pdlClient,
                 )
-                val identhendelseConsumerService = IdenthendelseConsumerService(
+                val identhendelseConsumer = IdenthendelseConsumer(
                     identhendelseService = identhendelseService,
                 )
                 launchKafkaTaskIdenthendelse(
                     applicationState = applicationState,
                     kafkaEnvironment = environment.kafka,
-                    kafkaIdenthendelseConsumerService = identhendelseConsumerService,
+                    identhendelseConsumer = identhendelseConsumer,
                 )
 
                 launchCronjobModule(

@@ -1,23 +1,11 @@
 package no.nav.syfo.infrastructure.kafka
 
-import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePersonDeserializer
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringDeserializer
 import java.util.*
-
-fun kafkaOppfolgingstilfellePersonConsumerConfig(
-    kafkaEnvironment: KafkaEnvironment,
-): Properties {
-    return Properties().apply {
-        putAll(commonKafkaAivenConsumerConfig(kafkaEnvironment))
-        this[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.canonicalName
-        this[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] =
-            KafkaOppfolgingstilfellePersonDeserializer::class.java.canonicalName
-    }
-}
 
 fun commonKafkaAivenConfig(
     kafkaEnvironment: KafkaEnvironment,

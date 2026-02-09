@@ -1,13 +1,17 @@
 package no.nav.syfo.cronjob.dialogmotekandidat
 
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.cronjob.dialogmotekandidat.DialogmotekandidatOutdatedCronjob
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
-import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.KafkaDialogmotekandidatEndring
+import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
@@ -26,7 +30,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
     private val dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository
-    private val kafkaProducer = mockk<KafkaProducer<String, KafkaDialogmotekandidatEndring>>()
+    private val kafkaProducer = mockk<KafkaProducer<String, DialogmotekandidatEndringRecord>>()
     private val endringProducer = DialogmotekandidatEndringProducer(producer = kafkaProducer)
     private val personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
     private val cutoff = LocalDate.now()
@@ -56,7 +60,7 @@ class DialogmotekandidatOutdatedCronjobTest {
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
         assertEquals(1, result.updated)
-        val slotRecord = slot<ProducerRecord<String, KafkaDialogmotekandidatEndring>>()
+        val slotRecord = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(slotRecord)) }
         assertFalse(slotRecord.captured.value().kandidat)
         val endringer = getEndringer(personident)
