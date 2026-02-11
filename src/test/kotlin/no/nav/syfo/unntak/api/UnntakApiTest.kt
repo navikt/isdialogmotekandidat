@@ -16,8 +16,8 @@ import no.nav.syfo.api.UnntakDTO
 import no.nav.syfo.api.endpoints.unntakApiBasePath
 import no.nav.syfo.api.endpoints.unntakApiPersonidentPath
 import no.nav.syfo.api.toUnntak
-import no.nav.syfo.domain.DialogmotekandidatEndringArsak
-import no.nav.syfo.domain.UnntakArsak
+import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.domain.Unntak
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -99,7 +99,7 @@ class UnntakApiTest {
     @Test
     fun `returns unntak with arsak FRISKMELDT for person`() = testApplication {
         val client = setupApiAndClient()
-        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT).copy(arsak = UnntakArsak.FRISKMELDT)
+        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT).copy(arsak = Unntak.Arsak.FRISKMELDT)
         database.connection.use {
             dialogmotekandidatVurderingRepository.createUnntak(it, unntak)
             it.commit()
@@ -111,7 +111,7 @@ class UnntakApiTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val list = response.body<List<UnntakDTO>>()
         assertEquals(1, list.size)
-        assertEquals(UnntakArsak.FRISKMELDT.name, list.first().arsak)
+        assertEquals(Unntak.Arsak.FRISKMELDT.name, list.first().arsak)
     }
 
     @Test
@@ -168,7 +168,7 @@ class UnntakApiTest {
                 .firstOrNull()
         assertNotNull(latestEndring)
         assertFalse(latestEndring!!.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.UNNTAK, latestEndring.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.UNNTAK, latestEndring.arsak)
 
         val latestUnntak = dialogmotekandidatVurderingRepository.getUnntakList(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertNotNull(latestUnntak.createdAt)
@@ -179,7 +179,7 @@ class UnntakApiTest {
 
         val kafkaValue = producerRecordSlot.captured.value()
         assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, kafkaValue.personIdentNumber)
-        assertEquals(DialogmotekandidatEndringArsak.UNNTAK.name, kafkaValue.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.UNNTAK.name, kafkaValue.arsak)
         assertFalse(kafkaValue.kandidat)
         assertEquals(newUnntakDTO.arsak, kafkaValue.unntakArsak)
         assertEquals(UserConstants.VEILEDER_IDENT, kafkaValue.unntakVeilederident)
@@ -195,7 +195,7 @@ class UnntakApiTest {
         val friskmeldtResponse = client.post(urlUnntakPersonIdent) {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = UnntakArsak.FRISKMELDT))
+            setBody(generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = Unntak.Arsak.FRISKMELDT))
         }
         assertEquals(HttpStatusCode.BadRequest, friskmeldtResponse.status)
 
@@ -205,7 +205,7 @@ class UnntakApiTest {
             setBody(
                 generateNewUnntakDTO(
                     personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
-                    arsak = UnntakArsak.ARBEIDSFORHOLD_OPPHORT
+                    arsak = Unntak.Arsak.ARBEIDSFORHOLD_OPPHORT
                 )
             )
         }

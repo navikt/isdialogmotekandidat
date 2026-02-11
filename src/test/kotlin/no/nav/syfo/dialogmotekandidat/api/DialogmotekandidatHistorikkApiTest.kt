@@ -16,19 +16,24 @@ import no.nav.syfo.api.endpoints.kandidatApiHistorikkPath
 import no.nav.syfo.api.toIkkeAktuell
 import no.nav.syfo.api.toUnntak
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.Unntak
 import no.nav.syfo.ikkeaktuell.api.generateNewIkkeAktuellDTO
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.ExternalMockEnvironment
+import no.nav.syfo.testhelper.UserConstants
+import no.nav.syfo.testhelper.createDialogmotekandidatEndring
+import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.generateJWT
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
+import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import no.nav.syfo.util.nowUTC
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -49,7 +54,9 @@ class DialogmotekandidatHistorikkApiTest {
     }
 
     @BeforeEach
-    fun setup() { database.dropData() }
+    fun setup() {
+        database.dropData()
+    }
 
     private val validToken = generateJWT(
         audience = externalMockEnvironment.environment.azure.appClientId,
@@ -58,7 +65,8 @@ class DialogmotekandidatHistorikkApiTest {
     )
 
     private fun createKandidat() {
-        val endring = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).copy(createdAt = nowUTC().minusDays(3))
+        val endring =
+            generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).copy(createdAt = nowUTC().minusDays(3))
         database.createDialogmotekandidatEndring(endring)
     }
 
@@ -75,7 +83,8 @@ class DialogmotekandidatHistorikkApiTest {
     }
 
     private fun createIkkeAktuell(): IkkeAktuell {
-        val ikkeAktuell = generateNewIkkeAktuellDTO(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toIkkeAktuell(UserConstants.VEILEDER_IDENT)
+        val ikkeAktuell =
+            generateNewIkkeAktuellDTO(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toIkkeAktuell(UserConstants.VEILEDER_IDENT)
         database.connection.use {
             it.createDialogmotekandidatEndring(DialogmotekandidatEndring.ikkeAktuell(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER))
             runBlocking { vurderingRepository.createIkkeAktuell(connection = it, commit = false, ikkeAktuell = ikkeAktuell) }
@@ -109,7 +118,7 @@ class DialogmotekandidatHistorikkApiTest {
         val historikk = response.body<List<HistorikkDTO>>()
         assertEquals(1, historikk.size)
         assertEquals(HistorikkType.KANDIDAT, historikk[0].type)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, historikk[0].arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, historikk[0].arsak)
         assertNull(historikk[0].vurdertAv)
     }
 
@@ -126,10 +135,10 @@ class DialogmotekandidatHistorikkApiTest {
         val historikk = response.body<List<HistorikkDTO>>()
         assertEquals(2, historikk.size)
         assertEquals(HistorikkType.LUKKET, historikk[0].type)
-        assertEquals(DialogmotekandidatEndringArsak.LUKKET.name, historikk[0].arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.LUKKET.name, historikk[0].arsak)
         assertNull(historikk[0].vurdertAv)
         assertEquals(HistorikkType.KANDIDAT, historikk[1].type)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, historikk[1].arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, historikk[1].arsak)
         assertNull(historikk[1].vurdertAv)
     }
 
@@ -149,7 +158,7 @@ class DialogmotekandidatHistorikkApiTest {
         assertEquals(unntak.arsak.name, historikk[0].arsak)
         assertEquals(unntak.createdBy, historikk[0].vurdertAv)
         assertEquals(HistorikkType.KANDIDAT, historikk[1].type)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, historikk[1].arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, historikk[1].arsak)
         assertNull(historikk[1].vurdertAv)
     }
 
@@ -169,7 +178,7 @@ class DialogmotekandidatHistorikkApiTest {
         assertEquals(ikkeAktuell.arsak.name, historikk[0].arsak)
         assertEquals(ikkeAktuell.createdBy, historikk[0].vurdertAv)
         assertEquals(HistorikkType.KANDIDAT, historikk[1].type)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, historikk[1].arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, historikk[1].arsak)
         assertNull(historikk[1].vurdertAv)
     }
 

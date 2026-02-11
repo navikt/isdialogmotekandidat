@@ -10,8 +10,7 @@ import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.domain.DialogmoteStatusEndring
-import no.nav.syfo.domain.DialogmoteStatusEndringType
-import no.nav.syfo.domain.DialogmotekandidatEndringArsak
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
@@ -102,7 +101,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         assertNull(stoppunktKandidatThird.processedAt)
         val kafkaValue = slotRecord.captured.value()
         assertEquals(kandidatFirstPersonident.value, kafkaValue.personIdentNumber)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, kafkaValue.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, kafkaValue.arsak)
         assertTrue(kafkaValue.kandidat)
         assertNull(kafkaValue.unntakArsak)
         assertEquals(LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS), kafkaValue.tilfelleStart)
@@ -130,7 +129,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         assertNull(stoppunktKandidatThird.processedAt)
         val kafkaValue = slotRecord.captured.value()
         assertEquals(kandidatFirstPersonident.value, kafkaValue.personIdentNumber)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, kafkaValue.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, kafkaValue.arsak)
         assertTrue(kafkaValue.kandidat)
         assertNull(kafkaValue.unntakArsak)
         assertEquals(LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS), kafkaValue.tilfelleStart)
@@ -165,11 +164,11 @@ class DialogmotekandidatStoppunktCronjobTest {
 
         val kandidatCount = list.count { it.status == DialogmotekandidatStoppunktStatus.KANDIDAT.name }
         assertEquals(1, kandidatCount)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, slotRecord.captured.value().arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, slotRecord.captured.value().arsak)
 
         val kafkaDialogmoteKandidatEndring = slotRecord.captured.value()
         assertEquals(kandidatFirstPersonident.value, kafkaDialogmoteKandidatEndring.personIdentNumber)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, kafkaDialogmoteKandidatEndring.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, kafkaDialogmoteKandidatEndring.arsak)
         assertTrue(kafkaDialogmoteKandidatEndring.kandidat)
         assertNull(kafkaDialogmoteKandidatEndring.unntakArsak)
         assertEquals(
@@ -205,7 +204,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val latestEndring = dialogmotekandidatRepository.getDialogmotekandidatEndringer(kandidatFirstPersonident).firstOrNull()
         assertNotNull(latestEndring)
         assertTrue(latestEndring!!.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT, latestEndring.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT, latestEndring.arsak)
     }
 
     @Test
@@ -216,7 +215,7 @@ class DialogmotekandidatStoppunktCronjobTest {
             DialogmoteStatusEndring.create(
                 generateKDialogmoteStatusEndring(
                     personIdentNumber = kandidatFirstPersonident,
-                    statusEndringType = DialogmoteStatusEndringType.FERDIGSTILT,
+                    statusEndringType = DialogmoteStatusEndring.Type.FERDIGSTILT,
                     moteTidspunkt = OffsetDateTime.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 10),
                     endringsTidspunkt = OffsetDateTime.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 11),
                 )
@@ -240,7 +239,7 @@ class DialogmotekandidatStoppunktCronjobTest {
             DialogmoteStatusEndring.create(
                 generateKDialogmoteStatusEndring(
                     personIdentNumber = kandidatFirstPersonident,
-                    statusEndringType = DialogmoteStatusEndringType.FERDIGSTILT,
+                    statusEndringType = DialogmoteStatusEndring.Type.FERDIGSTILT,
                     moteTidspunkt = OffsetDateTime.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 10),
                     endringsTidspunkt = OffsetDateTime.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 9),
                 )
@@ -257,11 +256,11 @@ class DialogmotekandidatStoppunktCronjobTest {
         assertEquals(1, list.size)
         val firstEndring = list[0]
         assertTrue(firstEndring.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT, firstEndring.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT, firstEndring.arsak)
 
         val kafkaDialogmoteKandidatEndring = slotRecord.captured.value()
         assertEquals(kandidatFirstPersonident.value, kafkaDialogmoteKandidatEndring.personIdentNumber)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT.name, kafkaDialogmoteKandidatEndring.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, kafkaDialogmoteKandidatEndring.arsak)
         assertTrue(kafkaDialogmoteKandidatEndring.kandidat)
         assertNull(kafkaDialogmoteKandidatEndring.unntakArsak)
         assertEquals(
@@ -293,13 +292,13 @@ class DialogmotekandidatStoppunktCronjobTest {
         assertEquals(3, list.size)
         val stoppunktKandidatFirst = list[2]
         assertTrue(stoppunktKandidatFirst.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT, stoppunktKandidatFirst.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT, stoppunktKandidatFirst.arsak)
         val stoppunktKandidatSecond = list[1]
         assertFalse(stoppunktKandidatSecond.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT, stoppunktKandidatSecond.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.DIALOGMOTE_FERDIGSTILT, stoppunktKandidatSecond.arsak)
         val stoppunktKandidatThird = list[0]
         assertTrue(stoppunktKandidatThird.kandidat)
-        assertEquals(DialogmotekandidatEndringArsak.STOPPUNKT, stoppunktKandidatThird.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT, stoppunktKandidatThird.arsak)
     }
 
     @Test

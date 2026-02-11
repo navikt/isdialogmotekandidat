@@ -7,7 +7,6 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.cronjob.dialogmotekandidat.DialogmotekandidatOutdatedCronjob
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
@@ -66,7 +65,7 @@ class DialogmotekandidatOutdatedCronjobTest {
         val endringer = getEndringer(personident)
         assertEquals(2, endringer.size)
         val latest = endringer.first()
-        assertEquals(DialogmotekandidatEndringArsak.LUKKET, latest.arsak)
+        assertEquals(DialogmotekandidatEndring.Arsak.LUKKET, latest.arsak)
         assertFalse(latest.kandidat)
     }
 
@@ -112,7 +111,7 @@ class DialogmotekandidatOutdatedCronjobTest {
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val endringer = getEndringer(personident)
         assertEquals(1, endringer.size)
-        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET })
+        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndring.Arsak.LUKKET })
     }
 
     @Test
@@ -126,7 +125,7 @@ class DialogmotekandidatOutdatedCronjobTest {
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val endringer = getEndringer(personident)
         assertEquals(1, endringer.size)
-        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET })
+        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndring.Arsak.LUKKET })
     }
 
     @Test
@@ -139,7 +138,7 @@ class DialogmotekandidatOutdatedCronjobTest {
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val endringer = getEndringer(personident)
         assertEquals(1, endringer.size)
-        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET })
+        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndring.Arsak.LUKKET })
     }
 
     @Test
@@ -156,7 +155,7 @@ class DialogmotekandidatOutdatedCronjobTest {
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val endringer = getEndringer(personident)
         assertEquals(2, endringer.size)
-        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET })
+        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndring.Arsak.LUKKET })
     }
 
     @Test
@@ -173,7 +172,7 @@ class DialogmotekandidatOutdatedCronjobTest {
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val endringer = getEndringer(personident)
         assertEquals(2, endringer.size)
-        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET })
+        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndring.Arsak.LUKKET })
     }
 
     @Test
@@ -190,6 +189,6 @@ class DialogmotekandidatOutdatedCronjobTest {
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val endringer = getEndringer(personident)
         assertEquals(2, endringer.size)
-        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndringArsak.LUKKET })
+        assertTrue(endringer.none { it.arsak == DialogmotekandidatEndring.Arsak.LUKKET })
     }
 }

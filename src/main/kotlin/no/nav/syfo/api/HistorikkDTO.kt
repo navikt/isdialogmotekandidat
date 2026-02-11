@@ -1,7 +1,6 @@
 package no.nav.syfo.api
 
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.DialogmotekandidatEndringArsak
 import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.Unntak
 import java.time.LocalDateTime
@@ -28,7 +27,7 @@ data class HistorikkDTO(
 fun List<DialogmotekandidatEndring>.toKandidatHistorikk(): List<HistorikkDTO> = this.mapNotNull {
     val tidspunkt = it.createdAt.toLocalDateTime()
     when (it.arsak) {
-        DialogmotekandidatEndringArsak.STOPPUNKT ->
+        DialogmotekandidatEndring.Arsak.STOPPUNKT ->
             HistorikkDTO(
                 tidspunkt = tidspunkt,
                 type = HistorikkType.KANDIDAT,
@@ -36,7 +35,7 @@ fun List<DialogmotekandidatEndring>.toKandidatHistorikk(): List<HistorikkDTO> = 
                 vurdertAv = null,
             )
 
-        DialogmotekandidatEndringArsak.LUKKET ->
+        DialogmotekandidatEndring.Arsak.LUKKET ->
             HistorikkDTO(
                 tidspunkt = tidspunkt,
                 type = HistorikkType.LUKKET,
@@ -45,7 +44,7 @@ fun List<DialogmotekandidatEndring>.toKandidatHistorikk(): List<HistorikkDTO> = 
             )
 
         // Disse dekkes av dialogmote-historikk og unntak/ikke-aktuell-historikk
-        DialogmotekandidatEndringArsak.DIALOGMOTE_FERDIGSTILT, DialogmotekandidatEndringArsak.DIALOGMOTE_LUKKET, DialogmotekandidatEndringArsak.UNNTAK, DialogmotekandidatEndringArsak.IKKE_AKTUELL -> null
+        DialogmotekandidatEndring.Arsak.DIALOGMOTE_FERDIGSTILT, DialogmotekandidatEndring.Arsak.DIALOGMOTE_LUKKET, DialogmotekandidatEndring.Arsak.UNNTAK, DialogmotekandidatEndring.Arsak.IKKE_AKTUELL -> null
     }
 }
 

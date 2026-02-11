@@ -4,32 +4,19 @@ import no.nav.syfo.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
 
-enum class UnntakArsak {
-    MEDISINSKE_GRUNNER,
-    INNLEGGELSE_INSTITUSJON,
-
-    @Deprecated("Brukes ikke lenger for Unntak, bruk IkkeAktuell")
-    FRISKMELDT,
-    FORVENTET_FRISKMELDING_INNEN_28UKER,
-    DOKUMENTERT_TILTAK_FRISKMELDING,
-
-    @Deprecated("Brukes ikke lenger for Unntak, bruk IkkeAktuell")
-    ARBEIDSFORHOLD_OPPHORT,
-}
-
 data class Unntak private constructor(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val createdBy: String,
     val personident: Personident,
-    val arsak: UnntakArsak,
+    val arsak: Arsak,
     val beskrivelse: String?,
 ) {
 
     constructor(
         createdBy: String,
         personident: Personident,
-        arsak: UnntakArsak,
+        arsak: Arsak,
         beskrivelse: String?,
     ) : this(
         uuid = UUID.randomUUID(),
@@ -39,9 +26,22 @@ data class Unntak private constructor(
         arsak = arsak,
         beskrivelse = beskrivelse,
     ) {
-        if (arsak in listOf(UnntakArsak.FRISKMELDT, UnntakArsak.ARBEIDSFORHOLD_OPPHORT)) {
+        if (arsak in listOf(Arsak.FRISKMELDT, Arsak.ARBEIDSFORHOLD_OPPHORT)) {
             throw IllegalArgumentException("$arsak skal ikke brukes for nye unntak, bruk IkkeAktuell")
         }
+    }
+
+    enum class Arsak {
+        MEDISINSKE_GRUNNER,
+        INNLEGGELSE_INSTITUSJON,
+
+        @Deprecated("Brukes ikke lenger for Unntak, bruk IkkeAktuell")
+        FRISKMELDT,
+        FORVENTET_FRISKMELDING_INNEN_28UKER,
+        DOKUMENTERT_TILTAK_FRISKMELDING,
+
+        @Deprecated("Brukes ikke lenger for Unntak, bruk IkkeAktuell")
+        ARBEIDSFORHOLD_OPPHORT,
     }
 
     companion object {
@@ -50,7 +50,7 @@ data class Unntak private constructor(
             createdAt: OffsetDateTime,
             createdBy: String,
             personident: Personident,
-            arsak: UnntakArsak,
+            arsak: Arsak,
             beskrivelse: String?,
         ) = Unntak(
             uuid = uuid,
