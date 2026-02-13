@@ -145,7 +145,7 @@ class AvventApiTest {
         }
 
         val ikkeKandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
-            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
         )
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = ikkeKandidatEndring)
 
@@ -194,7 +194,7 @@ class AvventApiTest {
         }
 
         val ikkeKandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
-            personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
+            personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
         )
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = ikkeKandidatEndring)
 

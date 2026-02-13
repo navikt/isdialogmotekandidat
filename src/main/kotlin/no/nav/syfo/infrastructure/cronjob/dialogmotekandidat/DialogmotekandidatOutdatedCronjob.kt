@@ -1,13 +1,13 @@
 package no.nav.syfo.infrastructure.cronjob.dialogmotekandidat
 
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.infrastructure.cronjob.Cronjob
-import no.nav.syfo.infrastructure.cronjob.CronjobResult
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.infrastructure.cronjob.Cronjob
+import no.nav.syfo.infrastructure.cronjob.CronjobResult
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 class DialogmotekandidatOutdatedCronjob(
     private val outdatedDialogmotekandidatCutoff: LocalDate,
@@ -30,7 +30,7 @@ class DialogmotekandidatOutdatedCronjob(
 
         dialogmotekandidaterToBeRemoved.forEach {
             try {
-                val dialogmotekandidatLukket = DialogmotekandidatEndring.lukket(it.personIdentNumber)
+                val dialogmotekandidatLukket = DialogmotekandidatEndring.lukket(it.personident)
                 dialogmotekandidatService.createDialogmotekandidatEndring(dialogmotekandidatLukket)
                 result.updated++
             } catch (e: Exception) {

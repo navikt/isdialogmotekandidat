@@ -1,8 +1,6 @@
 package no.nav.syfo.api
 
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.IkkeAktuell
-import no.nav.syfo.domain.Unntak
 import java.time.LocalDateTime
 
 data class HistorikkDTO(
@@ -14,8 +12,8 @@ data class HistorikkDTO(
     companion object {
         fun createHistorikkDTOs(
             dialogmotekandidatEndringer: List<DialogmotekandidatEndring>,
-            unntak: List<Unntak>,
-            ikkeAktuell: List<IkkeAktuell>,
+            unntak: List<DialogmotekandidatEndring.Unntak>,
+            ikkeAktuell: List<DialogmotekandidatEndring.IkkeAktuell>,
         ): List<HistorikkDTO> {
             val historikk =
                 dialogmotekandidatEndringer.toKandidatHistorikk() + unntak.toUnntakHistorikk() + ikkeAktuell.toIkkeAktuellHistorikk()
@@ -48,20 +46,20 @@ fun List<DialogmotekandidatEndring>.toKandidatHistorikk(): List<HistorikkDTO> = 
     }
 }
 
-fun List<Unntak>.toUnntakHistorikk(): List<HistorikkDTO> = this.map {
+fun List<DialogmotekandidatEndring.Unntak>.toUnntakHistorikk(): List<HistorikkDTO> = this.map {
     HistorikkDTO(
         tidspunkt = it.createdAt.toLocalDateTime(),
         type = HistorikkType.UNNTAK,
-        arsak = it.arsak.name,
+        arsak = it.unntakArsak.name,
         vurdertAv = it.createdBy,
     )
 }
 
-fun List<IkkeAktuell>.toIkkeAktuellHistorikk(): List<HistorikkDTO> = this.map {
+fun List<DialogmotekandidatEndring.IkkeAktuell>.toIkkeAktuellHistorikk(): List<HistorikkDTO> = this.map {
     HistorikkDTO(
         tidspunkt = it.createdAt.toLocalDateTime(),
         type = HistorikkType.IKKE_AKTUELL,
-        arsak = it.arsak.name,
+        arsak = it.ikkeAktuellArsak.name,
         vurdertAv = it.createdBy,
     )
 }
