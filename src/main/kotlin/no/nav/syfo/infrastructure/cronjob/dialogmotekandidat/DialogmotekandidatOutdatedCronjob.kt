@@ -10,20 +10,24 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DialogmotekandidatOutdatedCronjob(
-    private val outdatedDialogmotekandidatCutoff: LocalDate,
+    private val outdatedDialogmotekandidatCutoffMonths: Int,
     private val dialogmotekandidatService: DialogmotekandidatService,
 ) : Cronjob {
     override val initialDelayMinutes: Long = 4
-    override val intervalDelayMinutes: Long = 60 * 12
+    override val intervalDelayMinutes: Long = 30 // set to 24 hours after initial clean up
 
     override suspend fun run() {
+        log.info("DialogmotekandidatOutdatedCronjob started with cutoff of $outdatedDialogmotekandidatCutoffMonths months")
         runJob()
     }
 
     fun runJob(): CronjobResult {
         val result = CronjobResult()
 
-        val cutoff = outdatedDialogmotekandidatCutoff.atStartOfDay()
+        val cutoff = LocalDate.now()
+            .minusMonths(outdatedDialogmotekandidatCutoffMonths.toLong())
+            .atStartOfDay()
+
         val outdatedDialogmotekandidater = dialogmotekandidatService.getOutdatedDialogmotekandidater(cutoff)
         val withGivenUuids = uuids.mapNotNull { dialogmotekandidatService.getDialogmotekandidatEndring(it) }
         val dialogmotekandidaterToBeRemoved = outdatedDialogmotekandidater + withGivenUuids
@@ -33,9 +37,11 @@ class DialogmotekandidatOutdatedCronjob(
                 val dialogmotekandidatLukket = DialogmotekandidatEndring.lukket(it.personIdentNumber)
                 dialogmotekandidatService.createDialogmotekandidatEndring(dialogmotekandidatLukket)
                 result.updated++
+                log.info("Closed dialogmotekandidat ${it.uuid}")
             } catch (e: Exception) {
                 result.failed++
-                log.error("Got exception when creating dialogmotekandidat-endring LUKKET", e)
+                it.uuid
+                log.error("Got exception when creating dialogmotekandidat-endring LUKKET with uuid ${it.uuid}", e)
             }
         }
 

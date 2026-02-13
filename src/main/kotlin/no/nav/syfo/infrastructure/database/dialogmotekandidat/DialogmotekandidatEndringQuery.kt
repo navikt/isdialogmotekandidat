@@ -45,7 +45,7 @@ const val queryFindOutdatedDialogmotekandidater =
         select * from dialogmotekandidat_endring d
         where d.created_at = (select max(d2.created_at) from dialogmotekandidat_endring d2 where d2.personident = d.personident)
         and d.created_at < ? and d.kandidat 
-        LIMIT 200;
+        LIMIT 500;
     """
 
 fun DatabaseInterface.findOutdatedDialogmotekandidater(

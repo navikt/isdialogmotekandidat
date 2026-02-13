@@ -91,7 +91,7 @@ spec:
       value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
     - name: STOPPUNKT_CRONJOB_DELAY
       value: "240"
-    - name: OUTDATED_DIALOGMOTEKANDIDAT_CUTOFF
-      value: "2023-06-01"
+    - name: OUTDATED_DIALOGMOTEKANDIDAT_CUTOFF_MONTHS
+      value: "12"
     - name: OUTDATED_DIALOGMOTEKANDIDAT_CRONJOB_ENABLED
       value: "true"
