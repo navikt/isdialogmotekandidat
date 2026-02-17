@@ -81,13 +81,13 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
-    override suspend fun getUnntakList(personident: Personident): List<PUnntak> =
+    override suspend fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak> =
         database.connection.use { connection ->
             connection.prepareStatement(QUERY_GET_UNNTAK_FOR_PERSON).use {
                 it.setString(1, personident.value)
                 it.executeQuery().toList { toPUnntakList() }
             }
-        }
+        }.toUnntakList()
 
     override suspend fun getAvventList(personident: Personident): List<PAvvent> =
         database.connection.use { connection ->
@@ -96,6 +96,28 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
                 it.executeQuery().toList { toPAvventList() }
             }
         }
+
+    private fun ResultSet.toPIkkeAktuell() =
+        PIkkeAktuell(
+            id = getInt("id"),
+            uuid = UUID.fromString(getString("uuid")),
+            createdAt = getObject("created_at", OffsetDateTime::class.java),
+            createdBy = getString("created_by"),
+            personident = getString("personident"),
+            arsak = getString("arsak"),
+            beskrivelse = getString("beskrivelse"),
+        )
+
+    private fun ResultSet.toPUnntakList() =
+        PUnntak(
+            id = getInt("id"),
+            uuid = UUID.fromString(getString("uuid")),
+            createdAt = getObject("created_at", OffsetDateTime::class.java),
+            createdBy = getString("created_by"),
+            personident = getString("personident"),
+            arsak = getString("arsak"),
+            beskrivelse = getString("beskrivelse"),
+        )
 
     companion object {
         private const val GET_IKKE_AKTUELL_FOR_PERSON =
@@ -170,28 +192,6 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
             """
     }
 }
-
-private fun ResultSet.toPIkkeAktuell() =
-    PIkkeAktuell(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        createdAt = getObject("created_at", OffsetDateTime::class.java),
-        createdBy = getString("created_by"),
-        personident = getString("personident"),
-        arsak = getString("arsak"),
-        beskrivelse = getString("beskrivelse"),
-    )
-
-fun ResultSet.toPUnntakList() =
-    PUnntak(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        createdAt = getObject("created_at", OffsetDateTime::class.java),
-        createdBy = getString("created_by"),
-        personident = getString("personident"),
-        arsak = getString("arsak"),
-        beskrivelse = getString("beskrivelse"),
-    )
 
 fun ResultSet.toPAvventList() =
     PAvvent(

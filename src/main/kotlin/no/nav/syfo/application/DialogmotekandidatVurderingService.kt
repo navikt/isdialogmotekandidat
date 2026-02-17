@@ -9,7 +9,6 @@ import no.nav.syfo.domain.latest
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.toAvventList
-import no.nav.syfo.infrastructure.database.toUnntakList
 import java.sql.Connection
 
 class DialogmotekandidatVurderingService(
@@ -79,7 +78,7 @@ class DialogmotekandidatVurderingService(
     }
 
     suspend fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak> =
-        dialogmotekandidatVurderingRepository.getUnntakList(personident = personident).toUnntakList()
+        dialogmotekandidatVurderingRepository.getUnntakList(personident = personident)
 
     suspend fun createAvvent(
         avvent: Avvent,

@@ -40,6 +40,15 @@ sealed class DialogmotekandidatEndring {
         override val arsak: Arsak,
     ) : DialogmotekandidatEndring()
 
+    data class Kandidat(
+        override val uuid: UUID,
+        override val createdAt: OffsetDateTime,
+        override val personident: Personident,
+    ) : DialogmotekandidatEndring() {
+        override val kandidat: Boolean = true
+        override val arsak: Arsak = Arsak.STOPPUNKT
+    }
+
     data class Unntak(
         override val uuid: UUID,
         override val createdAt: OffsetDateTime,
@@ -85,24 +94,33 @@ sealed class DialogmotekandidatEndring {
         }
     }
 
+    data class Lukket(
+        override val uuid: UUID,
+        override val createdAt: OffsetDateTime,
+        override val personident: Personident,
+    ) : DialogmotekandidatEndring() {
+        override val kandidat: Boolean = false
+        override val arsak: Arsak = Arsak.LUKKET
+    }
+
     companion object {
-        fun stoppunktKandidat(personident: Personident) =
-            create(
-                personIdentNumber = personident,
-                kandidat = true,
-                arsak = Arsak.STOPPUNKT,
+        fun createKandidat(personident: Personident) =
+            Kandidat(
+                uuid = UUID.randomUUID(),
+                createdAt = nowUTC(),
+                personident = personident,
             )
 
         fun ferdigstiltDialogmote(personident: Personident) =
             create(
-                personIdentNumber = personident,
+                personident = personident,
                 kandidat = false,
                 arsak = Arsak.DIALOGMOTE_FERDIGSTILT,
             )
 
         fun lukketDialogmote(personident: Personident) =
             create(
-                personIdentNumber = personident,
+                personident = personident,
                 kandidat = false,
                 arsak = Arsak.DIALOGMOTE_LUKKET,
             )
@@ -141,20 +159,20 @@ sealed class DialogmotekandidatEndring {
         )
 
         fun lukket(personIdentNumber: Personident) =
-            create(
-                personIdentNumber = personIdentNumber,
-                kandidat = false,
-                arsak = Arsak.LUKKET,
+            Lukket(
+                uuid = UUID.randomUUID(),
+                createdAt = nowUTC(),
+                personident = personIdentNumber,
             )
 
         private fun create(
-            personIdentNumber: Personident,
+            personident: Personident,
             kandidat: Boolean,
             arsak: Arsak,
         ) = Endring(
             uuid = UUID.randomUUID(),
             createdAt = nowUTC(),
-            personident = personIdentNumber,
+            personident = personident,
             kandidat = kandidat,
             arsak = arsak,
         )
