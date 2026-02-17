@@ -26,6 +26,10 @@ class DialogmotekandidatOutdatedCronjob(
         val cutoff = outdatedDialogmotekandidatCutoff.atStartOfDay()
         val outdatedDialogmotekandidater = dialogmotekandidatService.getOutdatedDialogmotekandidater(cutoff)
         val withGivenUuids = uuids.mapNotNull { dialogmotekandidatService.getDialogmotekandidatEndring(it) }
+            .filterNot { endring ->
+                dialogmotekandidatService.getDialogmotekandidatEndringer(endring.personident)
+                    .any { it.createdAt > endring.createdAt && !it.kandidat }
+            }
         val dialogmotekandidaterToBeRemoved = outdatedDialogmotekandidater + withGivenUuids
 
         dialogmotekandidaterToBeRemoved.forEach {
