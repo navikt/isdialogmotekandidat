@@ -1,7 +1,7 @@
 package no.nav.syfo.infrastructure.database
 
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Unntak
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -16,12 +16,12 @@ data class PUnntak(
 )
 
 fun List<PUnntak>.toUnntakList() = this.map { pUnntak ->
-    Unntak.createFromDatabase(
+    DialogmotekandidatEndring.Unntak(
         uuid = pUnntak.uuid,
         createdAt = pUnntak.createdAt,
-        createdBy = pUnntak.createdBy,
         personident = Personident(pUnntak.personident),
-        arsak = Unntak.Arsak.valueOf(pUnntak.arsak),
+        createdBy = pUnntak.createdBy,
+        unntakArsak = DialogmotekandidatEndring.Unntak.Arsak.valueOf(pUnntak.arsak),
         beskrivelse = pUnntak.beskrivelse,
     )
 }

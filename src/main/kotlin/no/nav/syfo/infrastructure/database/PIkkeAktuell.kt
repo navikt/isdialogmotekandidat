@@ -1,6 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
-import no.nav.syfo.domain.IkkeAktuell
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import java.time.OffsetDateTime
 import java.util.*
@@ -16,12 +16,12 @@ data class PIkkeAktuell(
 )
 
 fun List<PIkkeAktuell>.toIkkeAktuellList() = this.map {
-    IkkeAktuell(
+    DialogmotekandidatEndring.IkkeAktuell(
         uuid = it.uuid,
         createdAt = it.createdAt,
-        createdBy = it.createdBy,
         personident = Personident(it.personident),
-        arsak = IkkeAktuell.Arsak.valueOf(it.arsak),
+        createdBy = it.createdBy,
+        ikkeAktuellArsak = DialogmotekandidatEndring.IkkeAktuell.Arsak.valueOf(it.arsak),
         beskrivelse = it.beskrivelse,
     )
 }

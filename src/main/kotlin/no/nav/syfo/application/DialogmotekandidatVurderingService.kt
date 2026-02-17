@@ -3,15 +3,12 @@ package no.nav.syfo.application
 import no.nav.syfo.api.exception.ConflictException
 import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Unntak
 import no.nav.syfo.domain.isLatestIkkeKandidat
 import no.nav.syfo.domain.latest
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.toAvventList
-import no.nav.syfo.infrastructure.database.toIkkeAktuellList
 import no.nav.syfo.infrastructure.database.toUnntakList
 import java.sql.Connection
 
@@ -23,7 +20,7 @@ class DialogmotekandidatVurderingService(
     private val dialogmotekandidatVurderingRepository: IDialogmotekandidatVurderingRepository,
 ) {
     suspend fun createIkkeAktuell(
-        ikkeAktuell: IkkeAktuell,
+        ikkeAktuell: DialogmotekandidatEndring.IkkeAktuell,
         veilederToken: String,
         callId: String,
     ) {
@@ -41,24 +38,20 @@ class DialogmotekandidatVurderingService(
                 veilederToken = veilederToken,
                 callId = callId,
             )
-            val newDialogmotekandidatEndring = DialogmotekandidatEndring.ikkeAktuell(
-                personIdentNumber = ikkeAktuell.personident,
-            )
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
-                dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                dialogmotekandidatEndring = ikkeAktuell,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
-                unntak = null,
             )
             connection.commit()
         }
     }
 
-    suspend fun getIkkeAktuellList(personident: Personident): List<IkkeAktuell> =
-        dialogmotekandidatVurderingRepository.getIkkeAktuellListForPerson(personident = personident).toIkkeAktuellList()
+    suspend fun getIkkeAktuellList(personident: Personident): List<DialogmotekandidatEndring.IkkeAktuell> =
+        dialogmotekandidatVurderingRepository.getIkkeAktuellListForPerson(personident = personident)
 
     suspend fun createUnntak(
-        unntak: Unntak,
+        unntak: DialogmotekandidatEndring.Unntak,
         veilederToken: String,
         callId: String,
     ) {
@@ -76,20 +69,16 @@ class DialogmotekandidatVurderingService(
 
         database.connection.use { connection ->
             dialogmotekandidatVurderingRepository.createUnntak(connection = connection, unntak = unntak)
-            val newDialogmotekandidatEndring = DialogmotekandidatEndring.unntak(
-                personIdentNumber = unntak.personident,
-            )
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 connection = connection,
-                dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                dialogmotekandidatEndring = unntak,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
-                unntak = unntak,
             )
             connection.commit()
         }
     }
 
-    suspend fun getUnntakList(personident: Personident): List<Unntak> =
+    suspend fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak> =
         dialogmotekandidatVurderingRepository.getUnntakList(personident = personident).toUnntakList()
 
     suspend fun createAvvent(

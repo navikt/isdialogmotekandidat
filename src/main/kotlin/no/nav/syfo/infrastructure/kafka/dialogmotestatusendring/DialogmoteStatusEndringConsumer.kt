@@ -102,7 +102,6 @@ class DialogmoteStatusEndringConsumer(
                     connection = connection,
                     dialogmotekandidatEndring = newDialogmotekandidatEndring,
                     tilfelleStart = latestOppfolgingstilfelle?.tilfelleStart,
-                    unntak = null,
                 )
                 COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_CREATED_KANDIDATENDRING.increment()
             }
@@ -115,10 +114,10 @@ class DialogmoteStatusEndringConsumer(
     private fun DialogmoteStatusEndring.toDialogmotekandidatEndring() =
         when (this.type) {
             DialogmoteStatusEndring.Type.FERDIGSTILT -> DialogmotekandidatEndring.ferdigstiltDialogmote(
-                personIdentNumber = this.personIdentNumber,
+                personident = this.personIdentNumber,
             )
             DialogmoteStatusEndring.Type.LUKKET -> DialogmotekandidatEndring.lukketDialogmote(
-                personIdentNumber = this.personIdentNumber,
+                personident = this.personIdentNumber,
             )
             else -> throw IllegalArgumentException("Cannot create DialogmotekandidatEndring for ${this.type}")
         }
