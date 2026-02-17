@@ -1,9 +1,7 @@
 package no.nav.syfo.api
 
-import no.nav.syfo.domain.IkkeAktuell
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.util.nowUTC
-import java.util.*
 
 data class CreateIkkeAktuellDTO(
     val personIdent: String,
@@ -13,11 +11,9 @@ data class CreateIkkeAktuellDTO(
 
 fun CreateIkkeAktuellDTO.toIkkeAktuell(
     createdByIdent: String,
-) = IkkeAktuell(
-    uuid = UUID.randomUUID(),
-    createdAt = nowUTC(),
-    createdBy = createdByIdent,
+) = DialogmotekandidatEndring.ikkeAktuell(
     personident = Personident(this.personIdent),
-    arsak = IkkeAktuell.Arsak.valueOf(this.arsak),
+    createdBy = createdByIdent,
+    arsak = DialogmotekandidatEndring.IkkeAktuell.Arsak.valueOf(this.arsak),
     beskrivelse = this.beskrivelse,
 )

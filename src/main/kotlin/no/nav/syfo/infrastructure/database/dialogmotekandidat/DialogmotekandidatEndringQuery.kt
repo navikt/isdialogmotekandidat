@@ -29,7 +29,7 @@ fun Connection.createDialogmotekandidatEndring(
     val idList = this.prepareStatement(queryCreateDialogmotekandidatEndring).use {
         it.setString(1, dialogmotekandidatEndring.uuid.toString())
         it.setObject(2, dialogmotekandidatEndring.createdAt)
-        it.setString(3, dialogmotekandidatEndring.personIdentNumber.value)
+        it.setString(3, dialogmotekandidatEndring.personident.value)
         it.setBoolean(4, dialogmotekandidatEndring.kandidat)
         it.setString(5, dialogmotekandidatEndring.arsak.name)
         it.executeQuery().toList { getInt("id") }

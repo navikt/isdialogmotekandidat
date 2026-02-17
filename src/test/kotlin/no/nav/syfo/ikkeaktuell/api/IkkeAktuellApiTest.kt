@@ -15,7 +15,6 @@ import io.mockk.verify
 import no.nav.syfo.api.CreateIkkeAktuellDTO
 import no.nav.syfo.api.endpoints.ikkeAktuellApiBasePath
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.IkkeAktuell
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.isLatestIkkeKandidat
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
@@ -137,12 +136,12 @@ class IkkeAktuellApiTest {
         verify(exactly = 0) { kafkaProducer.send(any()) }
     }
 
-    private fun newIkkeAktuellVurdering() = IkkeAktuell(
+    private fun newIkkeAktuellVurdering() = DialogmotekandidatEndring.IkkeAktuell(
         uuid = UUID.randomUUID(),
         createdAt = LocalDateTime.now().atOffset(ZoneOffset.UTC),
         createdBy = UserConstants.VEILEDER_IDENT,
         personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
-        arsak = IkkeAktuell.Arsak.ARBEIDSTAKER_AAP,
+        ikkeAktuellArsak = DialogmotekandidatEndring.IkkeAktuell.Arsak.ARBEIDSTAKER_AAP,
         beskrivelse = "Dette er en beskrivelse for hvorfor personen ikke er aktuell for dialogmøte",
     )
 
@@ -159,7 +158,7 @@ class IkkeAktuellApiTest {
             header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value)
         }
         assertEquals(HttpStatusCode.OK, response.status)
-        val body = response.body<List<IkkeAktuell>>()
+        val body = response.body<List<DialogmotekandidatEndring.IkkeAktuell>>()
         assertEquals(2, body.size)
     }
 
@@ -175,7 +174,7 @@ class IkkeAktuellApiTest {
             header(NAV_PERSONIDENT_HEADER, UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_ALTERNATIVE.value)
         }
         assertEquals(HttpStatusCode.OK, response.status)
-        val body = response.body<List<IkkeAktuell>>()
+        val body = response.body<List<DialogmotekandidatEndring.IkkeAktuell>>()
         assertEquals(0, body.size)
     }
 
@@ -193,6 +192,6 @@ class IkkeAktuellApiTest {
 
 fun generateNewIkkeAktuellDTO(personident: Personident) = CreateIkkeAktuellDTO(
     personIdent = personident.value,
-    arsak = IkkeAktuell.Arsak.DIALOGMOTE_AVHOLDT.name,
+    arsak = DialogmotekandidatEndring.IkkeAktuell.Arsak.DIALOGMOTE_AVHOLDT.name,
     beskrivelse = "Dette er en beskrivelse",
 )
