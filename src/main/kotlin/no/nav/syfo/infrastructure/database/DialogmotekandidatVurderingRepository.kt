@@ -2,32 +2,31 @@ package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.application.IDialogmotekandidatVurderingRepository
 import no.nav.syfo.domain.Avvent
-import no.nav.syfo.domain.IkkeAktuell
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Unntak
 import java.sql.Connection
 import java.sql.Date
 import java.sql.ResultSet
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 class DialogmotekandidatVurderingRepository(private val database: DatabaseInterface) : IDialogmotekandidatVurderingRepository {
 
-    override suspend fun getIkkeAktuellListForPerson(personident: Personident): List<PIkkeAktuell> =
+    override suspend fun getIkkeAktuellListForPerson(personident: Personident): List<DialogmotekandidatEndring.IkkeAktuell> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_IKKE_AKTUELL_FOR_PERSON).use {
                 it.setString(1, personident.value)
                 it.executeQuery().toList { toPIkkeAktuell() }
             }
-        }
+        }.toIkkeAktuellList()
 
-    override suspend fun createIkkeAktuell(connection: Connection, commit: Boolean, ikkeAktuell: IkkeAktuell) {
+    override suspend fun createIkkeAktuell(connection: Connection, commit: Boolean, ikkeAktuell: DialogmotekandidatEndring.IkkeAktuell) {
         val idList = connection.prepareStatement(QUERY_CREATE_IKKE_AKTUELL).use {
             it.setString(1, ikkeAktuell.uuid.toString())
             it.setObject(2, ikkeAktuell.createdAt)
             it.setString(3, ikkeAktuell.createdBy)
             it.setString(4, ikkeAktuell.personident.value)
-            it.setString(5, ikkeAktuell.arsak.name)
+            it.setString(5, ikkeAktuell.ikkeAktuellArsak.name)
             it.setString(6, ikkeAktuell.beskrivelse)
             it.executeQuery().toList { getInt("id") }
         }
@@ -38,13 +37,13 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         if (commit) connection.commit()
     }
 
-    override suspend fun createUnntak(connection: Connection, unntak: Unntak) {
+    override suspend fun createUnntak(connection: Connection, unntak: DialogmotekandidatEndring.Unntak) {
         val idList = connection.prepareStatement(QUERY_CREATE_UNNTAK).use {
             it.setString(1, unntak.uuid.toString())
             it.setObject(2, unntak.createdAt)
             it.setString(3, unntak.createdBy)
             it.setString(4, unntak.personident.value)
-            it.setString(5, unntak.arsak.name)
+            it.setString(5, unntak.unntakArsak.name)
             it.setString(6, unntak.beskrivelse)
             it.executeQuery().toList { getInt("id") }
         }

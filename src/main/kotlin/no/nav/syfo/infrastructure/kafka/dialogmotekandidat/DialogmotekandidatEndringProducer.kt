@@ -1,7 +1,6 @@
 package no.nav.syfo.infrastructure.kafka.dialogmotekandidat
 
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.Unntak
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.kafka.commonKafkaAivenConfig
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -19,12 +18,10 @@ class DialogmotekandidatEndringProducer(
     fun sendDialogmotekandidatEndring(
         dialogmotekandidatEndring: DialogmotekandidatEndring,
         tilfelleStart: LocalDate?,
-        unntak: Unntak?,
     ) {
         val record = DialogmotekandidatEndringRecord.from(
             dialogmoteKandidatEndring = dialogmotekandidatEndring,
             tilfelleStart = tilfelleStart,
-            unntak = unntak,
         )
         val key = UUID.nameUUIDFromBytes(record.personIdentNumber.toByteArray()).toString()
         try {
@@ -73,16 +70,18 @@ data class DialogmotekandidatEndringRecord(
     val unntakVeilederident: String?,
 ) {
     companion object {
-        fun from(dialogmoteKandidatEndring: DialogmotekandidatEndring, unntak: Unntak?, tilfelleStart: LocalDate?) =
-            DialogmotekandidatEndringRecord(
+        fun from(dialogmoteKandidatEndring: DialogmotekandidatEndring, tilfelleStart: LocalDate?): DialogmotekandidatEndringRecord {
+            val unntak = dialogmoteKandidatEndring as? DialogmotekandidatEndring.Unntak
+            return DialogmotekandidatEndringRecord(
                 uuid = dialogmoteKandidatEndring.uuid.toString(),
                 createdAt = dialogmoteKandidatEndring.createdAt,
-                personIdentNumber = dialogmoteKandidatEndring.personIdentNumber.value,
+                personIdentNumber = dialogmoteKandidatEndring.personident.value,
                 kandidat = dialogmoteKandidatEndring.kandidat,
                 arsak = dialogmoteKandidatEndring.arsak.name,
-                unntakArsak = unntak?.arsak?.name,
+                unntakArsak = unntak?.unntakArsak?.name,
                 tilfelleStart = tilfelleStart,
                 unntakVeilederident = unntak?.createdBy,
             )
+        }
     }
 }

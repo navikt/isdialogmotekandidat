@@ -16,4 +16,11 @@ data class PDialogmotekandidatEndring(
 
 fun List<PDialogmotekandidatEndring>.toDialogmotekandidatEndringList() = map { it.toDialogmotekandidatEndring() }
 
-fun PDialogmotekandidatEndring.toDialogmotekandidatEndring() = DialogmotekandidatEndring.create(this)
+fun PDialogmotekandidatEndring.toDialogmotekandidatEndring(): DialogmotekandidatEndring =
+    DialogmotekandidatEndring.Endring(
+        uuid = uuid,
+        createdAt = createdAt,
+        personident = personident,
+        kandidat = kandidat,
+        arsak = DialogmotekandidatEndring.Arsak.valueOf(arsak),
+    )

@@ -1,6 +1,6 @@
 package no.nav.syfo.api
 
-import no.nav.syfo.domain.Unntak
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import java.time.LocalDateTime
 
 data class UnntakDTO(
@@ -12,13 +12,13 @@ data class UnntakDTO(
     val beskrivelse: String?,
 )
 
-fun List<Unntak>.toUnntakDTOList() = this.map { unntak ->
+fun List<DialogmotekandidatEndring.Unntak>.toUnntakDTOList() = this.map { unntak ->
     UnntakDTO(
         uuid = unntak.uuid.toString(),
         createdAt = unntak.createdAt.toLocalDateTime(),
         createdBy = unntak.createdBy,
         personIdent = unntak.personident.value,
-        arsak = unntak.arsak.name,
+        arsak = unntak.unntakArsak.name,
         beskrivelse = unntak.beskrivelse,
     )
 }

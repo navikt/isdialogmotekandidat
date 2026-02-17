@@ -6,7 +6,6 @@ import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.Unntak
 import no.nav.syfo.domain.isDialogmotekandidat
 import no.nav.syfo.domain.toDialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.DatabaseInterface
@@ -101,7 +100,6 @@ class DialogmotekandidatService(
                     connection = connection,
                     dialogmotekandidatEndring = newDialogmotekandidatEndring,
                     tilfelleStart = oppfolgingstilfelleOnStoppunktDate?.tilfelleStart,
-                    unntak = null,
                 )
                 COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING.increment()
             } else {
@@ -123,7 +121,6 @@ class DialogmotekandidatService(
         dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
             dialogmotekandidatEndring = dialogmotekandidatEndring,
             tilfelleStart = null,
-            unntak = null,
         )
     }
 
@@ -131,7 +128,6 @@ class DialogmotekandidatService(
         connection: Connection,
         dialogmotekandidatEndring: DialogmotekandidatEndring,
         tilfelleStart: LocalDate?,
-        unntak: Unntak?,
     ) {
         connection.createDialogmotekandidatEndring(
             dialogmotekandidatEndring = dialogmotekandidatEndring
@@ -139,7 +135,6 @@ class DialogmotekandidatService(
         dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
             dialogmotekandidatEndring = dialogmotekandidatEndring,
             tilfelleStart = tilfelleStart,
-            unntak = unntak,
         )
     }
 
@@ -157,7 +152,7 @@ class DialogmotekandidatService(
     suspend fun getDialogmotekandidater(personidenter: List<Personident>): Map<Personident, Pair<DialogmotekandidatEndring, Avvent?>> {
         val latestDialogmotekandidatEndringerForPersons =
             dialogmotekandidatRepository.getDialogmotekandidatEndringForPersons(personidenter = personidenter)
-                .groupBy { endring -> endring.personIdentNumber }
+                .groupBy { endring -> endring.personident }
                 .mapValues { entry -> entry.value.maxBy { it.createdAt } }
         val aktiveKandidaterIdenter = latestDialogmotekandidatEndringerForPersons.keys.toList()
         val aktiveKandidaterAvventList = getAvventForPersons(aktiveKandidaterIdenter)

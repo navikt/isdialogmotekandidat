@@ -16,8 +16,6 @@ import no.nav.syfo.api.endpoints.kandidatApiHistorikkPath
 import no.nav.syfo.api.toIkkeAktuell
 import no.nav.syfo.api.toUnntak
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.IkkeAktuell
-import no.nav.syfo.domain.Unntak
 import no.nav.syfo.ikkeaktuell.api.generateNewIkkeAktuellDTO
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
@@ -70,11 +68,19 @@ class DialogmotekandidatHistorikkApiTest {
         database.createDialogmotekandidatEndring(endring)
     }
 
-    private fun createUnntak(): Unntak {
+    private fun createUnntak(): DialogmotekandidatEndring.Unntak {
         val unntak = generateNewUnntakDTO(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toUnntak(UserConstants.VEILEDER_IDENT)
         runBlocking {
             database.connection.use {
-                it.createDialogmotekandidatEndring(DialogmotekandidatEndring.unntak(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER))
+                it.createDialogmotekandidatEndring(
+                    DialogmotekandidatEndring.Endring(
+                        uuid = unntak.uuid,
+                        createdAt = unntak.createdAt,
+                        personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                        kandidat = false,
+                        arsak = DialogmotekandidatEndring.Arsak.UNNTAK,
+                    )
+                )
                 vurderingRepository.createUnntak(it, unntak)
                 it.commit()
             }
@@ -82,11 +88,19 @@ class DialogmotekandidatHistorikkApiTest {
         return unntak
     }
 
-    private fun createIkkeAktuell(): IkkeAktuell {
+    private fun createIkkeAktuell(): DialogmotekandidatEndring.IkkeAktuell {
         val ikkeAktuell =
             generateNewIkkeAktuellDTO(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toIkkeAktuell(UserConstants.VEILEDER_IDENT)
         database.connection.use {
-            it.createDialogmotekandidatEndring(DialogmotekandidatEndring.ikkeAktuell(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER))
+            it.createDialogmotekandidatEndring(
+                DialogmotekandidatEndring.Endring(
+                    uuid = ikkeAktuell.uuid,
+                    createdAt = ikkeAktuell.createdAt,
+                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                    kandidat = false,
+                    arsak = DialogmotekandidatEndring.Arsak.IKKE_AKTUELL,
+                )
+            )
             runBlocking { vurderingRepository.createIkkeAktuell(connection = it, commit = false, ikkeAktuell = ikkeAktuell) }
             it.commit()
         }
@@ -155,7 +169,7 @@ class DialogmotekandidatHistorikkApiTest {
         val historikk = response.body<List<HistorikkDTO>>()
         assertEquals(2, historikk.size)
         assertEquals(HistorikkType.UNNTAK, historikk[0].type)
-        assertEquals(unntak.arsak.name, historikk[0].arsak)
+        assertEquals(unntak.unntakArsak.name, historikk[0].arsak)
         assertEquals(unntak.createdBy, historikk[0].vurdertAv)
         assertEquals(HistorikkType.KANDIDAT, historikk[1].type)
         assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, historikk[1].arsak)
@@ -175,7 +189,7 @@ class DialogmotekandidatHistorikkApiTest {
         val historikk = response.body<List<HistorikkDTO>>()
         assertEquals(2, historikk.size)
         assertEquals(HistorikkType.IKKE_AKTUELL, historikk[0].type)
-        assertEquals(ikkeAktuell.arsak.name, historikk[0].arsak)
+        assertEquals(ikkeAktuell.ikkeAktuellArsak.name, historikk[0].arsak)
         assertEquals(ikkeAktuell.createdBy, historikk[0].vurdertAv)
         assertEquals(HistorikkType.KANDIDAT, historikk[1].type)
         assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT.name, historikk[1].arsak)

@@ -17,7 +17,6 @@ import no.nav.syfo.api.endpoints.unntakApiBasePath
 import no.nav.syfo.api.endpoints.unntakApiPersonidentPath
 import no.nav.syfo.api.toUnntak
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.domain.Unntak
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -99,7 +98,7 @@ class UnntakApiTest {
     @Test
     fun `returns unntak with arsak FRISKMELDT for person`() = testApplication {
         val client = setupApiAndClient()
-        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT).copy(arsak = Unntak.Arsak.FRISKMELDT)
+        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT).copy(unntakArsak = DialogmotekandidatEndring.Unntak.Arsak.FRISKMELDT)
         database.connection.use {
             dialogmotekandidatVurderingRepository.createUnntak(it, unntak)
             it.commit()
@@ -111,7 +110,7 @@ class UnntakApiTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val list = response.body<List<UnntakDTO>>()
         assertEquals(1, list.size)
-        assertEquals(Unntak.Arsak.FRISKMELDT.name, list.first().arsak)
+        assertEquals(DialogmotekandidatEndring.Unntak.Arsak.FRISKMELDT.name, list.first().arsak)
     }
 
     @Test
@@ -195,7 +194,7 @@ class UnntakApiTest {
         val friskmeldtResponse = client.post(urlUnntakPersonIdent) {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = Unntak.Arsak.FRISKMELDT))
+            setBody(generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = DialogmotekandidatEndring.Unntak.Arsak.FRISKMELDT))
         }
         assertEquals(HttpStatusCode.BadRequest, friskmeldtResponse.status)
 
@@ -205,7 +204,7 @@ class UnntakApiTest {
             setBody(
                 generateNewUnntakDTO(
                     personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
-                    arsak = Unntak.Arsak.ARBEIDSFORHOLD_OPPHORT
+                    arsak = DialogmotekandidatEndring.Unntak.Arsak.ARBEIDSFORHOLD_OPPHORT
                 )
             )
         }
