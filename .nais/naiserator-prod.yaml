@@ -92,6 +92,6 @@ spec:
     - name: STOPPUNKT_CRONJOB_DELAY
       value: "240"
     - name: OUTDATED_DIALOGMOTEKANDIDAT_CUTOFF_MONTHS
-      value: "12"
+      value: "9"
     - name: OUTDATED_DIALOGMOTEKANDIDAT_CRONJOB_ENABLED
       value: "true"
