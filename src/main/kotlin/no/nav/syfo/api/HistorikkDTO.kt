@@ -10,58 +10,48 @@ data class HistorikkDTO(
     val vurdertAv: String?,
 ) {
     companion object {
-        fun createHistorikkDTOs(
+        fun fromDialogmotekandidatEndringer(
             dialogmotekandidatEndringer: List<DialogmotekandidatEndring>,
-            unntak: List<DialogmotekandidatEndring.Unntak>,
-            ikkeAktuell: List<DialogmotekandidatEndring.IkkeAktuell>,
         ): List<HistorikkDTO> {
-            val historikk =
-                dialogmotekandidatEndringer.toKandidatHistorikk() + unntak.toUnntakHistorikk() + ikkeAktuell.toIkkeAktuellHistorikk()
+            val historikk = dialogmotekandidatEndringer.mapNotNull { from(it) }
             return historikk.sortedByDescending { it.tidspunkt }
         }
+
+        private fun from(dialogmotekandidatEndring: DialogmotekandidatEndring): HistorikkDTO? =
+            when (dialogmotekandidatEndring) {
+                is DialogmotekandidatEndring.Kandidat ->
+                    HistorikkDTO(
+                        tidspunkt = dialogmotekandidatEndring.createdAt.toLocalDateTime(),
+                        type = HistorikkType.KANDIDAT,
+                        arsak = dialogmotekandidatEndring.arsak.name,
+                        vurdertAv = null,
+                    )
+                is DialogmotekandidatEndring.Unntak ->
+                    HistorikkDTO(
+                        tidspunkt = dialogmotekandidatEndring.createdAt.toLocalDateTime(),
+                        type = HistorikkType.UNNTAK,
+                        arsak = dialogmotekandidatEndring.unntakArsak.name,
+                        vurdertAv = dialogmotekandidatEndring.createdBy,
+                    )
+                is DialogmotekandidatEndring.IkkeAktuell ->
+                    HistorikkDTO(
+                        tidspunkt = dialogmotekandidatEndring.createdAt.toLocalDateTime(),
+                        type = HistorikkType.IKKE_AKTUELL,
+                        arsak = dialogmotekandidatEndring.ikkeAktuellArsak.name,
+                        vurdertAv = dialogmotekandidatEndring.createdBy,
+                    )
+                is DialogmotekandidatEndring.Lukket ->
+                    HistorikkDTO(
+                        tidspunkt = dialogmotekandidatEndring.createdAt.toLocalDateTime(),
+                        type = HistorikkType.LUKKET,
+                        arsak = dialogmotekandidatEndring.arsak.name,
+                        vurdertAv = null,
+                    )
+
+                // Disse dekkes av dialogmote-historikk
+                else -> null
+            }
     }
-}
-
-fun List<DialogmotekandidatEndring>.toKandidatHistorikk(): List<HistorikkDTO> = this.mapNotNull {
-    val tidspunkt = it.createdAt.toLocalDateTime()
-    when (it.arsak) {
-        DialogmotekandidatEndring.Arsak.STOPPUNKT ->
-            HistorikkDTO(
-                tidspunkt = tidspunkt,
-                type = HistorikkType.KANDIDAT,
-                arsak = it.arsak.name,
-                vurdertAv = null,
-            )
-
-        DialogmotekandidatEndring.Arsak.LUKKET ->
-            HistorikkDTO(
-                tidspunkt = tidspunkt,
-                type = HistorikkType.LUKKET,
-                arsak = it.arsak.name,
-                vurdertAv = null,
-            )
-
-        // Disse dekkes av dialogmote-historikk og unntak/ikke-aktuell-historikk
-        DialogmotekandidatEndring.Arsak.DIALOGMOTE_FERDIGSTILT, DialogmotekandidatEndring.Arsak.DIALOGMOTE_LUKKET, DialogmotekandidatEndring.Arsak.UNNTAK, DialogmotekandidatEndring.Arsak.IKKE_AKTUELL -> null
-    }
-}
-
-fun List<DialogmotekandidatEndring.Unntak>.toUnntakHistorikk(): List<HistorikkDTO> = this.map {
-    HistorikkDTO(
-        tidspunkt = it.createdAt.toLocalDateTime(),
-        type = HistorikkType.UNNTAK,
-        arsak = it.unntakArsak.name,
-        vurdertAv = it.createdBy,
-    )
-}
-
-fun List<DialogmotekandidatEndring.IkkeAktuell>.toIkkeAktuellHistorikk(): List<HistorikkDTO> = this.map {
-    HistorikkDTO(
-        tidspunkt = it.createdAt.toLocalDateTime(),
-        type = HistorikkType.IKKE_AKTUELL,
-        arsak = it.ikkeAktuellArsak.name,
-        vurdertAv = it.createdBy,
-    )
 }
 
 enum class HistorikkType {

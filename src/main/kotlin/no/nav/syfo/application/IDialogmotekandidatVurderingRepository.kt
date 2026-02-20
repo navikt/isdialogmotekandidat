@@ -4,7 +4,6 @@ import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.PAvvent
-import no.nav.syfo.infrastructure.database.PUnntak
 import java.sql.Connection
 
 interface IDialogmotekandidatVurderingRepository {
@@ -13,6 +12,6 @@ interface IDialogmotekandidatVurderingRepository {
     suspend fun createUnntak(connection: Connection, unntak: DialogmotekandidatEndring.Unntak)
     suspend fun createAvvent(connection: Connection, avvent: Avvent)
     suspend fun lukkAvvent(connection: Connection, avvent: Avvent)
-    suspend fun getUnntakList(personident: Personident): List<PUnntak>
+    suspend fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak>
     suspend fun getAvventList(personident: Personident): List<PAvvent>
 }
