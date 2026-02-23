@@ -1,20 +1,20 @@
 package no.nav.syfo.infrastructure.cronjob.dialogmotekandidat
 
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.application.DialogmotekandidatService
-import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.infrastructure.cronjob.Cronjob
 import no.nav.syfo.infrastructure.cronjob.CronjobResult
+import no.nav.syfo.application.DialogmotekandidatService
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 class DialogmotekandidatOutdatedCronjob(
-    private val outdatedDialogmotekandidatCutoff: LocalDate,
+    private val outdatedDialogmotekandidatCutoffMonths: Int,
     private val dialogmotekandidatService: DialogmotekandidatService,
 ) : Cronjob {
     override val initialDelayMinutes: Long = 4
-    override val intervalDelayMinutes: Long = 60 * 12
+    override val intervalDelayMinutes: Long = 60 * 24
 
     override suspend fun run() {
         runJob()
@@ -23,7 +23,12 @@ class DialogmotekandidatOutdatedCronjob(
     fun runJob(): CronjobResult {
         val result = CronjobResult()
 
-        val cutoff = outdatedDialogmotekandidatCutoff.atStartOfDay()
+        val cutoff = LocalDate.now()
+            .minusMonths(outdatedDialogmotekandidatCutoffMonths.toLong())
+            .atStartOfDay()
+
+        log.info("DialogmotekandidatOutdatedCronjob started with cutoff $outdatedDialogmotekandidatCutoffMonths months, $cutoff")
+
         val outdatedDialogmotekandidater = dialogmotekandidatService.getOutdatedDialogmotekandidater(cutoff)
         val withGivenUuids = uuids.mapNotNull { dialogmotekandidatService.getDialogmotekandidatEndring(it) }
             .filterNot { endring ->
@@ -37,9 +42,11 @@ class DialogmotekandidatOutdatedCronjob(
                 val dialogmotekandidatLukket = DialogmotekandidatEndring.lukket(it.personident)
                 dialogmotekandidatService.createDialogmotekandidatEndring(dialogmotekandidatLukket)
                 result.updated++
+                log.info("Closed dialogmotekandidat ${it.uuid}")
             } catch (e: Exception) {
                 result.failed++
-                log.error("Got exception when creating dialogmotekandidat-endring LUKKET", e)
+                it.uuid
+                log.error("Got exception when creating dialogmotekandidat-endring LUKKET with uuid ${it.uuid}", e)
             }
         }
 

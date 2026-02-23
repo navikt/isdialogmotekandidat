@@ -62,7 +62,3 @@ data class DialogmotekandidatStoppunkt private constructor(
             )
     }
 }
-
-fun DialogmotekandidatStoppunkt.toDialogmotekandidatEndring() = DialogmotekandidatEndring.stoppunktKandidat(
-    personident = this.personident
-)

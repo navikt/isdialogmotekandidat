@@ -16,13 +16,17 @@ import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.Dialogmotekandidat
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
-import no.nav.syfo.testhelper.*
+import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.createDialogmotekandidatEndring
+import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.generateJWT
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringFerdigstilt
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
+import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import no.nav.syfo.util.toLocalDateTimeOslo
@@ -51,7 +55,9 @@ class DialogmotekandidatApiTest {
     }
 
     @BeforeEach
-    fun setup() { database.dropData() }
+    fun setup() {
+        database.dropData()
+    }
 
     private val validToken = generateJWT(
         audience = externalMockEnvironment.environment.azure.appClientId,

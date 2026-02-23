@@ -17,9 +17,8 @@ fun generateDialogmotekandidatStoppunktPlanlagt(
 
 fun generateDialogmotekandidatEndringStoppunkt(
     personIdentNumber: Personident,
-): DialogmotekandidatEndring.Endring = DialogmotekandidatEndring.stoppunktKandidat(
-    personident = personIdentNumber
-)
+): DialogmotekandidatEndring.Kandidat =
+    DialogmotekandidatEndring.createKandidat(personident = personIdentNumber)
 
 fun generateDialogmotekandidatEndringFerdigstilt(
     personIdentNumber: Personident,

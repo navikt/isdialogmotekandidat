@@ -1,7 +1,6 @@
 package no.nav.syfo.oppfolgingstilfelle
 
 import no.nav.syfo.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
-import no.nav.syfo.domain.isDialogmotekandidat
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringFerdigstilt
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt

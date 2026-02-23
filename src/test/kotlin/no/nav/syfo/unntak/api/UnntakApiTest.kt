@@ -98,7 +98,8 @@ class UnntakApiTest {
     @Test
     fun `returns unntak with arsak FRISKMELDT for person`() = testApplication {
         val client = setupApiAndClient()
-        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT).copy(unntakArsak = DialogmotekandidatEndring.Unntak.Arsak.FRISKMELDT)
+        val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
+            .copy(unntakArsak = DialogmotekandidatEndring.Unntak.Arsak.FRISKMELDT)
         database.connection.use {
             dialogmotekandidatVurderingRepository.createUnntak(it, unntak)
             it.commit()
@@ -171,9 +172,9 @@ class UnntakApiTest {
 
         val latestUnntak = dialogmotekandidatVurderingRepository.getUnntakList(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertNotNull(latestUnntak.createdAt)
-        assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, latestUnntak.personident)
+        assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, latestUnntak.personident)
         assertEquals(UserConstants.VEILEDER_IDENT, latestUnntak.createdBy)
-        assertEquals(newUnntakDTO.arsak, latestUnntak.arsak)
+        assertEquals(newUnntakDTO.arsak, latestUnntak.unntakArsak.name)
         assertEquals(newUnntakDTO.beskrivelse, latestUnntak.beskrivelse)
 
         val kafkaValue = producerRecordSlot.captured.value()
@@ -194,7 +195,12 @@ class UnntakApiTest {
         val friskmeldtResponse = client.post(urlUnntakPersonIdent) {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER, arsak = DialogmotekandidatEndring.Unntak.Arsak.FRISKMELDT))
+            setBody(
+                generateNewUnntakDTO(
+                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                    arsak = DialogmotekandidatEndring.Unntak.Arsak.FRISKMELDT
+                )
+            )
         }
         assertEquals(HttpStatusCode.BadRequest, friskmeldtResponse.status)
 
