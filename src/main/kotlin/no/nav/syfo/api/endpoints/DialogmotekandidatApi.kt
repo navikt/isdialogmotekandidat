@@ -4,12 +4,20 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.syfo.api.*
+import no.nav.syfo.api.AvventDTO
+import no.nav.syfo.api.DialogmotekandidatResponseDTO
+import no.nav.syfo.api.GetDialogmotekandidatForPersonsResponseDTO
+import no.nav.syfo.api.GetDialogmotekandidaterRequestDTO
+import no.nav.syfo.api.HistorikkDTO
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.util.*
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.getBearerHeader
+import no.nav.syfo.util.getCallId
+import no.nav.syfo.util.personIdentHeader
+import no.nav.syfo.util.validateVeilederAccess
 
 const val kandidatApiBasePath = "/api/internad/v1/kandidat"
 const val kandidatApiPersonidentPath = "/personident"
@@ -87,7 +95,7 @@ fun Route.registerDialogmotekandidatApi(
                             personident.value to DialogmotekandidatResponseDTO(
                                 uuid = pair.first.uuid,
                                 createdAt = pair.first.createdAt.toLocalDateTime(),
-                                personident = pair.first.personIdentNumber.value,
+                                personident = pair.first.personident.value,
                                 isKandidat = pair.first.kandidat,
                                 avvent = pair.second?.let {
                                     AvventDTO(

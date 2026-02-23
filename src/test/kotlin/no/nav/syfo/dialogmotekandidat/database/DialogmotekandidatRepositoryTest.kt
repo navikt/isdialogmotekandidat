@@ -28,7 +28,7 @@ class DialogmotekandidatRepositoryTest {
             connection.commit()
         }
         val inserted = repository.getDialogmotekandidatEndring(dialogmoteKandidatEndring.uuid)
-        assertEquals(dialogmoteKandidatEndring.personIdentNumber, inserted?.personident)
+        assertEquals(dialogmoteKandidatEndring.personident, inserted?.personident)
         assertEquals(dialogmoteKandidatEndring.uuid, inserted?.uuid)
         assertEquals(dialogmoteKandidatEndring.arsak.toString(), inserted?.arsak)
         assertEquals(dialogmoteKandidatEndring.kandidat, inserted?.kandidat)
