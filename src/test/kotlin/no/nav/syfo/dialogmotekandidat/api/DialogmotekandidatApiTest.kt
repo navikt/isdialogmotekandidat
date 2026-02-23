@@ -12,8 +12,8 @@ import no.nav.syfo.api.GetDialogmotekandidatForPersonsResponseDTO
 import no.nav.syfo.api.GetDialogmotekandidaterRequestDTO
 import no.nav.syfo.api.endpoints.kandidatApiBasePath
 import no.nav.syfo.api.endpoints.kandidatApiPersonidentPath
-import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.Dialogmotekandidat
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -249,13 +249,13 @@ class DialogmotekandidatApiTest {
             database.createDialogmotekandidatEndring(stoppunktKandidat1)
             database.createDialogmotekandidatEndring(stoppunktKandidat2)
 
-            val avvent1 = Avvent(
+            val avvent1 = DialogmotekandidatEndring.avvent(
                 frist = LocalDate.now().plusDays(1),
                 createdBy = VEILEDER_IDENT,
                 personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
                 beskrivelse = "Beskrivelse av avvent",
             )
-            val avvent2 = Avvent(
+            val avvent2 = DialogmotekandidatEndring.avvent(
                 frist = LocalDate.now().plusDays(1),
                 createdBy = VEILEDER_IDENT,
                 personident = ARBEIDSTAKER_2_PERSONIDENTNUMBER,
@@ -303,13 +303,13 @@ class DialogmotekandidatApiTest {
             val stoppunktKandidat = generateDialogmotekandidatEndringStoppunkt(ARBEIDSTAKER_PERSONIDENTNUMBER)
             database.createDialogmotekandidatEndring(stoppunktKandidat)
 
-            val avvent = Avvent(
+            val avvent = DialogmotekandidatEndring.avvent(
                 frist = LocalDate.now().plusDays(1),
                 createdBy = VEILEDER_IDENT,
                 personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
                 beskrivelse = "Beskrivelse av avvent",
             )
-            val oldAvvent = Avvent(
+            val oldAvvent = DialogmotekandidatEndring.avvent(
                 frist = LocalDate.now().plusDays(10),
                 createdBy = VEILEDER_IDENT,
                 personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -355,7 +355,7 @@ class DialogmotekandidatApiTest {
             val stoppunktKandidat = generateDialogmotekandidatEndringStoppunkt(ARBEIDSTAKER_PERSONIDENTNUMBER)
             database.createDialogmotekandidatEndring(stoppunktKandidat)
 
-            val avvent = Avvent(
+            val avvent = DialogmotekandidatEndring.avvent(
                 frist = LocalDate.now().plusDays(1),
                 createdBy = VEILEDER_IDENT,
                 personident = ARBEIDSTAKER_PERSONIDENTNUMBER,

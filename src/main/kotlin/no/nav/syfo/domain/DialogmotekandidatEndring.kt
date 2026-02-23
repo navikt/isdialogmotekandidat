@@ -20,13 +20,11 @@ sealed class DialogmotekandidatEndring {
         return stoppunktKandidatAt.isBefore(tilfelleStart)
     }
 
-    fun isAvventValidForDialogmotekandidatEndring(avvent: Avvent) =
-        this.kandidat && avvent.createdAt.isAfter(this.createdAt) == true && !avvent.isLukket
-
     enum class Arsak {
         STOPPUNKT,
         DIALOGMOTE_FERDIGSTILT,
         DIALOGMOTE_LUKKET,
+        AVVENT,
         UNNTAK,
         IKKE_AKTUELL,
         LUKKET,
@@ -47,6 +45,19 @@ sealed class DialogmotekandidatEndring {
     ) : DialogmotekandidatEndring() {
         override val kandidat: Boolean = true
         override val arsak: Arsak = Arsak.STOPPUNKT
+    }
+
+    data class Avvent(
+        override val uuid: UUID,
+        override val createdAt: OffsetDateTime,
+        override val personident: Personident,
+        val createdBy: String,
+        val frist: LocalDate,
+        val beskrivelse: String,
+        val isLukket: Boolean,
+    ) : DialogmotekandidatEndring() {
+        override val kandidat: Boolean = true
+        override val arsak: Arsak = Arsak.AVVENT
     }
 
     data class Unntak(
@@ -110,6 +121,21 @@ sealed class DialogmotekandidatEndring {
                 createdAt = nowUTC(),
                 personident = personident,
             )
+
+        fun avvent(
+            personident: Personident,
+            createdBy: String,
+            frist: LocalDate,
+            beskrivelse: String,
+        ) = Avvent(
+            uuid = UUID.randomUUID(),
+            createdAt = nowUTC(),
+            personident = personident,
+            createdBy = createdBy,
+            frist = frist,
+            beskrivelse = beskrivelse,
+            isLukket = false,
+        )
 
         fun ferdigstiltDialogmote(personident: Personident) =
             create(

@@ -10,7 +10,6 @@ import kotlinx.coroutines.test.runTest
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
-import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.DialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPerson
@@ -176,14 +175,13 @@ class KafkaDialogmoteStatusEndringServiceTest {
     @Test
     fun `closes avvent when latest endring for person is kandidat and created before innkalling`() = runTest {
         database.createDialogmotekandidatEndring(dialogmotekandidatEndringCreatedBeforeStatusEndring)
-        dialogmotekandidatVurderingService.createAvvent(
-            Avvent(
-                frist = LocalDate.now().plusDays(14),
-                createdBy = "Z999999",
-                personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                beskrivelse = "Beskrivelse"
-            )
+        val avvent = DialogmotekandidatEndring.avvent(
+            frist = LocalDate.now().plusDays(14),
+            createdBy = "Z999999",
+            personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
+            beskrivelse = "Beskrivelse"
         )
+        dialogmotekandidatVurderingService.createAvvent(avvent)
         assertTrue(dialogmotekandidatVurderingService.getAvvent(ARBEIDSTAKER_PERSONIDENTNUMBER).isNotEmpty())
         every { consumer.poll(any<Duration>()) } returns ConsumerRecords(
             mapOf(
