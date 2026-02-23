@@ -14,7 +14,7 @@ class DialogmotekandidatOutdatedCronjob(
     private val dialogmotekandidatService: DialogmotekandidatService,
 ) : Cronjob {
     override val initialDelayMinutes: Long = 4
-    override val intervalDelayMinutes: Long = 30 // set to 24 hours after initial clean up
+    override val intervalDelayMinutes: Long = 60 * 24
 
     override suspend fun run() {
         runJob()
