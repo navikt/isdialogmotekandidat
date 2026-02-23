@@ -29,7 +29,7 @@ fun launchCronjobModule(
 
     if (environment.outdatedCronjobEnabled) {
         val dialogmotekandidatOutdatedCronjob = DialogmotekandidatOutdatedCronjob(
-            outdatedDialogmotekandidatCutoff = environment.outdatedCutoff,
+            outdatedDialogmotekandidatCutoffMonths = environment.outdatedCutoffMonths,
             dialogmotekandidatService = dialogmotekandidatService,
         )
         cronjobs.add(dialogmotekandidatOutdatedCronjob)

@@ -32,7 +32,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     private val kafkaProducer = mockk<KafkaProducer<String, DialogmotekandidatEndringRecord>>()
     private val endringProducer = DialogmotekandidatEndringProducer(producer = kafkaProducer)
     private val personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
-    private val cutoff = LocalDate.now()
+    private val cutoff = 6
     private val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = mockk(),
         dialogmotekandidatEndringProducer = endringProducer,
@@ -54,7 +54,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     @Test
     fun `creates LUKKET endring for kandidat before cutoff with no other endring`() {
         val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident)
-            .copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatBefore)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
@@ -72,13 +72,13 @@ class DialogmotekandidatOutdatedCronjobTest {
     @Test
     fun `updates kandidat before cutoff only once`() {
         val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident)
-            .copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         val otherKandidatBefore = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_OLD_KANDIDAT)
-            .copy(createdAt = cutoff.minusDays(100).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(100).toOffsetDatetime())
         val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(UserConstants.ARBEIDSTAKER_2_PERSONIDENTNUMBER)
-            .copy(createdAt = cutoff.minusDays(50).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(50).toOffsetDatetime())
         val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_3_PERSONIDENTNUMBER)
-            .copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).plusDays(1).toOffsetDatetime())
         listOf(
             kandidatBefore,
             otherKandidatBefore,
@@ -103,7 +103,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     @Test
     fun `creates no endring for not kandidat before cutoff`() {
         val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(personident)
-            .copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(notKandidatBefore)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
@@ -117,7 +117,8 @@ class DialogmotekandidatOutdatedCronjobTest {
     @Test
     fun `creates no endring for not kandidat after cutoff`() {
         val notKandidatAfter =
-            generateDialogmotekandidatEndringFerdigstilt(personident).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+            generateDialogmotekandidatEndringFerdigstilt(personident)
+                .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(notKandidatAfter)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
@@ -130,7 +131,8 @@ class DialogmotekandidatOutdatedCronjobTest {
 
     @Test
     fun `creates no endring for kandidat after cutoff`() {
-        val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident).copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+        val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident)
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatAfter)
         val result = cronjob.runJob()
         assertEquals(0, result.failed)
@@ -144,9 +146,9 @@ class DialogmotekandidatOutdatedCronjobTest {
     @Test
     fun `creates no endring for kandidat before and not kandidat after cutoff`() {
         val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident)
-            .copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         val notKandidatAfter = generateDialogmotekandidatEndringFerdigstilt(personident)
-            .copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatBefore)
         database.createDialogmotekandidatEndring(notKandidatAfter)
         val result = cronjob.runJob()
@@ -161,9 +163,9 @@ class DialogmotekandidatOutdatedCronjobTest {
     @Test
     fun `creates no endring for not kandidat before and kandidat after cutoff`() {
         val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(personident)
-            .copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident)
-            .copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(notKandidatBefore)
         database.createDialogmotekandidatEndring(kandidatAfter)
         val result = cronjob.runJob()
@@ -178,9 +180,9 @@ class DialogmotekandidatOutdatedCronjobTest {
     @Test
     fun `creates no endring for kandidat before and kandidat after cutoff`() {
         val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident)
-            .copy(createdAt = cutoff.minusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident)
-            .copy(createdAt = cutoff.plusDays(1).toOffsetDatetime())
+            .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatBefore)
         database.createDialogmotekandidatEndring(kandidatAfter)
         val result = cronjob.runJob()
