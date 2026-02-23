@@ -12,28 +12,28 @@ data class Oppfolgingstilfelle(
     val arbeidstakerAtTilfelleEnd: Boolean,
     val virksomhetsnummerList: List<Virksomhetsnummer>,
     val dodsdato: LocalDate?,
-)
+) {
+    fun isDialogmotekandidat(
+        dialogmotekandidatEndringList: List<DialogmotekandidatEndring>,
+        latestDialogmoteFerdigstilt: OffsetDateTime?,
+    ) = isDialogmotekandidat() &&
+        (latestDialogmoteFerdigstilt == null || latestDialogmoteFerdigstilt.toLocalDate().isBefore(tilfelleStart)) &&
+        dialogmotekandidatEndringList.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
+            tilfelleStart = tilfelleStart,
+        )
 
-fun Oppfolgingstilfelle.isDialogmotekandidat(
-    dialogmotekandidatEndringList: List<DialogmotekandidatEndring>,
-    latestDialogmoteFerdigstilt: OffsetDateTime?,
-) = this.isDialogmotekandidat() &&
-    (latestDialogmoteFerdigstilt == null || latestDialogmoteFerdigstilt.toLocalDate().isBefore(this.tilfelleStart)) &&
-    dialogmotekandidatEndringList.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
-        tilfelleStart = this.tilfelleStart,
-    )
+    fun isDialogmotekandidat(): Boolean {
+        val dialogmotekandidatStoppunktPlanlagt = DialogmotekandidatStoppunkt.stoppunktPlanlagtDato(tilfelleStart, tilfelleEnd)
+        return dodsdato == null && arbeidstakerAtTilfelleEnd && tilfelleEnd.isAfterOrEqual(dialogmotekandidatStoppunktPlanlagt)
+    }
 
-fun Oppfolgingstilfelle.isDialogmotekandidat(): Boolean {
-    val dialogmotekandidatStoppunktPlanlagt = DialogmotekandidatStoppunkt.stoppunktPlanlagtDato(tilfelleStart, tilfelleEnd)
-    return dodsdato == null && arbeidstakerAtTilfelleEnd && tilfelleEnd.isAfterOrEqual(dialogmotekandidatStoppunktPlanlagt)
+    fun toDialogmotekandidatStoppunktPlanlagt() =
+        DialogmotekandidatStoppunkt.planlagt(
+            arbeidstakerPersonIdent = personident,
+            tilfelleStart = tilfelleStart,
+            tilfelleEnd = tilfelleEnd,
+        )
 }
-
-fun Oppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt() =
-    DialogmotekandidatStoppunkt.planlagt(
-        arbeidstakerPersonIdent = this.personident,
-        tilfelleStart = this.tilfelleStart,
-        tilfelleEnd = this.tilfelleEnd,
-    )
 
 fun List<Oppfolgingstilfelle>.tilfelleForDate(date: LocalDate) =
     this.firstOrNull { it.tilfelleStart.isBeforeOrEqual(date) && it.tilfelleEnd.isAfterOrEqual(date) }

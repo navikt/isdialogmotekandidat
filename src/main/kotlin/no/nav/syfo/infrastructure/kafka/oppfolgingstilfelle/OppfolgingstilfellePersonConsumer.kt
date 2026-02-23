@@ -1,8 +1,6 @@
 package no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle
 
 import no.nav.syfo.domain.Oppfolgingstilfelle
-import no.nav.syfo.domain.isDialogmotekandidat
-import no.nav.syfo.domain.toDialogmotekandidatStoppunktPlanlagt
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatStoppunkt
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment

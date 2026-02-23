@@ -6,15 +6,10 @@ import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.domain.isDialogmotekandidat
-import no.nav.syfo.domain.toDialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.findOutdatedDialogmotekandidater
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidaterWithStoppunktTodayOrYesterday
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatEndringList
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatStoppunktList
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.updateDialogmotekandidatStoppunktStatus
 import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPerson
@@ -60,7 +55,7 @@ class DialogmotekandidatService(
         database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
 
     fun getOutdatedDialogmotekandidater(cutoff: LocalDateTime) =
-        database.findOutdatedDialogmotekandidater(cutoff).toDialogmotekandidatEndringList()
+        dialogmotekandidatRepository.findOutdatedDialogmotekandidater(cutoff)
 
     suspend fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
@@ -95,10 +90,11 @@ class DialogmotekandidatService(
             )
 
             if (status == DialogmotekandidatStoppunktStatus.KANDIDAT) {
-                val newDialogmotekandidatEndring = dialogmotekandidatStoppunkt.toDialogmotekandidatEndring()
+                val dialogmoteKandidat =
+                    DialogmotekandidatEndring.createKandidat(personident = dialogmotekandidatStoppunkt.personident)
                 createDialogmotekandidatEndring(
                     connection = connection,
-                    dialogmotekandidatEndring = newDialogmotekandidatEndring,
+                    dialogmotekandidatEndring = dialogmoteKandidat,
                     tilfelleStart = oppfolgingstilfelleOnStoppunktDate?.tilfelleStart,
                 )
                 COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING.increment()

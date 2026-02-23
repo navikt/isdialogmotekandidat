@@ -62,11 +62,8 @@ fun Route.registerDialogmotekandidatApi(
                 )
                 val unntak = dialogmotekandidatVurderingService.getUnntakList(personident = personident)
                 val ikkeAktuell = dialogmotekandidatVurderingService.getIkkeAktuellList(personident = personident)
-                val historikkDTOs = HistorikkDTO.createHistorikkDTOs(
-                    dialogmotekandidatEndringer = dialogmotekandidatEndringer,
-                    unntak = unntak,
-                    ikkeAktuell = ikkeAktuell,
-                )
+                val historikkDTOs =
+                    HistorikkDTO.fromDialogmotekandidatEndringer(dialogmotekandidatEndringer = dialogmotekandidatEndringer + unntak + ikkeAktuell)
                 call.respond(historikkDTOs)
             }
         }
