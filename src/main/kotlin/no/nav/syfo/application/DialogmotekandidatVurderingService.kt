@@ -1,14 +1,12 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.api.exception.ConflictException
-import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.isLatestIkkeKandidat
 import no.nav.syfo.domain.latest
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
-import no.nav.syfo.infrastructure.database.toAvventList
 import java.sql.Connection
 
 class DialogmotekandidatVurderingService(
@@ -81,7 +79,7 @@ class DialogmotekandidatVurderingService(
         dialogmotekandidatVurderingRepository.getUnntakList(personident = personident)
 
     suspend fun createAvvent(
-        avvent: Avvent,
+        avvent: DialogmotekandidatEndring.Avvent,
     ) {
         val isPersonIkkeKandidat =
             dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = avvent.personident)
@@ -96,22 +94,20 @@ class DialogmotekandidatVurderingService(
         }
     }
 
-    suspend fun getAvvent(personident: Personident): List<Avvent> {
+    suspend fun getAvvent(personident: Personident): List<DialogmotekandidatEndring.Avvent> {
         val latestKandidatEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
 
         val latestAvvent = dialogmotekandidatVurderingRepository.getAvventList(personident = personident)
-            .toAvventList()
             .maxByOrNull { it.createdAt }
+        val isActiveAvvent = latestAvvent != null &&
+            latestKandidatEndring?.kandidat == true &&
+            latestAvvent.createdAt.isAfter(latestKandidatEndring.createdAt) &&
+            !latestAvvent.isLukket
 
-        return if (
-            latestAvvent != null &&
-            latestKandidatEndring?.isAvventValidForDialogmotekandidatEndring(latestAvvent) == true
-        ) {
-            listOf(latestAvvent)
-        } else emptyList()
+        return if (isActiveAvvent) listOf(latestAvvent) else emptyList()
     }
 
-    suspend fun lukkAvvent(connection: Connection, avvent: Avvent) {
+    suspend fun lukkAvvent(connection: Connection, avvent: DialogmotekandidatEndring.Avvent) {
         dialogmotekandidatVurderingRepository.lukkAvvent(
             connection = connection,
             avvent = avvent,

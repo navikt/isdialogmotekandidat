@@ -1,6 +1,5 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.Dialogmotekandidat
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
@@ -138,14 +137,14 @@ class DialogmotekandidatService(
         return dialogmotekandidatRepository.getDialogmotekandidatEndring(uuid = uuid)?.toDialogmotekandidatEndring()
     }
 
-    suspend fun getAvventForPersons(personidenter: List<Personident>): Map<Personident, Avvent> {
+    fun getAvventForPersons(personidenter: List<Personident>): Map<Personident, DialogmotekandidatEndring.Avvent> {
         val avventForPersons = dialogmotekandidatRepository.getAvventForPersons(personidenter = personidenter)
         return avventForPersons
             .groupBy { it.personident }
             .mapValues { it.value.maxBy { avvent -> avvent.createdAt } }
     }
 
-    suspend fun getDialogmotekandidater(personidenter: List<Personident>): Map<Personident, Pair<DialogmotekandidatEndring, Avvent?>> {
+    fun getDialogmotekandidater(personidenter: List<Personident>): Map<Personident, DialogmotekandidatEndring> {
         val latestDialogmotekandidatEndringerForPersons =
             dialogmotekandidatRepository.getDialogmotekandidatEndringForPersons(personidenter = personidenter)
                 .groupBy { endring -> endring.personident }
@@ -157,12 +156,12 @@ class DialogmotekandidatService(
             val dialogmotekandidatEndring = entry.value
             val avvent = aktiveKandidaterAvventList[personident]
             val isAvventValidForLatestKandidat =
-                avvent != null && dialogmotekandidatEndring.isAvventValidForDialogmotekandidatEndring(avvent)
+                avvent != null &&
+                    dialogmotekandidatEndring.kandidat &&
+                    avvent.createdAt.isAfter(dialogmotekandidatEndring.createdAt) &&
+                    !avvent.isLukket
 
-            personident to Pair(
-                first = dialogmotekandidatEndring,
-                second = if (isAvventValidForLatestKandidat) avvent else null,
-            )
+            personident to if (isAvventValidForLatestKandidat) avvent else dialogmotekandidatEndring
         }
     }
 

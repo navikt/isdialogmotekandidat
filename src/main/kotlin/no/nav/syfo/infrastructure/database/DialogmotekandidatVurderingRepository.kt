@@ -1,7 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.application.IDialogmotekandidatVurderingRepository
-import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import java.sql.Connection
@@ -53,7 +52,7 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
-    override suspend fun createAvvent(connection: Connection, avvent: Avvent) {
+    override suspend fun createAvvent(connection: Connection, avvent: DialogmotekandidatEndring.Avvent) {
         val idList = connection.prepareStatement(QUERY_CREATE_AVVENT).use {
             it.setString(1, avvent.uuid.toString())
             it.setObject(2, avvent.createdAt)
@@ -70,7 +69,7 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
-    override suspend fun lukkAvvent(connection: Connection, avvent: Avvent) {
+    override suspend fun lukkAvvent(connection: Connection, avvent: DialogmotekandidatEndring.Avvent) {
         val updated = connection.prepareStatement(QUERY_LUKK_AVVENT).use {
             it.setString(1, avvent.uuid.toString())
             it.executeUpdate()
@@ -89,13 +88,13 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
             }
         }.toUnntakList()
 
-    override suspend fun getAvventList(personident: Personident): List<PAvvent> =
+    override suspend fun getAvventList(personident: Personident): List<DialogmotekandidatEndring.Avvent> =
         database.connection.use { connection ->
             connection.prepareStatement(QUERY_GET_AVVENT_FOR_PERSON).use {
                 it.setString(1, personident.value)
                 it.executeQuery().toList { toPAvventList() }
             }
-        }
+        }.toAvventList()
 
     private fun ResultSet.toPIkkeAktuell() =
         PIkkeAktuell(
