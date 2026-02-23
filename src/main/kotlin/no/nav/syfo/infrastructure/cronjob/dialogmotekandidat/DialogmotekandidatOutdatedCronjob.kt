@@ -17,7 +17,6 @@ class DialogmotekandidatOutdatedCronjob(
     override val intervalDelayMinutes: Long = 30 // set to 24 hours after initial clean up
 
     override suspend fun run() {
-        log.info("DialogmotekandidatOutdatedCronjob started with cutoff of $outdatedDialogmotekandidatCutoffMonths months")
         runJob()
     }
 
@@ -27,6 +26,8 @@ class DialogmotekandidatOutdatedCronjob(
         val cutoff = LocalDate.now()
             .minusMonths(outdatedDialogmotekandidatCutoffMonths.toLong())
             .atStartOfDay()
+
+        log.info("DialogmotekandidatOutdatedCronjob started with cutoff $outdatedDialogmotekandidatCutoffMonths months, $cutoff")
 
         val outdatedDialogmotekandidater = dialogmotekandidatService.getOutdatedDialogmotekandidater(cutoff)
         val withGivenUuids = uuids.mapNotNull { dialogmotekandidatService.getDialogmotekandidatEndring(it) }
