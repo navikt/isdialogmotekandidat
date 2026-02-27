@@ -5,12 +5,14 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.api.CreateAvventDTO
-import no.nav.syfo.api.toAvvent
 import no.nav.syfo.api.toAvventDTOList
 import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.util.*
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.getNAVIdent
+import no.nav.syfo.util.personIdentHeader
+import no.nav.syfo.util.validateVeilederAccess
 
 const val avventApiBasePath = "/api/internad/v1/avvent"
 const val avventApiPersonidentPath = "/personident"
@@ -28,12 +30,8 @@ fun Route.registerAvventApi(
                 personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val avvent = createAvventDTO.toAvvent(
-                    createdByIdent = call.getNAVIdent()
-                )
-                dialogmotekandidatVurderingService.createAvvent(
-                    avvent = avvent,
-                )
+                val avvent = createAvventDTO.toAvvent(createdByIdent = call.getNAVIdent())
+                dialogmotekandidatVurderingService.createAvvent(avvent = avvent)
 
                 call.respond(HttpStatusCode.Created)
             }

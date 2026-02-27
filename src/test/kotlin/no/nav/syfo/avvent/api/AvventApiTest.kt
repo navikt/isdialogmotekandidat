@@ -133,7 +133,7 @@ class AvventApiTest {
             generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = firstKandidatEndring)
 
-        val oldAvvent = no.nav.syfo.domain.Avvent(
+        val oldAvvent = DialogmotekandidatEndring.avvent(
             frist = LocalDate.now().plusDays(7),
             createdBy = UserConstants.VEILEDER_IDENT,
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -153,7 +153,7 @@ class AvventApiTest {
             generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = secondKandidatEndring)
 
-        val newAvvent = no.nav.syfo.domain.Avvent(
+        val newAvvent = DialogmotekandidatEndring.avvent(
             frist = LocalDate.now().plusDays(14),
             createdBy = UserConstants.VEILEDER_IDENT,
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -182,7 +182,7 @@ class AvventApiTest {
         val kandidatEndring = generateDialogmotekandidatEndringStoppunkt(personIdentNumber = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(dialogmotekandidatEndring = kandidatEndring)
 
-        val avvent = no.nav.syfo.domain.Avvent(
+        val avvent = DialogmotekandidatEndring.avvent(
             frist = LocalDate.now().plusDays(14),
             createdBy = UserConstants.VEILEDER_IDENT,
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,

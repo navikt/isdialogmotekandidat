@@ -1,6 +1,5 @@
 package no.nav.syfo.infrastructure.database.dialogmotekandidat
 
-import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
@@ -49,7 +48,7 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
             }
         }
 
-    fun getAvventForPersons(personidenter: List<Personident>): List<Avvent> =
+    fun getAvventForPersons(personidenter: List<Personident>): List<DialogmotekandidatEndring.Avvent> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_AVVENT_FOR_PERSONS).use {
                 it.setString(1, personidenter.joinToString(transform = { personident -> personident.value }, separator = ","))
