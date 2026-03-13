@@ -27,6 +27,7 @@ import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumer
 import no.nav.syfo.infrastructure.kafka.identhendelse.launchKafkaTaskIdenthendelse
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.OppfolgingstilfellePersonConsumer
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.launchKafkaTaskOppfolgingstilfellePerson
+import no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -81,6 +82,10 @@ fun main() {
             databaseModule(
                 databaseEnvironment = environment.database,
             )
+            val behandlendeEnhetClient = BehandlendeEnhetClient(
+                azureAdClient = azureAdClient,
+                clientEnvironment = environment.clients.behandlendeEnhet,
+            )
             val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
                 azureAdClient = azureAdClient,
                 clientEnvironment = environment.clients.oppfolgingstilfelle,
@@ -91,6 +96,7 @@ fun main() {
             val dialogmotekandidatRepository = DialogmotekandidatRepository(applicationDatabase)
             dialogmotekandidatService = DialogmotekandidatService(
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
+                behandlendeEnhetClient = behandlendeEnhetClient,
                 dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
                 database = applicationDatabase,
                 dialogmotekandidatRepository = dialogmotekandidatRepository,

@@ -31,7 +31,7 @@ class DialogmotekandidatOutdatedCronjob(
         log.info("DialogmotekandidatOutdatedCronjob started with cutoff $outdatedDialogmotekandidatCutoffMonths months, $cutoff")
 
         val outdatedDialogmotekandidater = dialogmotekandidatService.getOutdatedDialogmotekandidater(cutoff)
-        val navUtlandOutdatedDialogmotekandidater  = runBlocking {
+        val navUtlandOutdatedDialogmotekandidater = runBlocking {
             dialogmotekandidatService.getNavUtlandOutdatedDialogmotekandidater()
         }
         val withGivenUuids = uuids.mapNotNull { dialogmotekandidatService.getDialogmotekandidatEndring(it) }

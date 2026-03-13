@@ -52,6 +52,7 @@ class AvventApiTest {
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository,
         oppfolgingstilfelleService = mockk(relaxed = true),
+        behandlendeEnhetClient = mockk(relaxed = true),
     )
 
     private fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
