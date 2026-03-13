@@ -67,6 +67,13 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
             }
         }.toDialogmotekandidatEndringList()
 
+    fun findPotentialNavUtlandOutdatedDialogmotekandidater(): List<DialogmotekandidatEndring> =
+        database.connection.use { connection ->
+            connection.prepareStatement(FIND_NAV_UTLAND_OUTDATED_DIALOGMOTEKANDIDATER_QUERY).use {
+                it.executeQuery().toList { toPDialogmotekandidatEndringList() }
+            }
+        }.toDialogmotekandidatEndringList()
+
     private fun LocalDateTime.toInstantOslo(): Instant =
         toInstant(ZoneId.of("Europe/Oslo").rules.getOffset(this))
 
@@ -116,6 +123,13 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
                 where d.created_at = (select max(d2.created_at) from dialogmotekandidat_endring d2 where d2.personident = d.personident)
                 and d.created_at < ? and d.kandidat 
                 LIMIT 200;
+            """
+
+        private const val FIND_NAV_UTLAND_OUTDATED_DIALOGMOTEKANDIDATER_QUERY =
+            """
+                select * from dialogmotekandidat_endring d
+                where d.created_at = (select max(d2.created_at) from dialogmotekandidat_endring d2 where d2.personident = d.personident)
+                and d.created_at < '2025-11-01' and d.kandidat;
             """
     }
 }

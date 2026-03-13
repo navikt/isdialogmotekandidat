@@ -50,6 +50,7 @@ spec:
       rules:
         - application: isoppfolgingstilfelle
         - application: istilgangskontroll
+        - application: syfobehandlendeenhet
   gcp:
     sqlInstances:
       - type: POSTGRES_17
@@ -85,6 +86,10 @@ spec:
       value: "prod-gcp.teamsykefravr.isoppfolgingstilfelle"
     - name: ISOPPFOLGINGSTILFELLE_URL
       value: "http://isoppfolgingstilfelle"
+    - name: SYFOBEHANDLENDEENHET_CLIENT_ID
+      value: "prod-gcp.teamsykefravr.syfobehandlendeenhet"
+    - name: SYFOBEHANDLENDEENHET_URL
+      value: "http://syfobehandlendeenhet"
     - name: PDL_CLIENT_ID
       value: "prod-fss.pdl.pdl-api"
     - name: PDL_URL
