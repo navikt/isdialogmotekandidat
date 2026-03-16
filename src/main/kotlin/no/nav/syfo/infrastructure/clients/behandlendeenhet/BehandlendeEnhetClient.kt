@@ -39,10 +39,10 @@ class BehandlendeEnhetClient(
                 header(NAV_PERSONIDENT_HEADER, personident.value)
                 accept(ContentType.Application.Json)
             }
-            if (response.status == HttpStatusCode.NoContent) {
-                null
-            } else {
+            if (response.status == HttpStatusCode.OK) {
                 response.body<BehandlendeEnhetResponseDTO>()
+            } else {
+                null
             }
         } catch (e: Exception) {
             log.error(
