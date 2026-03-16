@@ -1,4 +1,4 @@
-package no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet
+package no.nav.syfo.infrastructure.clients.behandlendeenhet
 
 import java.io.Serializable
 import java.time.LocalDateTime

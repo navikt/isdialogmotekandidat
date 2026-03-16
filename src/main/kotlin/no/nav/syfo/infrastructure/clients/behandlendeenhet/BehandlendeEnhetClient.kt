@@ -1,4 +1,4 @@
-package no.nav.syfo.kartleggingssporsmal.infrastructure.clients.behandlendeenhet
+package no.nav.syfo.infrastructure.clients.behandlendeenhet
 
 import io.ktor.client.*
 import io.ktor.client.call.*
