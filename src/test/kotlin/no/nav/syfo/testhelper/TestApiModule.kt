@@ -1,6 +1,7 @@
 package no.nav.syfo.testhelper
 
 import io.ktor.server.application.*
+import io.mockk.mockk
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
@@ -32,6 +33,7 @@ fun Application.testApiModule(
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         database = externalMockEnvironment.database,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
+        behandlendeEnhetClient = mockk(relaxed = true),
     )
     val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
         database = externalMockEnvironment.database,

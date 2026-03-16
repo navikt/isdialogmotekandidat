@@ -42,6 +42,10 @@ fun testEnvironment() = Environment(
             baseUrl = "oppfolgingstilfelleUrl",
             clientId = "dev-gcp.teamsykefravr.isoppfolgingstilfelle",
         ),
+        behandlendeEnhet = ClientEnvironment(
+            baseUrl = "syfobehandlendeenhetUrl",
+            clientId = "dev-gcp.teamsykefravr.syfobehandlendeenhet",
+        ),
         pdl = ClientEnvironment(
             baseUrl = "pdlUrl",
             clientId = "pdlClientId",

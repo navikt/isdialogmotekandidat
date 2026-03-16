@@ -58,6 +58,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         dialogmotekandidatEndringProducer = endringProducer,
         database = database,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
+        behandlendeEnhetClient = mockk(relaxed = true),
     )
     private val cronjob =
         DialogmotekandidatStoppunktCronjob(dialogmotekandidatService, externalMockEnvironment.environment.stoppunktCronjobDelay)

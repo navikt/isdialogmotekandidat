@@ -37,6 +37,10 @@ data class Environment(
         aivenRegistryPassword = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
     ),
     val clients: ClientsEnvironment = ClientsEnvironment(
+        behandlendeEnhet = ClientEnvironment(
+            baseUrl = getEnvVar("SYFOBEHANDLENDEENHET_URL"),
+            clientId = getEnvVar("SYFOBEHANDLENDEENHET_CLIENT_ID"),
+        ),
         istilgangskontroll = ClientEnvironment(
             baseUrl = getEnvVar("ISTILGANGSKONTROLL_URL"),
             clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID"),
