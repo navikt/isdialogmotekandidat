@@ -31,15 +31,12 @@ class DialogmotekandidatOutdatedCronjob(
         log.info("DialogmotekandidatOutdatedCronjob started with cutoff $outdatedDialogmotekandidatCutoffMonths months, $cutoff")
 
         val outdatedDialogmotekandidater = dialogmotekandidatService.getOutdatedDialogmotekandidater(cutoff)
-        val navUtlandOutdatedDialogmotekandidater = runBlocking {
-            dialogmotekandidatService.getNavUtlandOutdatedDialogmotekandidater()
-        }
         val withGivenUuids = uuids.mapNotNull { dialogmotekandidatService.getDialogmotekandidatEndring(it) }
             .filterNot { endring ->
                 dialogmotekandidatService.getDialogmotekandidatEndringer(endring.personident)
                     .any { it.createdAt > endring.createdAt && !it.kandidat }
             }
-        val dialogmotekandidaterToBeRemoved = outdatedDialogmotekandidater + navUtlandOutdatedDialogmotekandidater + withGivenUuids
+        val dialogmotekandidaterToBeRemoved = outdatedDialogmotekandidater + withGivenUuids
 
         dialogmotekandidaterToBeRemoved.forEach {
             try {

@@ -60,15 +60,6 @@ class DialogmotekandidatService(
     fun getOutdatedDialogmotekandidater(cutoff: LocalDateTime) =
         dialogmotekandidatRepository.findOutdatedDialogmotekandidater(cutoff)
 
-    suspend fun getNavUtlandOutdatedDialogmotekandidater() =
-        dialogmotekandidatRepository.findPotentialNavUtlandOutdatedDialogmotekandidater().filter { kandidatEndring ->
-            val behandlendeEnhetResponseDTO = behandlendeEnhetClient.getEnhet(kandidatEndring.personident)
-            behandlendeEnhetResponseDTO?.oppfolgingsenhetDTO?.enhet?.enhetId == NAV_UTLAND_ENHETID || (
-                behandlendeEnhetResponseDTO?.oppfolgingsenhetDTO == null &&
-                    behandlendeEnhetResponseDTO?.geografiskEnhet?.enhetId == NAV_UTLAND_ENHETID
-                )
-        }
-
     suspend fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
     ) {
