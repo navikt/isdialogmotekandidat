@@ -22,11 +22,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-private const val NAV_UTLAND_ENHETID = "0393"
-
 class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
-    private val behandlendeEnhetClient: IBehandlendeEnhetClient,
     private val dialogmotekandidatEndringProducer: DialogmotekandidatEndringProducer,
     private val database: DatabaseInterface,
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
@@ -59,15 +56,6 @@ class DialogmotekandidatService(
 
     fun getOutdatedDialogmotekandidater(cutoff: LocalDateTime) =
         dialogmotekandidatRepository.findOutdatedDialogmotekandidater(cutoff)
-
-    suspend fun getNavUtlandOutdatedDialogmotekandidater() =
-        dialogmotekandidatRepository.findPotentialNavUtlandOutdatedDialogmotekandidater().filter { kandidatEndring ->
-            val behandlendeEnhetResponseDTO = behandlendeEnhetClient.getEnhet(kandidatEndring.personident)
-            behandlendeEnhetResponseDTO?.oppfolgingsenhetDTO?.enhet?.enhetId == NAV_UTLAND_ENHETID || (
-                behandlendeEnhetResponseDTO?.oppfolgingsenhetDTO == null &&
-                    behandlendeEnhetResponseDTO?.geografiskEnhet?.enhetId == NAV_UTLAND_ENHETID
-                )
-        }
 
     suspend fun updateDialogmotekandidatStoppunktStatus(
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
