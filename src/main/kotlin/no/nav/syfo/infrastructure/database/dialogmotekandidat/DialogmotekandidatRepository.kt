@@ -129,7 +129,7 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
             """
                 select * from dialogmotekandidat_endring d
                 where d.created_at = (select max(d2.created_at) from dialogmotekandidat_endring d2 where d2.personident = d.personident)
-                and d.created_at < '2025-09-01' and d.kandidat;
+                and d.created_at < '2025-11-01' and d.kandidat;
             """
     }
 }
