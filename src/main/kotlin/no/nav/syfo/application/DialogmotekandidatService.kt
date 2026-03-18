@@ -22,11 +22,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-private const val NAV_UTLAND_ENHETID = "0393"
-
 class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
-    private val behandlendeEnhetClient: IBehandlendeEnhetClient,
     private val dialogmotekandidatEndringProducer: DialogmotekandidatEndringProducer,
     private val database: DatabaseInterface,
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,

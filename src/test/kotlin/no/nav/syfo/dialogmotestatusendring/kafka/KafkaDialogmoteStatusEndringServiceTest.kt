@@ -52,7 +52,6 @@ class KafkaDialogmoteStatusEndringServiceTest {
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         database = database,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
-        behandlendeEnhetClient = mockk(relaxed = true),
     )
     private val dialogmotekandidatVurderingService =
         DialogmotekandidatVurderingService(
