@@ -1,6 +1,5 @@
 package no.nav.syfo.infrastructure.cronjob.dialogmotekandidat
 
-import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.infrastructure.cronjob.Cronjob
 import no.nav.syfo.infrastructure.cronjob.CronjobResult
