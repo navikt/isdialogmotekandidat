@@ -1,6 +1,6 @@
 package no.nav.syfo.api
 
-import no.nav.syfo.domain.Avvent
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -13,13 +13,14 @@ data class AvventDTO(
     val beskrivelse: String,
 )
 
-fun List<Avvent>.toAvventDTOList() = this.map { avvent ->
-    AvventDTO(
-        uuid = avvent.uuid.toString(),
-        createdAt = avvent.createdAt.toLocalDateTime(),
-        frist = avvent.frist,
-        createdBy = avvent.createdBy,
-        personident = avvent.personident.value,
-        beskrivelse = avvent.beskrivelse,
-    )
-}
+fun List<DialogmotekandidatEndring.Avvent>.toAvventDTOList() =
+    this.map { avvent ->
+        AvventDTO(
+            uuid = avvent.uuid.toString(),
+            createdAt = avvent.createdAt.toLocalDateTime(),
+            frist = avvent.frist,
+            createdBy = avvent.createdBy,
+            personident = avvent.personident.value,
+            beskrivelse = avvent.beskrivelse,
+        )
+    }
