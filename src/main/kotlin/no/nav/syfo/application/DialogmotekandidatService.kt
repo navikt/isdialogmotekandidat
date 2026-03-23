@@ -7,7 +7,6 @@ import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidaterWithStoppunktTodayOrYesterday
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatStoppunktList
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.updateDialogmotekandidatStoppunktStatus
@@ -108,7 +107,8 @@ class DialogmotekandidatService(
 
     fun createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
         database.connection.use { connection ->
-            connection.createDialogmotekandidatEndring(
+            dialogmotekandidatRepository.createDialogmotekandidatEndring(
+                connection = connection,
                 dialogmotekandidatEndring = dialogmotekandidatEndring
             )
             connection.commit()
@@ -124,7 +124,8 @@ class DialogmotekandidatService(
         dialogmotekandidatEndring: DialogmotekandidatEndring,
         tilfelleStart: LocalDate?,
     ) {
-        connection.createDialogmotekandidatEndring(
+        dialogmotekandidatRepository.createDialogmotekandidatEndring(
+            connection = connection,
             dialogmotekandidatEndring = dialogmotekandidatEndring
         )
         dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(

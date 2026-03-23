@@ -17,7 +17,6 @@ import no.nav.syfo.api.toIkkeAktuell
 import no.nav.syfo.api.toUnntak
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.ikkeaktuell.api.generateNewIkkeAktuellDTO
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
@@ -39,6 +38,7 @@ class DialogmotekandidatHistorikkApiTest {
     private val historikkUrl = "$kandidatApiBasePath/$kandidatApiHistorikkPath"
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
+    private val dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository
     private val vurderingRepository = externalMockEnvironment.dialogmotekandidatVurderingRepository
 
     private fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
@@ -72,8 +72,9 @@ class DialogmotekandidatHistorikkApiTest {
         val unntak = generateNewUnntakDTO(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toUnntak(UserConstants.VEILEDER_IDENT)
         runBlocking {
             database.connection.use {
-                it.createDialogmotekandidatEndring(
-                    DialogmotekandidatEndring.Endring(
+                dialogmotekandidatRepository.createDialogmotekandidatEndring(
+                    connection = it,
+                    dialogmotekandidatEndring = DialogmotekandidatEndring.Endring(
                         uuid = unntak.uuid,
                         createdAt = unntak.createdAt,
                         personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
@@ -92,8 +93,9 @@ class DialogmotekandidatHistorikkApiTest {
         val ikkeAktuell =
             generateNewIkkeAktuellDTO(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toIkkeAktuell(UserConstants.VEILEDER_IDENT)
         database.connection.use {
-            it.createDialogmotekandidatEndring(
-                DialogmotekandidatEndring.Endring(
+            dialogmotekandidatRepository.createDialogmotekandidatEndring(
+                connection = it,
+                dialogmotekandidatEndring = DialogmotekandidatEndring.Endring(
                     uuid = ikkeAktuell.uuid,
                     createdAt = ikkeAktuell.createdAt,
                     personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,

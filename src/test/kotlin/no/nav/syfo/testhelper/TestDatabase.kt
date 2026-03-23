@@ -3,7 +3,7 @@ package no.nav.syfo.testhelper
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 
@@ -56,8 +56,9 @@ fun DatabaseInterface.dropData() {
 }
 
 fun DatabaseInterface.createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
+    val repository = DialogmotekandidatRepository(this)
     this.connection.use { connection ->
-        connection.createDialogmotekandidatEndring(dialogmotekandidatEndring)
+        repository.createDialogmotekandidatEndring(connection, dialogmotekandidatEndring)
         connection.commit()
     }
 }

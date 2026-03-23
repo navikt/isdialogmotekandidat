@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.database.dialogmotekandidat
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.NoElementInsertedException
 import no.nav.syfo.infrastructure.database.toAvventList
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.infrastructure.database.toPAvventList
@@ -58,6 +59,24 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
             }
         }
 
+    fun createDialogmotekandidatEndring(
+        connection: Connection,
+        dialogmotekandidatEndring: DialogmotekandidatEndring,
+    ) {
+        val idList = connection.prepareStatement(CREATE_DIALOGMOTEKANDIDAT_ENDRING_QUERY).use {
+            it.setString(1, dialogmotekandidatEndring.uuid.toString())
+            it.setObject(2, dialogmotekandidatEndring.createdAt)
+            it.setString(3, dialogmotekandidatEndring.personident.value)
+            it.setBoolean(4, dialogmotekandidatEndring.kandidat)
+            it.setString(5, dialogmotekandidatEndring.arsak.name)
+            it.executeQuery().toList { getInt("id") }
+        }
+
+        if (idList.size != 1) {
+            throw NoElementInsertedException("Creating DIALOGMOTEKANDIDAT_ENDRING failed, no rows affected.")
+        }
+    }
+
     fun findOutdatedDialogmotekandidater(cutoff: LocalDateTime): List<DialogmotekandidatEndring> =
         database.connection.use { connection ->
             connection.prepareStatement(FIND_OUTDATED_DIALOGMOTEKANDIDATER_QUERY).use {
@@ -80,6 +99,19 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
         )
 
     companion object {
+        private const val CREATE_DIALOGMOTEKANDIDAT_ENDRING_QUERY =
+            """
+            INSERT INTO DIALOGMOTEKANDIDAT_ENDRING (
+                id,
+                uuid,
+                created_at,
+                personident,
+                kandidat,
+                arsak
+            ) values (DEFAULT, ?, ?, ?, ?, ?)
+            RETURNING id
+            """
+
         private const val GET_DIALOGMOTEENDRING_QUERY =
             """
                 SELECT * 
