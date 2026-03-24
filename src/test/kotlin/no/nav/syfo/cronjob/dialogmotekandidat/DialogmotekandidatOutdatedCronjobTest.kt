@@ -39,6 +39,7 @@ class DialogmotekandidatOutdatedCronjobTest {
         database = database,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
+        dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
     )
     private val cronjob = DialogmotekandidatOutdatedCronjob(
         dialogmotekandidatService = dialogmotekandidatService,

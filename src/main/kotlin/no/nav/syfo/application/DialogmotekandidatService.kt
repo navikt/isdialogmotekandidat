@@ -6,10 +6,10 @@ import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatStoppunktList
-import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.util.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING
 import no.nav.syfo.util.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING
@@ -25,6 +25,7 @@ class DialogmotekandidatService(
     private val database: DatabaseInterface,
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
     private val dialogmotekandidatStoppunktRepository: DialogmotekandidatStoppunktRepository,
+    private val dialogmoteStatusRepository: DialogmoteStatusRepository,
 ) {
 
     suspend fun getKandidat(
@@ -68,7 +69,8 @@ class DialogmotekandidatService(
                 connection = connection
             )
 
-            val latestDialogmoteFerdigstilt = connection.getLatestDialogmoteFerdigstiltForPerson(
+            val latestDialogmoteFerdigstilt = dialogmoteStatusRepository.getLatestDialogmoteFerdigstiltForPerson(
+                connection = connection,
                 personident = dialogmotekandidatStoppunkt.personident
             )
             val status = if (

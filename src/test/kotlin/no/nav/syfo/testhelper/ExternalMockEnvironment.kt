@@ -6,6 +6,7 @@ import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
+import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.testhelper.mock.mockHttpClient
@@ -36,6 +37,7 @@ class ExternalMockEnvironment private constructor() {
 
     val dialogmotekandidatRepository = DialogmotekandidatRepository(database = database)
     val dialogmotekandidatStoppunktRepository = DialogmotekandidatStoppunktRepository(database = database)
+    val dialogmoteStatusRepository = DialogmoteStatusRepository(database = database)
     val dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database = database)
 
     companion object {
