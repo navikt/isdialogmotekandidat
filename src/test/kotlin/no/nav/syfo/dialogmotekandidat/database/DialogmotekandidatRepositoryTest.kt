@@ -1,7 +1,6 @@
 package no.nav.syfo.dialogmotekandidat.database
 
 import io.ktor.server.testing.*
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData
@@ -24,7 +23,7 @@ class DialogmotekandidatRepositoryTest {
     fun `Successfully gets a dialogmotekandidatendring`() = testApplication {
         val dialogmoteKandidatEndring = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.connection.use { connection ->
-            connection.createDialogmotekandidatEndring(dialogmotekandidatEndring = dialogmoteKandidatEndring)
+            repository.createDialogmotekandidatEndring(connection = connection, dialogmotekandidatEndring = dialogmoteKandidatEndring)
             connection.commit()
         }
         val inserted = repository.getDialogmotekandidatEndring(dialogmoteKandidatEndring.uuid)
