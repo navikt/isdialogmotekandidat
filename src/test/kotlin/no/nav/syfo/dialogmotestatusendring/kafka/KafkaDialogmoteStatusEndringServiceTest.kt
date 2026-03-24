@@ -51,6 +51,7 @@ class KafkaDialogmoteStatusEndringServiceTest {
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         database = database,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
+        dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
     )
     private val dialogmotekandidatVurderingService =
         DialogmotekandidatVurderingService(

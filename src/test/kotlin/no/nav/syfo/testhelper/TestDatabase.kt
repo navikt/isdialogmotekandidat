@@ -2,8 +2,12 @@ package no.nav.syfo.testhelper
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.domain.DialogmotekandidatStoppunkt
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.PDialogmotekandidatStoppunkt
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 
@@ -62,6 +66,17 @@ fun DatabaseInterface.createDialogmotekandidatEndring(dialogmotekandidatEndring:
         connection.commit()
     }
 }
+
+fun DatabaseInterface.createDialogmotekandidatStoppunkt(stoppunkt: DialogmotekandidatStoppunkt) {
+    val repository = DialogmotekandidatStoppunktRepository(this)
+    this.connection.use { connection ->
+        repository.createDialogmotekandidatStoppunkt(connection, stoppunkt)
+        connection.commit()
+    }
+}
+
+fun DatabaseInterface.getDialogmotekandidatStoppunktList(personident: Personident): List<PDialogmotekandidatStoppunkt> =
+    DialogmotekandidatStoppunktRepository(this).getDialogmotekandidatStoppunktList(personident)
 
 class TestDatabaseNotResponding : DatabaseInterface {
 

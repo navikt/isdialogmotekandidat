@@ -7,6 +7,7 @@ import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.Oppfolgingstilfell
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.testhelper.mock.mockHttpClient
 import java.nio.file.Paths
 
@@ -34,6 +35,7 @@ class ExternalMockEnvironment private constructor() {
     val oppfolgingstilfelleService = OppfolgingstilfelleService(oppfolgingstilfelleClient)
 
     val dialogmotekandidatRepository = DialogmotekandidatRepository(database = database)
+    val dialogmotekandidatStoppunktRepository = DialogmotekandidatStoppunktRepository(database = database)
     val dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database = database)
 
     companion object {

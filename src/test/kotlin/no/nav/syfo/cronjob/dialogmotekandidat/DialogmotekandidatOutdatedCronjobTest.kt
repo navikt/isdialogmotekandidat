@@ -38,8 +38,12 @@ class DialogmotekandidatOutdatedCronjobTest {
         dialogmotekandidatEndringProducer = endringProducer,
         database = database,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
+        dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
     )
-    private val cronjob = DialogmotekandidatOutdatedCronjob(cutoff, dialogmotekandidatService)
+    private val cronjob = DialogmotekandidatOutdatedCronjob(
+        dialogmotekandidatService = dialogmotekandidatService,
+        outdatedDialogmotekandidatCutoffMonths = cutoff,
+    )
 
     private fun getEndringer(p: Personident): List<DialogmotekandidatEndring> =
         dialogmotekandidatRepository.getDialogmotekandidatEndringer(p)

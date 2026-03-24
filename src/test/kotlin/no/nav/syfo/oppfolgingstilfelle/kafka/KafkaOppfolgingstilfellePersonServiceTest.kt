@@ -9,7 +9,6 @@ import no.nav.syfo.domain.DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatStoppunktList
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatStoppunktList
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfelle
 import no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle.KafkaOppfolgingstilfellePerson
@@ -20,6 +19,7 @@ import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_DOD
 import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.getDialogmotekandidatStoppunktList
 import no.nav.syfo.testhelper.generator.generateKafkaOppfolgingstilfellePerson
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -44,7 +44,10 @@ class KafkaOppfolgingstilfellePersonServiceTest {
     fun setup() {
         database.dropData()
         kafkaConsumer = mockk(relaxed = true)
-        service = OppfolgingstilfellePersonConsumer(database = database)
+        service = OppfolgingstilfellePersonConsumer(
+            database = database,
+            dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
+        )
         clearMocks(kafkaConsumer)
         every { kafkaConsumer.commitSync() } returns Unit
     }

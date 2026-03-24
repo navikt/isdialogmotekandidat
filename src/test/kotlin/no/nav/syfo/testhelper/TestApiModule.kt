@@ -10,6 +10,7 @@ import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.Oppfolgingstilfell
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 
 fun Application.testApiModule(
@@ -27,11 +28,13 @@ fun Application.testApiModule(
     )
     val oppfolgingstilfelleService = OppfolgingstilfelleService(oppfolgingstilfelleClient = oppfolgingstilfelleClient)
     val dialogmotekandidatRepository = DialogmotekandidatRepository(externalMockEnvironment.database)
+    val dialogmotekandidatStoppunktRepository = DialogmotekandidatStoppunktRepository(externalMockEnvironment.database)
     val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         database = externalMockEnvironment.database,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
+        dialogmotekandidatStoppunktRepository = dialogmotekandidatStoppunktRepository,
     )
     val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
         database = externalMockEnvironment.database,

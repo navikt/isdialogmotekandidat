@@ -7,9 +7,8 @@ import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidaterWithStoppunktTodayOrYesterday
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.toDialogmotekandidatStoppunktList
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.updateDialogmotekandidatStoppunktStatus
 import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.util.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING
@@ -25,6 +24,7 @@ class DialogmotekandidatService(
     private val dialogmotekandidatEndringProducer: DialogmotekandidatEndringProducer,
     private val database: DatabaseInterface,
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
+    private val dialogmotekandidatStoppunktRepository: DialogmotekandidatStoppunktRepository,
 ) {
 
     suspend fun getKandidat(
@@ -50,7 +50,7 @@ class DialogmotekandidatService(
     ) = dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = personident)
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
-        database.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
+        dialogmotekandidatStoppunktRepository.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
 
     fun getOutdatedDialogmotekandidater(cutoff: LocalDateTime) =
         dialogmotekandidatRepository.findOutdatedDialogmotekandidater(cutoff)
@@ -82,7 +82,8 @@ class DialogmotekandidatService(
             else
                 DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
 
-            connection.updateDialogmotekandidatStoppunktStatus(
+            dialogmotekandidatStoppunktRepository.updateDialogmotekandidatStoppunktStatus(
+                connection = connection,
                 uuid = dialogmotekandidatStoppunkt.uuid,
                 status = status,
             )

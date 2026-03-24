@@ -20,6 +20,7 @@ import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotestatusendring.DialogmoteStatusEndringConsumer
 import no.nav.syfo.infrastructure.kafka.dialogmotestatusendring.launchKafkaTaskDialogmoteStatusEndring
@@ -89,11 +90,13 @@ fun main() {
                 oppfolgingstilfelleClient = oppfolgingstilfelleClient,
             )
             val dialogmotekandidatRepository = DialogmotekandidatRepository(applicationDatabase)
+            val dialogmotekandidatStoppunktRepository = DialogmotekandidatStoppunktRepository(applicationDatabase)
             dialogmotekandidatService = DialogmotekandidatService(
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
                 database = applicationDatabase,
                 dialogmotekandidatRepository = dialogmotekandidatRepository,
+                dialogmotekandidatStoppunktRepository = dialogmotekandidatStoppunktRepository,
             )
             dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
                 database = applicationDatabase,
@@ -117,6 +120,7 @@ fun main() {
 
                 val oppfolgingstilfellePersonConsumer = OppfolgingstilfellePersonConsumer(
                     database = applicationDatabase,
+                    dialogmotekandidatStoppunktRepository = dialogmotekandidatStoppunktRepository,
                 )
                 val dialogmoteStatusEndringConsumer = DialogmoteStatusEndringConsumer(
                     database = applicationDatabase,

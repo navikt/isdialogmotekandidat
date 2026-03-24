@@ -9,11 +9,11 @@ import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.createDialogmoteStatus
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatStoppunkt
 import no.nav.syfo.infrastructure.database.getIdentCount
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
+import no.nav.syfo.testhelper.createDialogmotekandidatStoppunkt
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatStoppunktPlanlagt
@@ -44,7 +44,7 @@ class IdenthendelseServiceTest {
     private fun populateDatabase(oldIdent: Personident, database: DatabaseInterface, updateInAllTables: Boolean = true) {
         val stoppunkt = generateDialogmotekandidatStoppunktPlanlagt(oldIdent, LocalDate.now())
         val endring = generateDialogmotekandidatEndringStoppunkt(oldIdent)
-        database.connection.use { it.createDialogmotekandidatStoppunkt(true, stoppunkt) }
+        database.createDialogmotekandidatStoppunkt(stoppunkt)
         database.createDialogmotekandidatEndring(endring)
         if (updateInAllTables) {
             val unntak = generateNewUnntakDTO(oldIdent).toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
