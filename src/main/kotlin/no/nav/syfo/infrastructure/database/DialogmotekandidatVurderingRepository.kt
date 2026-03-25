@@ -51,20 +51,23 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
-    override fun createAvvent(transaction: ITransaction, avvent: DialogmotekandidatEndring.Avvent) {
-        val idList = transaction.connection.prepareStatement(QUERY_CREATE_AVVENT).use {
-            it.setString(1, avvent.uuid.toString())
-            it.setObject(2, avvent.createdAt)
-            it.setDate(3, Date.valueOf(avvent.frist))
-            it.setString(4, avvent.createdBy)
-            it.setString(5, avvent.personident.value)
-            it.setString(6, avvent.beskrivelse)
-            it.setBoolean(7, avvent.isLukket)
-            it.executeQuery().toList { getInt("id") }
-        }
+    override fun createAvvent(avvent: DialogmotekandidatEndring.Avvent) {
+        database.connection.use { connection ->
+            val idList = connection.prepareStatement(QUERY_CREATE_AVVENT).use {
+                it.setString(1, avvent.uuid.toString())
+                it.setObject(2, avvent.createdAt)
+                it.setDate(3, Date.valueOf(avvent.frist))
+                it.setString(4, avvent.createdBy)
+                it.setString(5, avvent.personident.value)
+                it.setString(6, avvent.beskrivelse)
+                it.setBoolean(7, avvent.isLukket)
+                it.executeQuery().toList { getInt("id") }
+            }
 
-        if (idList.size != 1) {
-            throw NoElementInsertedException("Creating AVVENT failed, no rows affected.")
+            if (idList.size != 1) {
+                throw NoElementInsertedException("Creating AVVENT failed, no rows affected.")
+            }
+            connection.commit()
         }
     }
 

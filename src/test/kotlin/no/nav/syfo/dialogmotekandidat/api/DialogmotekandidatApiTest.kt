@@ -14,7 +14,6 @@ import no.nav.syfo.api.endpoints.kandidatApiBasePath
 import no.nav.syfo.api.endpoints.kandidatApiPersonidentPath
 import no.nav.syfo.domain.Dialogmotekandidat
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -263,17 +262,8 @@ class DialogmotekandidatApiTest {
                 beskrivelse = "Beskrivelse av avvent 2",
             )
 
-            database.connection.use { connection ->
-                dialogmotekandidatVurderingRepository.createAvvent(
-                    transaction = DatabaseTransaction(connection),
-                    avvent = avvent1,
-                )
-                dialogmotekandidatVurderingRepository.createAvvent(
-                    transaction = DatabaseTransaction(connection),
-                    avvent = avvent2,
-                )
-                connection.commit()
-            }
+            dialogmotekandidatVurderingRepository.createAvvent(avvent1)
+            dialogmotekandidatVurderingRepository.createAvvent(avvent2)
 
             val requestDTO = GetDialogmotekandidaterRequestDTO(
                 personidenter = listOf(
@@ -319,17 +309,8 @@ class DialogmotekandidatApiTest {
                 createdAt = OffsetDateTime.now().minusDays(10),
             )
 
-            database.connection.use { connection ->
-                dialogmotekandidatVurderingRepository.createAvvent(
-                    transaction = DatabaseTransaction(connection),
-                    avvent = avvent,
-                )
-                dialogmotekandidatVurderingRepository.createAvvent(
-                    transaction = DatabaseTransaction(connection),
-                    avvent = oldAvvent,
-                )
-                connection.commit()
-            }
+            dialogmotekandidatVurderingRepository.createAvvent(avvent)
+            dialogmotekandidatVurderingRepository.createAvvent(oldAvvent)
 
             val requestDTO = GetDialogmotekandidaterRequestDTO(personidenter = listOf(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
 
@@ -365,13 +346,7 @@ class DialogmotekandidatApiTest {
                 isLukket = true,
             )
 
-            database.connection.use { connection ->
-                dialogmotekandidatVurderingRepository.createAvvent(
-                    transaction = DatabaseTransaction(connection),
-                    avvent = avvent,
-                )
-                connection.commit()
-            }
+            dialogmotekandidatVurderingRepository.createAvvent(avvent)
 
             val requestDTO = GetDialogmotekandidaterRequestDTO(personidenter = listOf(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
 

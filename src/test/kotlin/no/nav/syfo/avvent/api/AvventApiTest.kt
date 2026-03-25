@@ -17,7 +17,6 @@ import no.nav.syfo.api.endpoints.avventApiBasePath
 import no.nav.syfo.api.endpoints.avventApiPersonidentPath
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
@@ -142,10 +141,7 @@ class AvventApiTest {
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
             beskrivelse = "Old avvent",
         )
-        database.connection.use { connection ->
-            dialogmotekandidatVurderingRepository.createAvvent(DatabaseTransaction(connection), oldAvvent)
-            connection.commit()
-        }
+        dialogmotekandidatVurderingRepository.createAvvent(oldAvvent)
 
         val ikkeKandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
@@ -162,10 +158,7 @@ class AvventApiTest {
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
             beskrivelse = "New avvent",
         )
-        database.connection.use { connection ->
-            externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(DatabaseTransaction(connection), newAvvent)
-            connection.commit()
-        }
+        externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(newAvvent)
 
         val getResponse = client.get(urlAvventPersonIdent) {
             bearerAuth(validToken)
@@ -191,10 +184,7 @@ class AvventApiTest {
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
             beskrivelse = "Test avvent",
         )
-        database.connection.use { connection ->
-            dialogmotekandidatVurderingRepository.createAvvent(DatabaseTransaction(connection), avvent)
-            connection.commit()
-        }
+        dialogmotekandidatVurderingRepository.createAvvent(avvent)
 
         val ikkeKandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
