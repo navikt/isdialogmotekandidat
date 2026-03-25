@@ -36,7 +36,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     private val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = mockk(),
         dialogmotekandidatEndringProducer = endringProducer,
-        database = database,
+        transactionManager = externalMockEnvironment.transactionManager,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
         dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,

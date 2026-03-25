@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.database.dialogmotekandidat
 
+import no.nav.syfo.application.ITransaction
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
@@ -26,8 +27,8 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
             }
         }.firstOrNull()
 
-    fun getDialogmotekandidatEndringer(personident: Personident, connection: Connection? = null): List<DialogmotekandidatEndring> =
-        connection?.getDialogmotekandidatEndringer(personident) ?: database.connection.use { connection ->
+    fun getDialogmotekandidatEndringer(personident: Personident, transaction: ITransaction? = null): List<DialogmotekandidatEndring> =
+        transaction?.connection?.getDialogmotekandidatEndringer(personident) ?: database.connection.use { connection ->
             connection.getDialogmotekandidatEndringer(personident)
         }
 
@@ -60,10 +61,10 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
         }
 
     fun createDialogmotekandidatEndring(
-        connection: Connection,
+        transaction: ITransaction,
         dialogmotekandidatEndring: DialogmotekandidatEndring,
     ) {
-        val idList = connection.prepareStatement(CREATE_DIALOGMOTEKANDIDAT_ENDRING_QUERY).use {
+        val idList = transaction.connection.prepareStatement(CREATE_DIALOGMOTEKANDIDAT_ENDRING_QUERY).use {
             it.setString(1, dialogmotekandidatEndring.uuid.toString())
             it.setObject(2, dialogmotekandidatEndring.createdAt)
             it.setString(3, dialogmotekandidatEndring.personident.value)

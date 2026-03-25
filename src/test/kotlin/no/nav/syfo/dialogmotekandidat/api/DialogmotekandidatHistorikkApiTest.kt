@@ -8,7 +8,6 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
 import no.nav.syfo.api.HistorikkDTO
 import no.nav.syfo.api.HistorikkType
 import no.nav.syfo.api.endpoints.kandidatApiBasePath
@@ -28,6 +27,7 @@ import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
 import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
+import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.util.nowUTC
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -70,21 +70,20 @@ class DialogmotekandidatHistorikkApiTest {
 
     private fun createUnntak(): DialogmotekandidatEndring.Unntak {
         val unntak = generateNewUnntakDTO(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toUnntak(UserConstants.VEILEDER_IDENT)
-        runBlocking {
-            database.connection.use {
-                dialogmotekandidatRepository.createDialogmotekandidatEndring(
-                    connection = it,
-                    dialogmotekandidatEndring = DialogmotekandidatEndring.Endring(
-                        uuid = unntak.uuid,
-                        createdAt = unntak.createdAt,
-                        personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
-                        kandidat = false,
-                        arsak = DialogmotekandidatEndring.Arsak.UNNTAK,
-                    )
+        database.connection.use {
+            val transaction = DatabaseTransaction(it)
+            dialogmotekandidatRepository.createDialogmotekandidatEndring(
+                transaction = transaction,
+                dialogmotekandidatEndring = DialogmotekandidatEndring.Endring(
+                    uuid = unntak.uuid,
+                    createdAt = unntak.createdAt,
+                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
+                    kandidat = false,
+                    arsak = DialogmotekandidatEndring.Arsak.UNNTAK,
                 )
-                vurderingRepository.createUnntak(it, unntak)
-                it.commit()
-            }
+            )
+            vurderingRepository.createUnntak(transaction, unntak)
+            it.commit()
         }
         return unntak
     }
@@ -93,8 +92,9 @@ class DialogmotekandidatHistorikkApiTest {
         val ikkeAktuell =
             generateNewIkkeAktuellDTO(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER).toIkkeAktuell(UserConstants.VEILEDER_IDENT)
         database.connection.use {
+            val transaction = DatabaseTransaction(it)
             dialogmotekandidatRepository.createDialogmotekandidatEndring(
-                connection = it,
+                transaction = transaction,
                 dialogmotekandidatEndring = DialogmotekandidatEndring.Endring(
                     uuid = ikkeAktuell.uuid,
                     createdAt = ikkeAktuell.createdAt,
@@ -103,7 +103,7 @@ class DialogmotekandidatHistorikkApiTest {
                     arsak = DialogmotekandidatEndring.Arsak.IKKE_AKTUELL,
                 )
             )
-            runBlocking { vurderingRepository.createIkkeAktuell(connection = it, commit = false, ikkeAktuell = ikkeAktuell) }
+            vurderingRepository.createIkkeAktuell(transaction = transaction, ikkeAktuell = ikkeAktuell)
             it.commit()
         }
         return ikkeAktuell

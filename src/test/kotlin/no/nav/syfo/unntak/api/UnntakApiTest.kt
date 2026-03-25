@@ -16,6 +16,7 @@ import no.nav.syfo.api.UnntakDTO
 import no.nav.syfo.api.endpoints.unntakApiBasePath
 import no.nav.syfo.api.endpoints.unntakApiPersonidentPath
 import no.nav.syfo.api.toUnntak
+import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
@@ -76,7 +77,7 @@ class UnntakApiTest {
         val client = setupApiAndClient()
         val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
         database.connection.use {
-            dialogmotekandidatVurderingRepository.createUnntak(it, unntak)
+            dialogmotekandidatVurderingRepository.createUnntak(DatabaseTransaction(it), unntak)
             it.commit()
         }
         val response = client.get(urlUnntakPersonIdent) {
@@ -101,7 +102,7 @@ class UnntakApiTest {
         val unntak = newUnntakDTO.toUnntak(createdByIdent = UserConstants.VEILEDER_IDENT)
             .copy(unntakArsak = DialogmotekandidatEndring.Unntak.Arsak.FRISKMELDT)
         database.connection.use {
-            dialogmotekandidatVurderingRepository.createUnntak(it, unntak)
+            dialogmotekandidatVurderingRepository.createUnntak(DatabaseTransaction(it), unntak)
             it.commit()
         }
         val response = client.get(urlUnntakPersonIdent) {

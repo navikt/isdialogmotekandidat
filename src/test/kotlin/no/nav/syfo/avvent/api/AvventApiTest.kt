@@ -17,6 +17,7 @@ import no.nav.syfo.api.endpoints.avventApiBasePath
 import no.nav.syfo.api.endpoints.avventApiPersonidentPath
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
@@ -48,7 +49,7 @@ class AvventApiTest {
     val dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database)
 
     private val dialogmoteKandidatService = DialogmotekandidatService(
-        database = database,
+        transactionManager = externalMockEnvironment.transactionManager,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository,
         dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
@@ -142,7 +143,7 @@ class AvventApiTest {
             beskrivelse = "Old avvent",
         )
         database.connection.use { connection ->
-            dialogmotekandidatVurderingRepository.createAvvent(connection, oldAvvent)
+            dialogmotekandidatVurderingRepository.createAvvent(DatabaseTransaction(connection), oldAvvent)
             connection.commit()
         }
 
@@ -162,7 +163,7 @@ class AvventApiTest {
             beskrivelse = "New avvent",
         )
         database.connection.use { connection ->
-            externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(connection, newAvvent)
+            externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(DatabaseTransaction(connection), newAvvent)
             connection.commit()
         }
 
@@ -191,7 +192,7 @@ class AvventApiTest {
             beskrivelse = "Test avvent",
         )
         database.connection.use { connection ->
-            dialogmotekandidatVurderingRepository.createAvvent(connection, avvent)
+            dialogmotekandidatVurderingRepository.createAvvent(DatabaseTransaction(connection), avvent)
             connection.commit()
         }
 

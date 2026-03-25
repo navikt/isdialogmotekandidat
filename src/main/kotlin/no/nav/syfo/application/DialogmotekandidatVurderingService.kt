@@ -5,12 +5,10 @@ import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.isLatestIkkeKandidat
 import no.nav.syfo.domain.latest
-import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
-import java.sql.Connection
 
 class DialogmotekandidatVurderingService(
-    private val database: DatabaseInterface,
+    private val transactionManager: ITransactionManager,
     private val dialogmotekandidatService: DialogmotekandidatService,
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
@@ -28,23 +26,22 @@ class DialogmotekandidatVurderingService(
             throw ConflictException("Failed to create IkkeAktuell: Person is not kandidat")
         }
 
-        database.connection.use { connection ->
-            dialogmotekandidatVurderingRepository.createIkkeAktuell(connection = connection, commit = false, ikkeAktuell = ikkeAktuell)
-            val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
-                arbeidstakerPersonIdent = ikkeAktuell.personident,
-                veilederToken = veilederToken,
-                callId = callId,
-            )
+        val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
+            arbeidstakerPersonIdent = ikkeAktuell.personident,
+            veilederToken = veilederToken,
+            callId = callId,
+        )
+        transactionManager.run { transaction ->
+            dialogmotekandidatVurderingRepository.createIkkeAktuell(transaction = transaction, ikkeAktuell = ikkeAktuell)
             dialogmotekandidatService.createDialogmotekandidatEndring(
-                connection = connection,
+                transaction = transaction,
                 dialogmotekandidatEndring = ikkeAktuell,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
             )
-            connection.commit()
         }
     }
 
-    suspend fun getIkkeAktuellList(personident: Personident): List<DialogmotekandidatEndring.IkkeAktuell> =
+    fun getIkkeAktuellList(personident: Personident): List<DialogmotekandidatEndring.IkkeAktuell> =
         dialogmotekandidatVurderingRepository.getIkkeAktuellListForPerson(personident = personident)
 
     suspend fun createUnntak(
@@ -64,18 +61,17 @@ class DialogmotekandidatVurderingService(
             throw ConflictException("Failed to create Unntak: Person is not kandidat")
         }
 
-        database.connection.use { connection ->
-            dialogmotekandidatVurderingRepository.createUnntak(connection = connection, unntak = unntak)
+        transactionManager.run { transaction ->
+            dialogmotekandidatVurderingRepository.createUnntak(transaction = transaction, unntak = unntak)
             dialogmotekandidatService.createDialogmotekandidatEndring(
-                connection = connection,
+                transaction = transaction,
                 dialogmotekandidatEndring = unntak,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
             )
-            connection.commit()
         }
     }
 
-    suspend fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak> =
+    fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak> =
         dialogmotekandidatVurderingRepository.getUnntakList(personident = personident)
 
     suspend fun createAvvent(
@@ -88,13 +84,12 @@ class DialogmotekandidatVurderingService(
             throw ConflictException("Failed to create Avvent: Person is not kandidat")
         }
 
-        database.connection.use { connection ->
-            dialogmotekandidatVurderingRepository.createAvvent(connection = connection, avvent = avvent)
-            connection.commit()
+        transactionManager.run { transaction ->
+            dialogmotekandidatVurderingRepository.createAvvent(transaction = transaction, avvent = avvent)
         }
     }
 
-    suspend fun getAvvent(personident: Personident): List<DialogmotekandidatEndring.Avvent> {
+    fun getAvvent(personident: Personident): List<DialogmotekandidatEndring.Avvent> {
         val latestKandidatEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
 
         val latestAvvent = dialogmotekandidatVurderingRepository.getAvventList(personident = personident)
@@ -107,9 +102,9 @@ class DialogmotekandidatVurderingService(
         return if (isActiveAvvent) listOf(latestAvvent) else emptyList()
     }
 
-    suspend fun lukkAvvent(connection: Connection, avvent: DialogmotekandidatEndring.Avvent) {
+    fun lukkAvvent(transaction: ITransaction, avvent: DialogmotekandidatEndring.Avvent) {
         dialogmotekandidatVurderingRepository.lukkAvvent(
-            connection = connection,
+            transaction = transaction,
             avvent = avvent,
         )
     }

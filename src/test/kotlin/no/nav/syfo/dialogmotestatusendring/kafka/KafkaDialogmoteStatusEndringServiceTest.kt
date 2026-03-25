@@ -49,21 +49,21 @@ class KafkaDialogmoteStatusEndringServiceTest {
     private val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
-        database = database,
+        transactionManager = externalMockEnvironment.transactionManager,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
         dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
     )
     private val dialogmotekandidatVurderingService =
         DialogmotekandidatVurderingService(
-            database = database,
+            transactionManager = externalMockEnvironment.transactionManager,
             dialogmotekandidatService = dialogmotekandidatService,
             dialogmotekandidatVurderingRepository = externalMockEnvironment.dialogmotekandidatVurderingRepository,
             dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository,
             oppfolgingstilfelleService = oppfolgingstilfelleService,
         )
     private val dialogmoteStatusEndringConsumer = DialogmoteStatusEndringConsumer(
-        database = database,
+        transactionManager = externalMockEnvironment.transactionManager,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
         dialogmotekandidatService = dialogmotekandidatService,

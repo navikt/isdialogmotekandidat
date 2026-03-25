@@ -45,7 +45,7 @@ class KafkaOppfolgingstilfellePersonServiceTest {
         database.dropData()
         kafkaConsumer = mockk(relaxed = true)
         service = OppfolgingstilfellePersonConsumer(
-            database = database,
+            transactionManager = externalMockEnvironment.transactionManager,
             dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
         )
         clearMocks(kafkaConsumer)

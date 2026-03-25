@@ -14,6 +14,7 @@ import no.nav.syfo.api.endpoints.kandidatApiBasePath
 import no.nav.syfo.api.endpoints.kandidatApiPersonidentPath
 import no.nav.syfo.domain.Dialogmotekandidat
 import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -264,11 +265,11 @@ class DialogmotekandidatApiTest {
 
             database.connection.use { connection ->
                 dialogmotekandidatVurderingRepository.createAvvent(
-                    connection = connection,
+                    transaction = DatabaseTransaction(connection),
                     avvent = avvent1,
                 )
                 dialogmotekandidatVurderingRepository.createAvvent(
-                    connection = connection,
+                    transaction = DatabaseTransaction(connection),
                     avvent = avvent2,
                 )
                 connection.commit()
@@ -320,11 +321,11 @@ class DialogmotekandidatApiTest {
 
             database.connection.use { connection ->
                 dialogmotekandidatVurderingRepository.createAvvent(
-                    connection = connection,
+                    transaction = DatabaseTransaction(connection),
                     avvent = avvent,
                 )
                 dialogmotekandidatVurderingRepository.createAvvent(
-                    connection = connection,
+                    transaction = DatabaseTransaction(connection),
                     avvent = oldAvvent,
                 )
                 connection.commit()
@@ -366,7 +367,7 @@ class DialogmotekandidatApiTest {
 
             database.connection.use { connection ->
                 dialogmotekandidatVurderingRepository.createAvvent(
-                    connection = connection,
+                    transaction = DatabaseTransaction(connection),
                     avvent = avvent,
                 )
                 connection.commit()

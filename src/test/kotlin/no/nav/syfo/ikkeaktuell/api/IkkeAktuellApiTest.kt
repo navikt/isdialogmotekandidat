@@ -14,6 +14,7 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.syfo.api.CreateIkkeAktuellDTO
 import no.nav.syfo.api.endpoints.ikkeAktuellApiBasePath
+import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.isLatestIkkeKandidat
@@ -148,8 +149,9 @@ class IkkeAktuellApiTest {
     @Test
     fun `Successfully retrieves ikke aktuell vurderinger for person`() = testApplication {
         database.connection.use { connection ->
-            repository.createIkkeAktuell(connection, true, newIkkeAktuellVurdering())
-            repository.createIkkeAktuell(connection, true, newIkkeAktuellVurdering())
+            repository.createIkkeAktuell(DatabaseTransaction(connection), newIkkeAktuellVurdering())
+            repository.createIkkeAktuell(DatabaseTransaction(connection), newIkkeAktuellVurdering())
+            connection.commit()
         }
         val client = setupApiAndClient()
         val response = client.get(urlIkkeAktuellPersonIdent) {
@@ -165,7 +167,8 @@ class IkkeAktuellApiTest {
     @Test
     fun `Fails to retrieves ikke aktuell vurderinger for person when another person has vurdering`() = testApplication {
         database.connection.use { connection ->
-            repository.createIkkeAktuell(connection, true, newIkkeAktuellVurdering())
+            repository.createIkkeAktuell(DatabaseTransaction(connection), newIkkeAktuellVurdering())
+            connection.commit()
         }
         val client = setupApiAndClient()
         val response = client.get(urlIkkeAktuellPersonIdent) {
