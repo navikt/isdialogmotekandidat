@@ -1,6 +1,5 @@
 package no.nav.syfo.infrastructure.cronjob.dialogmotekandidat
 
-import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.infrastructure.cronjob.Cronjob
 import no.nav.syfo.infrastructure.cronjob.CronjobResult
@@ -21,7 +20,7 @@ class DialogmotekandidatOutdatedCronjob(
         runJob()
     }
 
-    fun runJob(): CronjobResult {
+    suspend fun runJob(): CronjobResult {
         val result = CronjobResult()
 
         val cutoff = LocalDate.now()
@@ -41,9 +40,7 @@ class DialogmotekandidatOutdatedCronjob(
         dialogmotekandidaterToBeRemoved.forEach {
             try {
                 val dialogmotekandidatLukket = DialogmotekandidatEndring.lukket(it.personident)
-                runBlocking {
-                    dialogmotekandidatService.createDialogmotekandidatEndring(dialogmotekandidatLukket)
-                }
+                dialogmotekandidatService.createDialogmotekandidatEndring(dialogmotekandidatLukket)
                 result.updated++
                 log.info("Closed dialogmotekandidat ${it.uuid}")
             } catch (e: Exception) {
@@ -52,7 +49,6 @@ class DialogmotekandidatOutdatedCronjob(
                 log.error("Got exception when creating dialogmotekandidat-endring LUKKET with uuid ${it.uuid}", e)
             }
         }
-
         log.info(
             "Completed dialogmote-kandidat-outdated job with result: {}, {}",
             StructuredArguments.keyValue("failed", result.failed),

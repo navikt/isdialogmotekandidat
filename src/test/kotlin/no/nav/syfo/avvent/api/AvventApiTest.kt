@@ -22,6 +22,7 @@ import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEnd
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
+import no.nav.syfo.testhelper.createAvvent
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWT
@@ -141,7 +142,7 @@ class AvventApiTest {
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
             beskrivelse = "Old avvent",
         )
-        dialogmotekandidatVurderingRepository.createAvvent(oldAvvent)
+        database.createAvvent(oldAvvent)
 
         val ikkeKandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
@@ -158,7 +159,7 @@ class AvventApiTest {
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
             beskrivelse = "New avvent",
         )
-        externalMockEnvironment.dialogmotekandidatVurderingRepository.createAvvent(newAvvent)
+        database.createAvvent(newAvvent)
 
         val getResponse = client.get(urlAvventPersonIdent) {
             bearerAuth(validToken)
@@ -184,7 +185,7 @@ class AvventApiTest {
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER,
             beskrivelse = "Test avvent",
         )
-        dialogmotekandidatVurderingRepository.createAvvent(avvent)
+        database.createAvvent(avvent)
 
         val ikkeKandidatEndring = DialogmotekandidatEndring.ferdigstiltDialogmote(
             personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER

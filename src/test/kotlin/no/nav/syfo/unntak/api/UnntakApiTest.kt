@@ -27,6 +27,7 @@ import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWT
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
+import no.nav.syfo.testhelper.getDialogmotekandidatEndringer
 import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
@@ -165,7 +166,7 @@ class UnntakApiTest {
         verify(exactly = 1) { kafkaProducer.send(capture(producerRecordSlot)) }
 
         val latestEndring =
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+            database.getDialogmotekandidatEndringer(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
                 .firstOrNull()
         assertNotNull(latestEndring)
         assertFalse(latestEndring!!.kandidat)

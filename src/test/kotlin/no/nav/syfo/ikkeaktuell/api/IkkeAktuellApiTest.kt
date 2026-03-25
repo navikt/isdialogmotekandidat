@@ -26,6 +26,7 @@ import no.nav.syfo.testhelper.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWT
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
+import no.nav.syfo.testhelper.getDialogmotekandidatEndringer
 import no.nav.syfo.testhelper.testApiModule
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
@@ -74,7 +75,7 @@ class IkkeAktuellApiTest {
         val stoppunktEndring = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.createDialogmotekandidatEndring(stoppunktEndring)
         assertFalse(
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+            database.getDialogmotekandidatEndringer(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
                 .isLatestIkkeKandidat()
         )
 
@@ -87,11 +88,11 @@ class IkkeAktuellApiTest {
         val producerRecordSlot = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(producerRecordSlot)) }
         assertTrue(
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+            database.getDialogmotekandidatEndringer(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
                 .isLatestIkkeKandidat()
         )
         val latestEndring =
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
+            database.getDialogmotekandidatEndringer(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
                 .firstOrNull()
         assertNotNull(latestEndring)
         assertFalse(latestEndring!!.kandidat)

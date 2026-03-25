@@ -19,19 +19,21 @@ class DialogmotekandidatVurderingService(
         veilederToken: String,
         callId: String,
     ) {
-        val ikkeKandidat =
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = ikkeAktuell.personident)
-                .isLatestIkkeKandidat()
-        if (ikkeKandidat) {
-            throw ConflictException("Failed to create IkkeAktuell: Person is not kandidat")
-        }
-
         val latestOppfolgingstilfelleArbeidstaker = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
             arbeidstakerPersonIdent = ikkeAktuell.personident,
             veilederToken = veilederToken,
             callId = callId,
         )
         transactionManager.run { transaction ->
+            val ikkeKandidat =
+                dialogmotekandidatRepository.getDialogmotekandidatEndringer(
+                    transaction = transaction,
+                    personident = ikkeAktuell.personident,
+                )
+                    .isLatestIkkeKandidat()
+            if (ikkeKandidat) {
+                throw ConflictException("Failed to create IkkeAktuell: Person is not kandidat")
+            }
             dialogmotekandidatVurderingRepository.createIkkeAktuell(transaction = transaction, ikkeAktuell = ikkeAktuell)
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 transaction = transaction,
@@ -54,14 +56,17 @@ class DialogmotekandidatVurderingService(
             veilederToken = veilederToken,
             callId = callId,
         )
-        val ikkeKandidat =
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = unntak.personident)
-                .isLatestIkkeKandidat()
-        if (ikkeKandidat) {
-            throw ConflictException("Failed to create Unntak: Person is not kandidat")
-        }
 
         transactionManager.run { transaction ->
+            val ikkeKandidat =
+                dialogmotekandidatRepository.getDialogmotekandidatEndringer(
+                    transaction = transaction,
+                    personident = unntak.personident,
+                )
+                    .isLatestIkkeKandidat()
+            if (ikkeKandidat) {
+                throw ConflictException("Failed to create Unntak: Person is not kandidat")
+            }
             dialogmotekandidatVurderingRepository.createUnntak(transaction = transaction, unntak = unntak)
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 transaction = transaction,
@@ -77,17 +82,22 @@ class DialogmotekandidatVurderingService(
     suspend fun createAvvent(
         avvent: DialogmotekandidatEndring.Avvent,
     ) {
-        val isPersonIkkeKandidat =
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = avvent.personident)
-                .isLatestIkkeKandidat()
-        if (isPersonIkkeKandidat) {
-            throw ConflictException("Failed to create Avvent: Person is not kandidat")
-        }
+        transactionManager.run { transaction ->
+            val isPersonIkkeKandidat =
+                dialogmotekandidatRepository.getDialogmotekandidatEndringer(
+                    transaction = transaction,
+                    personident = avvent.personident,
+                )
+                    .isLatestIkkeKandidat()
+            if (isPersonIkkeKandidat) {
+                throw ConflictException("Failed to create Avvent: Person is not kandidat")
+            }
 
-        dialogmotekandidatVurderingRepository.createAvvent(avvent = avvent)
+            dialogmotekandidatVurderingRepository.createAvvent(transaction = transaction, avvent = avvent)
+        }
     }
 
-    fun getAvvent(personident: Personident): List<DialogmotekandidatEndring.Avvent> {
+    suspend fun getAvvent(personident: Personident): List<DialogmotekandidatEndring.Avvent> {
         val latestKandidatEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
 
         val latestAvvent = dialogmotekandidatVurderingRepository.getAvventList(personident = personident)

@@ -1,6 +1,5 @@
 package no.nav.syfo.application
 
-import kotlinx.coroutines.runBlocking
 import no.nav.syfo.domain.Dialogmotekandidat
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
@@ -45,9 +44,11 @@ class DialogmotekandidatService(
         )
     }
 
-    fun getDialogmotekandidatEndringer(
+    suspend fun getDialogmotekandidatEndringer(
         personident: Personident,
-    ) = dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = personident)
+    ) = transactionManager.run { transaction ->
+        dialogmotekandidatRepository.getDialogmotekandidatEndringer(transaction, personident)
+    }
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         dialogmotekandidatStoppunktRepository.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()

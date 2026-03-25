@@ -29,6 +29,7 @@ import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringFerdigs
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatStoppunktPlanlagt
 import no.nav.syfo.testhelper.generator.generateKDialogmoteStatusEndring
+import no.nav.syfo.testhelper.getDialogmotekandidatEndringer
 import no.nav.syfo.util.defaultZoneOffset
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -203,7 +204,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val latestEndring = dialogmotekandidatRepository.getDialogmotekandidatEndringer(kandidatFirstPersonident).firstOrNull()
+        val latestEndring = database.getDialogmotekandidatEndringer(kandidatFirstPersonident).firstOrNull()
         assertNotNull(latestEndring)
         assertTrue(latestEndring!!.kandidat)
         assertEquals(DialogmotekandidatEndring.Arsak.STOPPUNKT, latestEndring.arsak)
@@ -229,7 +230,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val latestEndring = dialogmotekandidatRepository.getDialogmotekandidatEndringer(kandidatFirstPersonident).firstOrNull()
+        val latestEndring = database.getDialogmotekandidatEndringer(kandidatFirstPersonident).firstOrNull()
         assertNull(latestEndring)
     }
 
@@ -254,7 +255,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val list = dialogmotekandidatRepository.getDialogmotekandidatEndringer(kandidatFirstPersonident)
+        val list = database.getDialogmotekandidatEndringer(kandidatFirstPersonident)
         assertEquals(1, list.size)
         val firstEndring = list[0]
         assertTrue(firstEndring.kandidat)
@@ -290,7 +291,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val list = dialogmotekandidatRepository.getDialogmotekandidatEndringer(kandidatFirstPersonident)
+        val list = database.getDialogmotekandidatEndringer(kandidatFirstPersonident)
         assertEquals(3, list.size)
         val stoppunktKandidatFirst = list[2]
         assertTrue(stoppunktKandidatFirst.kandidat)
@@ -316,7 +317,7 @@ class DialogmotekandidatStoppunktCronjobTest {
         val stoppunkt = database.getDialogmotekandidatStoppunktList(kandidatFirstPersonident).first()
         assertEquals(DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT.name, stoppunkt.status)
         assertNotNull(stoppunkt.processedAt)
-        val latestEndring = dialogmotekandidatRepository.getDialogmotekandidatEndringer(kandidatFirstPersonident).firstOrNull()
+        val latestEndring = database.getDialogmotekandidatEndringer(kandidatFirstPersonident).firstOrNull()
         assertEquals(dialogmotekandidatEndring.uuid, latestEndring?.uuid)
     }
 }

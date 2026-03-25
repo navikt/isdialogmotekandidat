@@ -8,7 +8,6 @@ import no.nav.syfo.infrastructure.database.NoElementInsertedException
 import no.nav.syfo.infrastructure.database.toAvventList
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.infrastructure.database.toPAvventList
-import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
@@ -27,13 +26,11 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
             }
         }.firstOrNull()
 
-    fun getDialogmotekandidatEndringer(personident: Personident, transaction: ITransaction? = null): List<DialogmotekandidatEndring> =
-        transaction?.connection?.getDialogmotekandidatEndringer(personident) ?: database.connection.use { connection ->
-            connection.getDialogmotekandidatEndringer(personident)
-        }
-
-    private fun Connection.getDialogmotekandidatEndringer(personident: Personident): List<DialogmotekandidatEndring> =
-        this.prepareStatement(GET_DIALOGMOTEENDRING_FOR_PERSON_QUERY).use {
+    fun getDialogmotekandidatEndringer(
+        transaction: ITransaction,
+        personident: Personident
+    ): List<DialogmotekandidatEndring> =
+        transaction.connection.prepareStatement(GET_DIALOGMOTEENDRING_FOR_PERSON_QUERY).use {
             it.setString(1, personident.value)
             it.executeQuery()
                 .toList { toPDialogmotekandidatEndringList() }

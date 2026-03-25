@@ -21,6 +21,7 @@ import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.testhelper.createAvvent
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWT
@@ -262,8 +263,8 @@ class DialogmotekandidatApiTest {
                 beskrivelse = "Beskrivelse av avvent 2",
             )
 
-            dialogmotekandidatVurderingRepository.createAvvent(avvent1)
-            dialogmotekandidatVurderingRepository.createAvvent(avvent2)
+            database.createAvvent(avvent1)
+            database.createAvvent(avvent2)
 
             val requestDTO = GetDialogmotekandidaterRequestDTO(
                 personidenter = listOf(
@@ -309,8 +310,8 @@ class DialogmotekandidatApiTest {
                 createdAt = OffsetDateTime.now().minusDays(10),
             )
 
-            dialogmotekandidatVurderingRepository.createAvvent(avvent)
-            dialogmotekandidatVurderingRepository.createAvvent(oldAvvent)
+            database.createAvvent(avvent)
+            database.createAvvent(oldAvvent)
 
             val requestDTO = GetDialogmotekandidaterRequestDTO(personidenter = listOf(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
 
@@ -346,7 +347,7 @@ class DialogmotekandidatApiTest {
                 isLukket = true,
             )
 
-            dialogmotekandidatVurderingRepository.createAvvent(avvent)
+            database.createAvvent(avvent)
 
             val requestDTO = GetDialogmotekandidaterRequestDTO(personidenter = listOf(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
 
