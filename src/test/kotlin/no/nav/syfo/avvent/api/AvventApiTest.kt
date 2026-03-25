@@ -51,6 +51,8 @@ class AvventApiTest {
         database = database,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
         dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository,
+        dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
+        dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
         oppfolgingstilfelleService = mockk(relaxed = true),
     )
 

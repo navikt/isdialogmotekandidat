@@ -2,7 +2,7 @@ package no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle
 
 import no.nav.syfo.domain.Oppfolgingstilfelle
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatStoppunkt
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.kafka.commonKafkaAivenConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -17,6 +17,7 @@ import java.util.*
 
 class OppfolgingstilfellePersonConsumer(
     val database: DatabaseInterface,
+    val dialogmotekandidatStoppunktRepository: DialogmotekandidatStoppunktRepository,
 ) {
     fun pollAndProcessRecords(
         consumer: KafkaConsumer<String, KafkaOppfolgingstilfellePerson>,
@@ -97,8 +98,8 @@ class OppfolgingstilfellePersonConsumer(
         if (oppfolgingstilfelle?.isDialogmotekandidat() == true) {
             val dialogmotekandidatStoppunkt =
                 oppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt()
-            connection.createDialogmotekandidatStoppunkt(
-                commit = false,
+            dialogmotekandidatStoppunktRepository.createDialogmotekandidatStoppunkt(
+                connection = connection,
                 dialogmotekandidatStoppunkt = dialogmotekandidatStoppunkt,
             )
             COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_PLANLAGT_KANDIDAT.increment()

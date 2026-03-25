@@ -11,7 +11,7 @@ import no.nav.syfo.domain.DialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.latest
 import no.nav.syfo.infrastructure.database.DatabaseInterface
-import no.nav.syfo.infrastructure.database.createDialogmoteStatus
+import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.kafka.commonKafkaAivenConsumerConfig
@@ -27,6 +27,7 @@ import java.util.*
 class DialogmoteStatusEndringConsumer(
     private val database: DatabaseInterface,
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
+    private val dialogmoteStatusRepository: DialogmoteStatusRepository,
     private val dialogmotekandidatService: DialogmotekandidatService,
     private val dialogmotekandidatVurderingService: DialogmotekandidatVurderingService,
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
@@ -73,7 +74,8 @@ class DialogmoteStatusEndringConsumer(
             return
         }
 
-        connection.createDialogmoteStatus(
+        dialogmoteStatusRepository.createDialogmoteStatus(
+            connection = connection,
             dialogmoteStatusEndring = dialogmoteStatusEndring,
         )
 

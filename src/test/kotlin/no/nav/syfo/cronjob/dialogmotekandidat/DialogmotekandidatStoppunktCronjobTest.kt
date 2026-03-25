@@ -16,15 +16,15 @@ import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.cronjob.dialogmotekandidat.DialogmotekandidatStoppunktCronjob
-import no.nav.syfo.infrastructure.database.createDialogmoteStatus
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.createDialogmotekandidatStoppunkt
-import no.nav.syfo.infrastructure.database.dialogmotekandidat.getDialogmotekandidatStoppunktList
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
+import no.nav.syfo.testhelper.createDialogmotekandidatStoppunkt
+import no.nav.syfo.testhelper.createDialogmoteStatus
 import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.getDialogmotekandidatStoppunktList
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringFerdigstilt
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatStoppunktPlanlagt
@@ -58,6 +58,8 @@ class DialogmotekandidatStoppunktCronjobTest {
         dialogmotekandidatEndringProducer = endringProducer,
         database = database,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
+        dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
+        dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
     )
     private val cronjob =
         DialogmotekandidatStoppunktCronjob(dialogmotekandidatService, externalMockEnvironment.environment.stoppunktCronjobDelay)
@@ -70,10 +72,10 @@ class DialogmotekandidatStoppunktCronjobTest {
     }
 
     private fun createStoppunkt(stoppunkt: DialogmotekandidatStoppunkt) =
-        database.connection.use { it.createDialogmotekandidatStoppunkt(true, stoppunkt) }
+        database.createDialogmotekandidatStoppunkt(stoppunkt)
 
     private fun createStatus(dialogmoteStatusEndring: DialogmoteStatusEndring) =
-        database.connection.use { it.createDialogmoteStatus(true, dialogmoteStatusEndring) }
+        database.createDialogmoteStatus(dialogmoteStatusEndring)
 
     private val kandidatFirstPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
     private val kandidatSecondPersonident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_NOT_KANDIDAT

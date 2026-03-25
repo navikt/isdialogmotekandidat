@@ -2,8 +2,15 @@ package no.nav.syfo.testhelper
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.domain.DialogmotekandidatStoppunkt
+import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.PDialogmotekandidatStoppunkt
+import no.nav.syfo.domain.DialogmoteStatusEndring
+import java.time.OffsetDateTime
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 
@@ -62,6 +69,30 @@ fun DatabaseInterface.createDialogmotekandidatEndring(dialogmotekandidatEndring:
         connection.commit()
     }
 }
+
+fun DatabaseInterface.createDialogmotekandidatStoppunkt(stoppunkt: DialogmotekandidatStoppunkt) {
+    val repository = DialogmotekandidatStoppunktRepository(this)
+    this.connection.use { connection ->
+        repository.createDialogmotekandidatStoppunkt(connection, stoppunkt)
+        connection.commit()
+    }
+}
+
+fun DatabaseInterface.getDialogmotekandidatStoppunktList(personident: Personident): List<PDialogmotekandidatStoppunkt> =
+    DialogmotekandidatStoppunktRepository(this).getDialogmotekandidatStoppunktList(personident)
+
+fun DatabaseInterface.createDialogmoteStatus(dialogmoteStatusEndring: DialogmoteStatusEndring) {
+    val repository = DialogmoteStatusRepository(this)
+    this.connection.use { connection ->
+        repository.createDialogmoteStatus(connection, dialogmoteStatusEndring)
+        connection.commit()
+    }
+}
+
+fun DatabaseInterface.getLatestDialogmoteFerdigstiltForPerson(personident: Personident): OffsetDateTime? =
+    this.connection.use { connection ->
+        DialogmoteStatusRepository(this).getLatestDialogmoteFerdigstiltForPerson(connection, personident)
+    }
 
 class TestDatabaseNotResponding : DatabaseInterface {
 
