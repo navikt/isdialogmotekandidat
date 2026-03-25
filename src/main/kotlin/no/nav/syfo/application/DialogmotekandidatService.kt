@@ -105,19 +105,14 @@ class DialogmotekandidatService(
         }
     }
 
-    fun createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
-        runBlocking {
-            transactionManager.run { transaction ->
-                dialogmotekandidatRepository.createDialogmotekandidatEndring(
-                    transaction = transaction,
-                    dialogmotekandidatEndring = dialogmotekandidatEndring,
-                )
-            }
+    suspend fun createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
+        transactionManager.run { transaction ->
+            createDialogmotekandidatEndring(
+                transaction = transaction,
+                dialogmotekandidatEndring = dialogmotekandidatEndring,
+                tilfelleStart = null,
+            )
         }
-        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
-            dialogmotekandidatEndring = dialogmotekandidatEndring,
-            tilfelleStart = null,
-        )
     }
 
     fun createDialogmotekandidatEndring(
