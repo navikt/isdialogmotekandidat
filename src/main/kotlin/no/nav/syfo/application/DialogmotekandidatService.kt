@@ -65,8 +65,8 @@ class DialogmotekandidatService(
         )
         transactionManager.run { transaction ->
             val dialogmotekandidatEndringList = dialogmotekandidatRepository.getDialogmotekandidatEndringer(
-                personident = dialogmotekandidatStoppunkt.personident,
                 transaction = transaction,
+                personident = dialogmotekandidatStoppunkt.personident,
             )
 
             val latestDialogmoteFerdigstilt = dialogmoteStatusRepository.getLatestDialogmoteFerdigstiltForPerson(
