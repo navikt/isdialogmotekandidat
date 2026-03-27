@@ -20,7 +20,7 @@ class DialogmotekandidatOutdatedCronjob(
         runJob()
     }
 
-    fun runJob(): CronjobResult {
+    suspend fun runJob(): CronjobResult {
         val result = CronjobResult()
 
         val cutoff = LocalDate.now()
@@ -49,7 +49,6 @@ class DialogmotekandidatOutdatedCronjob(
                 log.error("Got exception when creating dialogmotekandidat-endring LUKKET with uuid ${it.uuid}", e)
             }
         }
-
         log.info(
             "Completed dialogmote-kandidat-outdated job with result: {}, {}",
             StructuredArguments.keyValue("failed", result.failed),

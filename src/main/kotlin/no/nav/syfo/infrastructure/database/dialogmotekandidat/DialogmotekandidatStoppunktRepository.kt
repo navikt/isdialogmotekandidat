@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.database.dialogmotekandidat
 
+import no.nav.syfo.application.ITransaction
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.Personident
@@ -7,7 +8,6 @@ import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.NoElementInsertedException
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.nowUTC
-import java.sql.Connection
 import java.sql.Date
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -17,14 +17,14 @@ import java.util.*
 class DialogmotekandidatStoppunktRepository(private val database: DatabaseInterface) {
 
     fun createDialogmotekandidatStoppunkt(
-        connection: Connection,
+        transaction: ITransaction,
         dialogmotekandidatStoppunkt: DialogmotekandidatStoppunkt,
     ) {
         if (dialogmotekandidatStoppunkt.processedAt != null || dialogmotekandidatStoppunkt.status != DialogmotekandidatStoppunktStatus.PLANLAGT_KANDIDAT) {
             throw IllegalArgumentException("Cannot create DialogmotekandidatStoppunkt with status ${dialogmotekandidatStoppunkt.status} processedAt ${dialogmotekandidatStoppunkt.processedAt}")
         }
 
-        val idList = connection.prepareStatement(CREATE_DIALOGMOTEKANDIDAT_STOPPUNKT_QUERY).use {
+        val idList = transaction.connection.prepareStatement(CREATE_DIALOGMOTEKANDIDAT_STOPPUNKT_QUERY).use {
             it.setString(1, dialogmotekandidatStoppunkt.uuid.toString())
             it.setObject(2, dialogmotekandidatStoppunkt.createdAt)
             it.setString(3, dialogmotekandidatStoppunkt.personident.value)
@@ -49,7 +49,7 @@ class DialogmotekandidatStoppunktRepository(private val database: DatabaseInterf
         }
 
     fun updateDialogmotekandidatStoppunktStatus(
-        connection: Connection,
+        transaction: ITransaction,
         uuid: UUID,
         status: DialogmotekandidatStoppunktStatus,
     ) {
@@ -59,7 +59,7 @@ class DialogmotekandidatStoppunktRepository(private val database: DatabaseInterf
 
         val now = nowUTC()
 
-        connection.prepareStatement(UPDATE_DIALOGMOTEKANDIDAT_STOPPUNKT_STATUS_QUERY).use { preparedStatement ->
+        transaction.connection.prepareStatement(UPDATE_DIALOGMOTEKANDIDAT_STOPPUNKT_STATUS_QUERY).use { preparedStatement ->
             preparedStatement.setString(1, status.name)
             preparedStatement.setObject(2, now)
             preparedStatement.setString(3, uuid.toString())

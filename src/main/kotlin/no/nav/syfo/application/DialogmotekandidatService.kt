@@ -5,7 +5,6 @@ import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.domain.Personident
-import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
@@ -14,7 +13,6 @@ import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEnd
 import no.nav.syfo.util.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_CREATED_KANDIDATENDRING
 import no.nav.syfo.util.COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING
 import org.slf4j.LoggerFactory
-import java.sql.Connection
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -22,7 +20,7 @@ import java.util.*
 class DialogmotekandidatService(
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
     private val dialogmotekandidatEndringProducer: DialogmotekandidatEndringProducer,
-    private val database: DatabaseInterface,
+    private val transactionManager: ITransactionManager,
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
     private val dialogmotekandidatStoppunktRepository: DialogmotekandidatStoppunktRepository,
     private val dialogmoteStatusRepository: DialogmoteStatusRepository,
@@ -46,9 +44,11 @@ class DialogmotekandidatService(
         )
     }
 
-    fun getDialogmotekandidatEndringer(
+    suspend fun getDialogmotekandidatEndringer(
         personident: Personident,
-    ) = dialogmotekandidatRepository.getDialogmotekandidatEndringer(personident = personident)
+    ) = transactionManager.run { transaction ->
+        dialogmotekandidatRepository.getDialogmotekandidatEndringer(transaction, personident)
+    }
 
     fun getDialogmotekandidaterWithStoppunktPlanlagtTodayOrYesterday() =
         dialogmotekandidatStoppunktRepository.getDialogmotekandidaterWithStoppunktTodayOrYesterday().toDialogmotekandidatStoppunktList()
@@ -63,15 +63,15 @@ class DialogmotekandidatService(
             arbeidstakerPersonIdent = dialogmotekandidatStoppunkt.personident,
             date = dialogmotekandidatStoppunkt.stoppunktPlanlagt,
         )
-        database.connection.use { connection ->
+        transactionManager.run { transaction ->
             val dialogmotekandidatEndringList = dialogmotekandidatRepository.getDialogmotekandidatEndringer(
+                transaction = transaction,
                 personident = dialogmotekandidatStoppunkt.personident,
-                connection = connection
             )
 
             val latestDialogmoteFerdigstilt = dialogmoteStatusRepository.getLatestDialogmoteFerdigstiltForPerson(
-                connection = connection,
-                personident = dialogmotekandidatStoppunkt.personident
+                transaction = transaction,
+                personident = dialogmotekandidatStoppunkt.personident,
             )
             val status = if (
                 oppfolgingstilfelleOnStoppunktDate != null &&
@@ -85,7 +85,7 @@ class DialogmotekandidatService(
                 DialogmotekandidatStoppunktStatus.IKKE_KANDIDAT
 
             dialogmotekandidatStoppunktRepository.updateDialogmotekandidatStoppunktStatus(
-                connection = connection,
+                transaction = transaction,
                 uuid = dialogmotekandidatStoppunkt.uuid,
                 status = status,
             )
@@ -94,7 +94,7 @@ class DialogmotekandidatService(
                 val dialogmoteKandidat =
                     DialogmotekandidatEndring.createKandidat(personident = dialogmotekandidatStoppunkt.personident)
                 createDialogmotekandidatEndring(
-                    connection = connection,
+                    transaction = transaction,
                     dialogmotekandidatEndring = dialogmoteKandidat,
                     tilfelleStart = oppfolgingstilfelleOnStoppunktDate?.tilfelleStart,
                 )
@@ -103,33 +103,27 @@ class DialogmotekandidatService(
                 COUNT_DIALOGMOTEKANDIDAT_STOPPUNKT_SKIPPED_NOT_KANDIDATENDRING.increment()
                 log.info("Processed ${DialogmotekandidatStoppunkt::class.java.simpleName}, not kandidat - no DialogmotekandidatEndring created")
             }
-
-            connection.commit()
         }
     }
 
-    fun createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
-        database.connection.use { connection ->
-            dialogmotekandidatRepository.createDialogmotekandidatEndring(
-                connection = connection,
-                dialogmotekandidatEndring = dialogmotekandidatEndring
+    suspend fun createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
+        transactionManager.run { transaction ->
+            createDialogmotekandidatEndring(
+                transaction = transaction,
+                dialogmotekandidatEndring = dialogmotekandidatEndring,
+                tilfelleStart = null,
             )
-            connection.commit()
         }
-        dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
-            dialogmotekandidatEndring = dialogmotekandidatEndring,
-            tilfelleStart = null,
-        )
     }
 
     fun createDialogmotekandidatEndring(
-        connection: Connection,
+        transaction: ITransaction,
         dialogmotekandidatEndring: DialogmotekandidatEndring,
         tilfelleStart: LocalDate?,
     ) {
         dialogmotekandidatRepository.createDialogmotekandidatEndring(
-            connection = connection,
-            dialogmotekandidatEndring = dialogmotekandidatEndring
+            transaction = transaction,
+            dialogmotekandidatEndring = dialogmotekandidatEndring,
         )
         dialogmotekandidatEndringProducer.sendDialogmotekandidatEndring(
             dialogmotekandidatEndring = dialogmotekandidatEndring,

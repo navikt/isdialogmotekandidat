@@ -7,6 +7,7 @@ import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.Oppfolgingstilfell
 import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
+import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.testhelper.mock.mockHttpClient
@@ -39,6 +40,7 @@ class ExternalMockEnvironment private constructor() {
     val dialogmotekandidatStoppunktRepository = DialogmotekandidatStoppunktRepository(database = database)
     val dialogmoteStatusRepository = DialogmoteStatusRepository(database = database)
     val dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database = database)
+    val transactionManager = TransactionManager(database = database)
 
     companion object {
         val instance: ExternalMockEnvironment = ExternalMockEnvironment()

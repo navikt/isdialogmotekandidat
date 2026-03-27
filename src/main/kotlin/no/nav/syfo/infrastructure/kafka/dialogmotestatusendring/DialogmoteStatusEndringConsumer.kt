@@ -3,6 +3,8 @@ package no.nav.syfo.infrastructure.kafka.dialogmotestatusendring
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.application.ITransaction
+import no.nav.syfo.application.ITransactionManager
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.application.OppfolgingstilfelleService
@@ -10,7 +12,6 @@ import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.latest
-import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
@@ -20,12 +21,11 @@ import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
-import java.sql.Connection
 import java.time.Duration
 import java.util.*
 
 class DialogmoteStatusEndringConsumer(
-    private val database: DatabaseInterface,
+    private val transactionManager: ITransactionManager,
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
     private val dialogmoteStatusRepository: DialogmoteStatusRepository,
     private val dialogmotekandidatService: DialogmotekandidatService,
@@ -49,22 +49,21 @@ class DialogmoteStatusEndringConsumer(
         }
 
         runBlocking {
-            database.connection.use { connection ->
+            transactionManager.run { transaction ->
                 validRecords.forEach { record ->
                     COUNT_KAFKA_CONSUMER_DIALOGMOTE_STATUS_ENDRING_READ.increment()
                     log.info("Received ${KDialogmoteStatusEndring::class.java.simpleName} with key=${record.key()}, ready to process.")
                     receiveKafkaDialogmoteStatusEndring(
-                        connection = connection,
+                        transaction = transaction,
                         kafkaDialogmoteStatusEndring = record.value(),
                     )
                 }
-                connection.commit()
             }
         }
     }
 
     private suspend fun receiveKafkaDialogmoteStatusEndring(
-        connection: Connection,
+        transaction: ITransaction,
         kafkaDialogmoteStatusEndring: KDialogmoteStatusEndring,
     ) {
         val dialogmoteStatusEndring = DialogmoteStatusEndring.create(kafkaDialogmoteStatusEndring)
@@ -75,14 +74,14 @@ class DialogmoteStatusEndringConsumer(
         }
 
         dialogmoteStatusRepository.createDialogmoteStatus(
-            connection = connection,
+            transaction = transaction,
             dialogmoteStatusEndring = dialogmoteStatusEndring,
         )
 
         val latestDialogmotekandidatEndring =
             dialogmotekandidatRepository.getDialogmotekandidatEndringer(
                 personident = dialogmoteStatusEndring.personIdentNumber,
-                connection = connection
+                transaction = transaction,
             )
                 .latest()
 
@@ -93,7 +92,7 @@ class DialogmoteStatusEndringConsumer(
                 val avventList = dialogmotekandidatVurderingService.getAvvent(dialogmoteStatusEndring.personIdentNumber)
                 avventList.filter { !it.isLukket }
                     .forEach { avvent ->
-                        dialogmotekandidatVurderingService.lukkAvvent(connection, avvent)
+                        dialogmotekandidatVurderingService.lukkAvvent(transaction, avvent)
                     }
             } else {
                 val latestOppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
@@ -101,7 +100,7 @@ class DialogmoteStatusEndringConsumer(
                 )
                 val newDialogmotekandidatEndring = dialogmoteStatusEndring.toDialogmotekandidatEndring()
                 dialogmotekandidatService.createDialogmotekandidatEndring(
-                    connection = connection,
+                    transaction = transaction,
                     dialogmotekandidatEndring = newDialogmotekandidatEndring,
                     tilfelleStart = latestOppfolgingstilfelle?.tilfelleStart,
                 )

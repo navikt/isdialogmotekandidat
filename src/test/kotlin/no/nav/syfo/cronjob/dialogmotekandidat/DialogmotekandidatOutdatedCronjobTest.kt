@@ -5,10 +5,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import kotlinx.coroutines.test.runTest
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.cronjob.dialogmotekandidat.DialogmotekandidatOutdatedCronjob
+import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
 import no.nav.syfo.testhelper.ExternalMockEnvironment
@@ -36,7 +38,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     private val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = mockk(),
         dialogmotekandidatEndringProducer = endringProducer,
-        database = database,
+        transactionManager = externalMockEnvironment.transactionManager,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
         dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
@@ -47,7 +49,12 @@ class DialogmotekandidatOutdatedCronjobTest {
     )
 
     private fun getEndringer(p: Personident): List<DialogmotekandidatEndring> =
-        dialogmotekandidatRepository.getDialogmotekandidatEndringer(p)
+        database.connection.use { connection ->
+            dialogmotekandidatRepository.getDialogmotekandidatEndringer(
+                transaction = DatabaseTransaction(connection),
+                personident = p,
+            )
+        }
 
     @BeforeEach
     fun setup() {
@@ -57,7 +64,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     }
 
     @Test
-    fun `creates LUKKET endring for kandidat before cutoff with no other endring`() {
+    fun `creates LUKKET endring for kandidat before cutoff with no other endring`() = runTest {
         val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident)
             .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatBefore)
@@ -75,7 +82,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     }
 
     @Test
-    fun `updates kandidat before cutoff only once`() {
+    fun `updates kandidat before cutoff only once`() = runTest {
         val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident)
             .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         val otherKandidatBefore = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER_OLD_KANDIDAT)
@@ -99,14 +106,14 @@ class DialogmotekandidatOutdatedCronjobTest {
     }
 
     @Test
-    fun `creates no endring for person with no endring`() {
+    fun `creates no endring for person with no endring`() = runTest {
         cronjob.runJob()
         verify(exactly = 0) { kafkaProducer.send(any()) }
         assertTrue(getEndringer(personident).isEmpty())
     }
 
     @Test
-    fun `creates no endring for not kandidat before cutoff`() {
+    fun `creates no endring for not kandidat before cutoff`() = runTest {
         val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(personident)
             .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(notKandidatBefore)
@@ -120,7 +127,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     }
 
     @Test
-    fun `creates no endring for not kandidat after cutoff`() {
+    fun `creates no endring for not kandidat after cutoff`() = runTest {
         val notKandidatAfter =
             generateDialogmotekandidatEndringFerdigstilt(personident)
                 .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).plusDays(1).toOffsetDatetime())
@@ -135,7 +142,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     }
 
     @Test
-    fun `creates no endring for kandidat after cutoff`() {
+    fun `creates no endring for kandidat after cutoff`() = runTest {
         val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident)
             .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).plusDays(1).toOffsetDatetime())
         database.createDialogmotekandidatEndring(kandidatAfter)
@@ -149,7 +156,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     }
 
     @Test
-    fun `creates no endring for kandidat before and not kandidat after cutoff`() {
+    fun `creates no endring for kandidat before and not kandidat after cutoff`() = runTest {
         val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident)
             .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         val notKandidatAfter = generateDialogmotekandidatEndringFerdigstilt(personident)
@@ -166,7 +173,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     }
 
     @Test
-    fun `creates no endring for not kandidat before and kandidat after cutoff`() {
+    fun `creates no endring for not kandidat before and kandidat after cutoff`() = runTest {
         val notKandidatBefore = generateDialogmotekandidatEndringFerdigstilt(personident)
             .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident)
@@ -183,7 +190,7 @@ class DialogmotekandidatOutdatedCronjobTest {
     }
 
     @Test
-    fun `creates no endring for kandidat before and kandidat after cutoff`() {
+    fun `creates no endring for kandidat before and kandidat after cutoff`() = runTest {
         val kandidatBefore = generateDialogmotekandidatEndringStoppunkt(personident)
             .copy(createdAt = LocalDate.now().minusMonths(cutoff.toLong()).minusDays(1).toOffsetDatetime())
         val kandidatAfter = generateDialogmotekandidatEndringStoppunkt(personident)

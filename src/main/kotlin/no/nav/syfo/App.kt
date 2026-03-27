@@ -18,6 +18,7 @@ import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.cronjob.launchCronjobModule
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
+import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
@@ -93,16 +94,17 @@ fun main() {
             val dialogmotekandidatRepository = DialogmotekandidatRepository(applicationDatabase)
             val dialogmotekandidatStoppunktRepository = DialogmotekandidatStoppunktRepository(applicationDatabase)
             val dialogmoteStatusRepository = DialogmoteStatusRepository(applicationDatabase)
+            val transactionManager = TransactionManager(applicationDatabase)
             dialogmotekandidatService = DialogmotekandidatService(
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
-                database = applicationDatabase,
+                transactionManager = transactionManager,
                 dialogmotekandidatRepository = dialogmotekandidatRepository,
                 dialogmotekandidatStoppunktRepository = dialogmotekandidatStoppunktRepository,
                 dialogmoteStatusRepository = dialogmoteStatusRepository,
             )
             dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
-                database = applicationDatabase,
+                transactionManager = transactionManager,
                 dialogmotekandidatService = dialogmotekandidatService,
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
                 dialogmotekandidatRepository = dialogmotekandidatRepository,
@@ -122,11 +124,11 @@ fun main() {
                 logger.info("Application is ready, running Java VM ${Runtime.version()}")
 
                 val oppfolgingstilfellePersonConsumer = OppfolgingstilfellePersonConsumer(
-                    database = applicationDatabase,
+                    transactionManager = transactionManager,
                     dialogmotekandidatStoppunktRepository = dialogmotekandidatStoppunktRepository,
                 )
                 val dialogmoteStatusEndringConsumer = DialogmoteStatusEndringConsumer(
-                    database = applicationDatabase,
+                    transactionManager = transactionManager,
                     dialogmotekandidatRepository = dialogmotekandidatRepository,
                     dialogmoteStatusRepository = dialogmoteStatusRepository,
                     dialogmotekandidatService = dialogmotekandidatService,

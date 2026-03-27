@@ -1,7 +1,8 @@
 package no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle
 
+import no.nav.syfo.application.ITransaction
+import no.nav.syfo.application.ITransactionManager
 import no.nav.syfo.domain.Oppfolgingstilfelle
-import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.kafka.commonKafkaAivenConsumerConfig
@@ -11,12 +12,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
-import java.sql.Connection
 import java.time.Duration
 import java.util.*
+import kotlinx.coroutines.runBlocking
 
 class OppfolgingstilfellePersonConsumer(
-    val database: DatabaseInterface,
+    val transactionManager: ITransactionManager,
     val dialogmotekandidatStoppunktRepository: DialogmotekandidatStoppunktRepository,
 ) {
     fun pollAndProcessRecords(
@@ -59,21 +60,22 @@ class OppfolgingstilfellePersonConsumer(
     private fun processRelevantRecordList(
         records: List<ConsumerRecord<String, KafkaOppfolgingstilfellePerson>>,
     ) {
-        database.connection.use { connection ->
-            records.forEach { consumerRecord ->
-                COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_READ.increment()
+        runBlocking {
+            transactionManager.run { transaction ->
+                records.forEach { consumerRecord ->
+                    COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_READ.increment()
 
-                receiveKafkaOppfolgingstilfellePerson(
-                    connection = connection,
-                    kafkaOppfolgingstilfellePerson = consumerRecord.value(),
-                )
+                    receiveKafkaOppfolgingstilfellePerson(
+                        transaction = transaction,
+                        kafkaOppfolgingstilfellePerson = consumerRecord.value(),
+                    )
+                }
             }
-            connection.commit()
         }
     }
 
     private fun receiveKafkaOppfolgingstilfellePerson(
-        connection: Connection,
+        transaction: ITransaction,
         kafkaOppfolgingstilfellePerson: KafkaOppfolgingstilfellePerson,
     ) {
         if (kafkaOppfolgingstilfellePerson.oppfolgingstilfelleList.isEmpty()) {
@@ -83,23 +85,23 @@ class OppfolgingstilfellePersonConsumer(
         }
 
         val latestOppfolgingstilfelle = kafkaOppfolgingstilfellePerson.toLatestOppfolgingstilfelle()
-        createStoppunktIfKandidattilfelle(latestOppfolgingstilfelle, connection)
+        createStoppunktIfKandidattilfelle(latestOppfolgingstilfelle, transaction)
 
         val currentOppfolgingstilfelle = kafkaOppfolgingstilfellePerson.toCurrentOppfolgingstilfelle()
         if (currentOppfolgingstilfelle != null && currentOppfolgingstilfelle != latestOppfolgingstilfelle) {
-            createStoppunktIfKandidattilfelle(currentOppfolgingstilfelle, connection)
+            createStoppunktIfKandidattilfelle(currentOppfolgingstilfelle, transaction)
         }
     }
 
     private fun createStoppunktIfKandidattilfelle(
         oppfolgingstilfelle: Oppfolgingstilfelle?,
-        connection: Connection,
+        transaction: ITransaction,
     ) {
         if (oppfolgingstilfelle?.isDialogmotekandidat() == true) {
             val dialogmotekandidatStoppunkt =
                 oppfolgingstilfelle.toDialogmotekandidatStoppunktPlanlagt()
             dialogmotekandidatStoppunktRepository.createDialogmotekandidatStoppunkt(
-                connection = connection,
+                transaction = transaction,
                 dialogmotekandidatStoppunkt = dialogmotekandidatStoppunkt,
             )
             COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_PLANLAGT_KANDIDAT.increment()

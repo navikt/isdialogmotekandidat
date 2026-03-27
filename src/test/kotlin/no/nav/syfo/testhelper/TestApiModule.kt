@@ -10,6 +10,7 @@ import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.Oppfolgingstilfell
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
+import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
@@ -31,16 +32,17 @@ fun Application.testApiModule(
     val dialogmotekandidatRepository = DialogmotekandidatRepository(externalMockEnvironment.database)
     val dialogmotekandidatStoppunktRepository = DialogmotekandidatStoppunktRepository(externalMockEnvironment.database)
     val dialogmoteStatusRepository = DialogmoteStatusRepository(externalMockEnvironment.database)
+    val transactionManager = TransactionManager(externalMockEnvironment.database)
     val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
-        database = externalMockEnvironment.database,
+        transactionManager = transactionManager,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmotekandidatStoppunktRepository = dialogmotekandidatStoppunktRepository,
         dialogmoteStatusRepository = dialogmoteStatusRepository,
     )
     val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
-        database = externalMockEnvironment.database,
+        transactionManager = transactionManager,
         dialogmotekandidatService = dialogmotekandidatService,
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatRepository = dialogmotekandidatRepository,

@@ -5,6 +5,7 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
+import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -23,7 +24,7 @@ class DialogmotekandidatRepositoryTest {
     fun `Successfully gets a dialogmotekandidatendring`() = testApplication {
         val dialogmoteKandidatEndring = generateDialogmotekandidatEndringStoppunkt(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
         database.connection.use { connection ->
-            repository.createDialogmotekandidatEndring(connection = connection, dialogmotekandidatEndring = dialogmoteKandidatEndring)
+            repository.createDialogmotekandidatEndring(transaction = DatabaseTransaction(connection), dialogmotekandidatEndring = dialogmoteKandidatEndring)
             connection.commit()
         }
         val inserted = repository.getDialogmotekandidatEndring(dialogmoteKandidatEndring.uuid)

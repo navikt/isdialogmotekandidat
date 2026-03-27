@@ -8,6 +8,7 @@ import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.infrastructure.database.getIdentCount
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
@@ -52,7 +53,7 @@ class IdenthendelseServiceTest {
             val kStatusEndring =
                 generateKDialogmoteStatusEndring(oldIdent, DialogmoteStatusEndring.Type.INNKALT, moteTidspunkt, moteTidspunkt)
             val statusEndring = DialogmoteStatusEndring.create(kStatusEndring)
-            runBlocking { database.connection.use { vurderingRepository.createUnntak(it, unntak); it.commit() } }
+            runBlocking { database.connection.use { vurderingRepository.createUnntak(DatabaseTransaction(it), unntak); it.commit() } }
             database.createDialogmoteStatus(statusEndring)
         }
     }

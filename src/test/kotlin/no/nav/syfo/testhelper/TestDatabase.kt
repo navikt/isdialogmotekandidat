@@ -5,11 +5,13 @@ import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.DatabaseTransaction
 import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.PDialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmoteStatusEndring
+import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import java.time.OffsetDateTime
 import org.flywaydb.core.Flyway
 import java.sql.Connection
@@ -65,7 +67,7 @@ fun DatabaseInterface.dropData() {
 fun DatabaseInterface.createDialogmotekandidatEndring(dialogmotekandidatEndring: DialogmotekandidatEndring) {
     val repository = DialogmotekandidatRepository(this)
     this.connection.use { connection ->
-        repository.createDialogmotekandidatEndring(connection, dialogmotekandidatEndring)
+        repository.createDialogmotekandidatEndring(DatabaseTransaction(connection), dialogmotekandidatEndring)
         connection.commit()
     }
 }
@@ -73,8 +75,23 @@ fun DatabaseInterface.createDialogmotekandidatEndring(dialogmotekandidatEndring:
 fun DatabaseInterface.createDialogmotekandidatStoppunkt(stoppunkt: DialogmotekandidatStoppunkt) {
     val repository = DialogmotekandidatStoppunktRepository(this)
     this.connection.use { connection ->
-        repository.createDialogmotekandidatStoppunkt(connection, stoppunkt)
+        repository.createDialogmotekandidatStoppunkt(DatabaseTransaction(connection), stoppunkt)
         connection.commit()
+    }
+}
+
+fun DatabaseInterface.createAvvent(avvent: DialogmotekandidatEndring.Avvent) {
+    val repository = DialogmotekandidatVurderingRepository(this)
+    this.connection.use { connection ->
+        repository.createAvvent(DatabaseTransaction(connection), avvent)
+        connection.commit()
+    }
+}
+
+fun DatabaseInterface.getDialogmotekandidatEndringer(personident: Personident): List<DialogmotekandidatEndring> {
+    val repository = DialogmotekandidatRepository(this)
+    return this.connection.use { connection ->
+        repository.getDialogmotekandidatEndringer(DatabaseTransaction(connection), personident)
     }
 }
 
@@ -84,14 +101,14 @@ fun DatabaseInterface.getDialogmotekandidatStoppunktList(personident: Personiden
 fun DatabaseInterface.createDialogmoteStatus(dialogmoteStatusEndring: DialogmoteStatusEndring) {
     val repository = DialogmoteStatusRepository(this)
     this.connection.use { connection ->
-        repository.createDialogmoteStatus(connection, dialogmoteStatusEndring)
+        repository.createDialogmoteStatus(DatabaseTransaction(connection), dialogmoteStatusEndring)
         connection.commit()
     }
 }
 
 fun DatabaseInterface.getLatestDialogmoteFerdigstiltForPerson(personident: Personident): OffsetDateTime? =
     this.connection.use { connection ->
-        DialogmoteStatusRepository(this).getLatestDialogmoteFerdigstiltForPerson(connection, personident)
+        DialogmoteStatusRepository(this).getLatestDialogmoteFerdigstiltForPerson(DatabaseTransaction(connection), personident)
     }
 
 class TestDatabaseNotResponding : DatabaseInterface {

@@ -1,9 +1,9 @@
 package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.application.IDialogmotekandidatVurderingRepository
+import no.nav.syfo.application.ITransaction
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
-import java.sql.Connection
 import java.sql.Date
 import java.sql.ResultSet
 import java.time.OffsetDateTime
@@ -11,7 +11,7 @@ import java.util.*
 
 class DialogmotekandidatVurderingRepository(private val database: DatabaseInterface) : IDialogmotekandidatVurderingRepository {
 
-    override suspend fun getIkkeAktuellListForPerson(personident: Personident): List<DialogmotekandidatEndring.IkkeAktuell> =
+    override fun getIkkeAktuellListForPerson(personident: Personident): List<DialogmotekandidatEndring.IkkeAktuell> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_IKKE_AKTUELL_FOR_PERSON).use {
                 it.setString(1, personident.value)
@@ -19,8 +19,8 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
             }
         }.toIkkeAktuellList()
 
-    override suspend fun createIkkeAktuell(connection: Connection, commit: Boolean, ikkeAktuell: DialogmotekandidatEndring.IkkeAktuell) {
-        val idList = connection.prepareStatement(QUERY_CREATE_IKKE_AKTUELL).use {
+    override fun createIkkeAktuell(transaction: ITransaction, ikkeAktuell: DialogmotekandidatEndring.IkkeAktuell) {
+        val idList = transaction.connection.prepareStatement(QUERY_CREATE_IKKE_AKTUELL).use {
             it.setString(1, ikkeAktuell.uuid.toString())
             it.setObject(2, ikkeAktuell.createdAt)
             it.setString(3, ikkeAktuell.createdBy)
@@ -33,11 +33,10 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         if (idList.size != 1) {
             throw NoElementInsertedException("Creating IKKEAKTUELL failed, no rows affected.")
         }
-        if (commit) connection.commit()
     }
 
-    override suspend fun createUnntak(connection: Connection, unntak: DialogmotekandidatEndring.Unntak) {
-        val idList = connection.prepareStatement(QUERY_CREATE_UNNTAK).use {
+    override fun createUnntak(transaction: ITransaction, unntak: DialogmotekandidatEndring.Unntak) {
+        val idList = transaction.connection.prepareStatement(QUERY_CREATE_UNNTAK).use {
             it.setString(1, unntak.uuid.toString())
             it.setObject(2, unntak.createdAt)
             it.setString(3, unntak.createdBy)
@@ -52,8 +51,8 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
-    override suspend fun createAvvent(connection: Connection, avvent: DialogmotekandidatEndring.Avvent) {
-        val idList = connection.prepareStatement(QUERY_CREATE_AVVENT).use {
+    override fun createAvvent(transaction: ITransaction, avvent: DialogmotekandidatEndring.Avvent) {
+        val idList = transaction.connection.prepareStatement(QUERY_CREATE_AVVENT).use {
             it.setString(1, avvent.uuid.toString())
             it.setObject(2, avvent.createdAt)
             it.setDate(3, Date.valueOf(avvent.frist))
@@ -69,8 +68,8 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
-    override suspend fun lukkAvvent(connection: Connection, avvent: DialogmotekandidatEndring.Avvent) {
-        val updated = connection.prepareStatement(QUERY_LUKK_AVVENT).use {
+    override fun lukkAvvent(transaction: ITransaction, avvent: DialogmotekandidatEndring.Avvent) {
+        val updated = transaction.connection.prepareStatement(QUERY_LUKK_AVVENT).use {
             it.setString(1, avvent.uuid.toString())
             it.executeUpdate()
         }
@@ -80,7 +79,7 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
-    override suspend fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak> =
+    override fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak> =
         database.connection.use { connection ->
             connection.prepareStatement(QUERY_GET_UNNTAK_FOR_PERSON).use {
                 it.setString(1, personident.value)
@@ -88,7 +87,7 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
             }
         }.toUnntakList()
 
-    override suspend fun getAvventList(personident: Personident): List<DialogmotekandidatEndring.Avvent> =
+    override fun getAvventList(personident: Personident): List<DialogmotekandidatEndring.Avvent> =
         database.connection.use { connection ->
             connection.prepareStatement(QUERY_GET_AVVENT_FOR_PERSON).use {
                 it.setString(1, personident.value)

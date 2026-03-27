@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.database.dialogmotekandidat
 
+import no.nav.syfo.application.ITransaction
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
@@ -7,7 +8,6 @@ import no.nav.syfo.infrastructure.database.NoElementInsertedException
 import no.nav.syfo.infrastructure.database.toAvventList
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.infrastructure.database.toPAvventList
-import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
@@ -26,13 +26,11 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
             }
         }.firstOrNull()
 
-    fun getDialogmotekandidatEndringer(personident: Personident, connection: Connection? = null): List<DialogmotekandidatEndring> =
-        connection?.getDialogmotekandidatEndringer(personident) ?: database.connection.use { connection ->
-            connection.getDialogmotekandidatEndringer(personident)
-        }
-
-    private fun Connection.getDialogmotekandidatEndringer(personident: Personident): List<DialogmotekandidatEndring> =
-        this.prepareStatement(GET_DIALOGMOTEENDRING_FOR_PERSON_QUERY).use {
+    fun getDialogmotekandidatEndringer(
+        transaction: ITransaction,
+        personident: Personident
+    ): List<DialogmotekandidatEndring> =
+        transaction.connection.prepareStatement(GET_DIALOGMOTEENDRING_FOR_PERSON_QUERY).use {
             it.setString(1, personident.value)
             it.executeQuery()
                 .toList { toPDialogmotekandidatEndringList() }
@@ -60,10 +58,10 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
         }
 
     fun createDialogmotekandidatEndring(
-        connection: Connection,
+        transaction: ITransaction,
         dialogmotekandidatEndring: DialogmotekandidatEndring,
     ) {
-        val idList = connection.prepareStatement(CREATE_DIALOGMOTEKANDIDAT_ENDRING_QUERY).use {
+        val idList = transaction.connection.prepareStatement(CREATE_DIALOGMOTEKANDIDAT_ENDRING_QUERY).use {
             it.setString(1, dialogmotekandidatEndring.uuid.toString())
             it.setObject(2, dialogmotekandidatEndring.createdAt)
             it.setString(3, dialogmotekandidatEndring.personident.value)

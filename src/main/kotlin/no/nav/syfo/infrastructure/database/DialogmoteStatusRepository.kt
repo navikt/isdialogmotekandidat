@@ -1,18 +1,18 @@
 package no.nav.syfo.infrastructure.database
 
+import no.nav.syfo.application.ITransaction
 import no.nav.syfo.domain.DialogmoteStatusEndring
 import no.nav.syfo.domain.Personident
-import java.sql.Connection
 import java.time.OffsetDateTime
 import java.util.*
 
 class DialogmoteStatusRepository(private val database: DatabaseInterface) {
 
     fun createDialogmoteStatus(
-        connection: Connection,
+        transaction: ITransaction,
         dialogmoteStatusEndring: DialogmoteStatusEndring,
     ) {
-        val idList = connection.prepareStatement(CREATE_DIALOGMOTESTATUS_QUERY).use {
+        val idList = transaction.connection.prepareStatement(CREATE_DIALOGMOTESTATUS_QUERY).use {
             it.setString(1, UUID.randomUUID().toString())
             it.setObject(2, dialogmoteStatusEndring.createdAt)
             it.setString(3, dialogmoteStatusEndring.personIdentNumber.value)
@@ -28,10 +28,10 @@ class DialogmoteStatusRepository(private val database: DatabaseInterface) {
     }
 
     fun getLatestDialogmoteFerdigstiltForPerson(
-        connection: Connection,
+        transaction: ITransaction,
         personident: Personident,
     ): OffsetDateTime? =
-        connection.prepareStatement(GET_LATEST_DIALOGMOTE_FERDIGSTILT_QUERY).use {
+        transaction.connection.prepareStatement(GET_LATEST_DIALOGMOTE_FERDIGSTILT_QUERY).use {
             it.setString(1, personident.value)
             it.executeQuery().toList {
                 getObject(1, OffsetDateTime::class.java)
