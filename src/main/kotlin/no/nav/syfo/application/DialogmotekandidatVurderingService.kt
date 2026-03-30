@@ -40,6 +40,14 @@ class DialogmotekandidatVurderingService(
                 dialogmotekandidatEndring = ikkeAktuell,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
             )
+            dialogmotekandidatVurderingRepository.getAvventList(personident = ikkeAktuell.personident)
+                .filter { !it.isLukket }
+                .forEach { existingAvvent ->
+                    dialogmotekandidatVurderingRepository.lukkAvvent(
+                        transaction = transaction,
+                        avvent = existingAvvent,
+                    )
+                }
         }
     }
 
@@ -73,6 +81,14 @@ class DialogmotekandidatVurderingService(
                 dialogmotekandidatEndring = unntak,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
             )
+            dialogmotekandidatVurderingRepository.getAvventList(personident = unntak.personident)
+                .filter { !it.isLukket }
+                .forEach { existingAvvent ->
+                    dialogmotekandidatVurderingRepository.lukkAvvent(
+                        transaction = transaction,
+                        avvent = existingAvvent,
+                    )
+                }
         }
     }
 
