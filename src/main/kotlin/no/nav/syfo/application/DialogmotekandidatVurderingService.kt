@@ -93,7 +93,17 @@ class DialogmotekandidatVurderingService(
                 throw ConflictException("Failed to create Avvent: Person is not kandidat")
             }
 
-            dialogmotekandidatVurderingRepository.createAvvent(transaction = transaction, avvent = avvent)
+            transactionManager.run { transaction ->
+                dialogmotekandidatVurderingRepository.getAvventList(personident = avvent.personident)
+                    .filter { !it.isLukket }
+                    .forEach { existingAvvent ->
+                         dialogmotekandidatVurderingRepository.lukkAvvent(
+                            transaction = transaction,
+                            avvent = existingAvvent,
+                        )
+                    }
+                dialogmotekandidatVurderingRepository.createAvvent(transaction = transaction, avvent = avvent)
+            }
         }
     }
 
