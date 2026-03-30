@@ -97,7 +97,7 @@ class DialogmotekandidatVurderingService(
                 dialogmotekandidatVurderingRepository.getAvventList(personident = avvent.personident)
                     .filter { !it.isLukket }
                     .forEach { existingAvvent ->
-                         dialogmotekandidatVurderingRepository.lukkAvvent(
+                        dialogmotekandidatVurderingRepository.lukkAvvent(
                             transaction = transaction,
                             avvent = existingAvvent,
                         )
