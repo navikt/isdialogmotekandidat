@@ -40,6 +40,7 @@ class DialogmotekandidatVurderingService(
                 dialogmotekandidatEndring = ikkeAktuell,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
             )
+            lukkAlleEksisterendeAvvent(transaction, ikkeAktuell.personident)
         }
     }
 
@@ -73,6 +74,7 @@ class DialogmotekandidatVurderingService(
                 dialogmotekandidatEndring = unntak,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
             )
+            lukkAlleEksisterendeAvvent(transaction, unntak.personident)
         }
     }
 
@@ -92,7 +94,7 @@ class DialogmotekandidatVurderingService(
             if (isPersonIkkeKandidat) {
                 throw ConflictException("Failed to create Avvent: Person is not kandidat")
             }
-
+            lukkAlleEksisterendeAvvent(transaction, avvent.personident)
             dialogmotekandidatVurderingRepository.createAvvent(transaction = transaction, avvent = avvent)
         }
     }
@@ -115,5 +117,16 @@ class DialogmotekandidatVurderingService(
             transaction = transaction,
             avvent = avvent,
         )
+    }
+
+    private fun lukkAlleEksisterendeAvvent(transaction: ITransaction, personident: Personident) {
+        dialogmotekandidatVurderingRepository.getAvventList(personident = personident)
+            .filter { !it.isLukket }
+            .forEach { existingAvvent ->
+                dialogmotekandidatVurderingRepository.lukkAvvent(
+                    transaction = transaction,
+                    avvent = existingAvvent,
+                )
+            }
     }
 }
