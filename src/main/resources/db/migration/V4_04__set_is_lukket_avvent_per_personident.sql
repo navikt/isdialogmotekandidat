@@ -1,7 +1,8 @@
 -- Close all but the last created avvent per personident
 UPDATE avvent
 SET is_lukket = TRUE
-WHERE id NOT IN (
+WHERE is_lukket = FALSE
+AND id NOT IN (
     SELECT DISTINCT ON (personident) id
     FROM avvent
     ORDER BY personident, created_at DESC
