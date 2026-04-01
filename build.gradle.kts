@@ -3,25 +3,26 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluentVersion = "8.1.1"
+val confluentVersion = "8.2.0"
 val flywayVersion = "11.19.0"
 val hikariVersion = "7.0.2"
 val isdialogmoteSchemaVersion = "1.0.5"
-val jacksonDataTypeVersion = "2.20.1"
-val jettyVersion = "12.1.5"
-val kafkaVersion = "4.1.0"
-val ktorVersion = "3.3.3"
-val logbackVersion = "1.5.22"
+val jacksonDataTypeVersion = "2.21.2"
+val jacksonDatabindVersion = "3.1.0"
+val jettyVersion = "12.1.7"
+val kafkaVersion = "4.2.0"
+val ktorVersion = "3.4.2"
+val logbackVersion = "1.5.32"
 val logstashEncoderVersion = "9.0"
-val micrometerRegistryVersion = "1.12.13"
-val nimbusJoseJwtVersion = "10.6"
-val mockkVersion = "1.14.7"
-val postgresVersion = "42.7.8"
-val postgresEmbeddedVersion = "2.2.0"
+val micrometerRegistryVersion = "1.16.4"
+val nimbusJoseJwtVersion = "10.8"
+val mockkVersion = "1.14.9"
+val postgresVersion = "42.7.10"
+val postgresEmbeddedVersion = "2.2.2"
 val postgresRuntimeVersion = "17.6.0"
 
 plugins {
-    kotlin("jvm") version "2.2.21"
+    kotlin("jvm") version "2.3.10"
     id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.github.ben-manes.versions") version "0.53.0"
@@ -65,6 +66,7 @@ dependencies {
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonDataTypeVersion")
+    implementation("tools.jackson.core:jackson-databind:$jacksonDatabindVersion")
 
     // Database
     implementation("org.postgresql:postgresql:$postgresVersion")
@@ -75,53 +77,14 @@ dependencies {
     testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:$postgresRuntimeVersion"))
 
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion")
-    constraints {
-        implementation("org.bitbucket.b_c:jose4j") {
-            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
-            version {
-                require("0.9.6")
-            }
-        }
-        implementation("commons-beanutils:commons-beanutils") {
-            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
-            version {
-                require("1.11.0")
-            }
-        }
-    }
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
-    constraints {
-        implementation("org.apache.avro:avro") {
-            because("io.confluent:kafka-avro-serializer:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
-            version {
-                require("1.12.1")
-            }
-        }
-        implementation("org.apache.commons:commons-compress") {
-            because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
-            version {
-                require("1.28.0")
-            }
-        }
-    }
     implementation("io.confluent:kafka-schema-registry:$confluentVersion")
     constraints {
         implementation("io.github.classgraph:classgraph") {
             because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
             version {
                 require("4.8.184")
-            }
-        }
-        implementation("org.glassfish.jersey.core:jersey-client") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2025-12383")
-            version {
-                require("3.1.11")
-            }
-        }
-        implementation("com.nimbusds:nimbus-jose-jwt") {
-            version {
-                require(nimbusJoseJwtVersion)
             }
         }
     }
