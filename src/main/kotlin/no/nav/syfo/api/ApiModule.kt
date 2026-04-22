@@ -8,7 +8,6 @@ import no.nav.syfo.Environment
 import no.nav.syfo.api.auth.JwtIssuer
 import no.nav.syfo.api.auth.JwtIssuerType
 import no.nav.syfo.api.auth.installJwtAuthentication
-import no.nav.syfo.api.endpoints.registerAvventApi
 import no.nav.syfo.api.endpoints.registerDialogmotekandidatApi
 import no.nav.syfo.api.endpoints.registerIkkeAktuellApi
 import no.nav.syfo.api.endpoints.registerUnntakApi
@@ -59,10 +58,6 @@ fun Application.apiModule(
                 dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
             )
             registerIkkeAktuellApi(
-                veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-                dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
-            )
-            registerAvventApi(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
             )

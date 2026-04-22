@@ -4,7 +4,6 @@ import no.nav.syfo.api.exception.ConflictException
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.domain.isLatestIkkeKandidat
-import no.nav.syfo.domain.latest
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 
 class DialogmotekandidatVurderingService(
@@ -40,7 +39,6 @@ class DialogmotekandidatVurderingService(
                 dialogmotekandidatEndring = ikkeAktuell,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
             )
-            lukkAlleEksisterendeAvvent(transaction, ikkeAktuell.personident)
         }
     }
 
@@ -74,59 +72,9 @@ class DialogmotekandidatVurderingService(
                 dialogmotekandidatEndring = unntak,
                 tilfelleStart = latestOppfolgingstilfelleArbeidstaker?.tilfelleStart,
             )
-            lukkAlleEksisterendeAvvent(transaction, unntak.personident)
         }
     }
 
     fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak> =
         dialogmotekandidatVurderingRepository.getUnntakList(personident = personident)
-
-    suspend fun createAvvent(
-        avvent: DialogmotekandidatEndring.Avvent,
-    ) {
-        transactionManager.run { transaction ->
-            val isPersonIkkeKandidat =
-                dialogmotekandidatRepository.getDialogmotekandidatEndringer(
-                    transaction = transaction,
-                    personident = avvent.personident,
-                )
-                    .isLatestIkkeKandidat()
-            if (isPersonIkkeKandidat) {
-                throw ConflictException("Failed to create Avvent: Person is not kandidat")
-            }
-            lukkAlleEksisterendeAvvent(transaction, avvent.personident)
-            dialogmotekandidatVurderingRepository.createAvvent(transaction = transaction, avvent = avvent)
-        }
-    }
-
-    suspend fun getAvvent(personident: Personident): List<DialogmotekandidatEndring.Avvent> {
-        val latestKandidatEndring = dialogmotekandidatService.getDialogmotekandidatEndringer(personident).latest()
-
-        val latestAvvent = dialogmotekandidatVurderingRepository.getAvventList(personident = personident)
-            .maxByOrNull { it.createdAt }
-        val isActiveAvvent = latestAvvent != null &&
-            latestKandidatEndring?.kandidat == true &&
-            latestAvvent.createdAt.isAfter(latestKandidatEndring.createdAt) &&
-            !latestAvvent.isLukket
-
-        return if (isActiveAvvent) listOf(latestAvvent) else emptyList()
-    }
-
-    fun lukkAvvent(transaction: ITransaction, avvent: DialogmotekandidatEndring.Avvent) {
-        dialogmotekandidatVurderingRepository.lukkAvvent(
-            transaction = transaction,
-            avvent = avvent,
-        )
-    }
-
-    private fun lukkAlleEksisterendeAvvent(transaction: ITransaction, personident: Personident) {
-        dialogmotekandidatVurderingRepository.getAvventList(personident = personident)
-            .filter { !it.isLukket }
-            .forEach { existingAvvent ->
-                dialogmotekandidatVurderingRepository.lukkAvvent(
-                    transaction = transaction,
-                    avvent = existingAvvent,
-                )
-            }
-    }
 }

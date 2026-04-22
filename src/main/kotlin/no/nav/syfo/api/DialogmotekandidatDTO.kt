@@ -16,5 +16,4 @@ data class DialogmotekandidatResponseDTO(
     val createdAt: LocalDateTime,
     val personident: String,
     val isKandidat: Boolean,
-    val avvent: AvventDTO?,
 )

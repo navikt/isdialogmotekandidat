@@ -132,7 +132,6 @@ fun main() {
                     dialogmotekandidatRepository = dialogmotekandidatRepository,
                     dialogmoteStatusRepository = dialogmoteStatusRepository,
                     dialogmotekandidatService = dialogmotekandidatService,
-                    dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
                     oppfolgingstilfelleService = oppfolgingstilfelleService,
                 )
 
