@@ -26,14 +26,19 @@ fun ApplicationCall.getBearerHeader(): String? {
 }
 
 fun ApplicationCall.getConsumerClientId(): String? =
-    getBearerHeader()?.let {
-        JWT.decode(it).claims[JWT_CLAIM_AZP]?.asString()
+    getBearerHeader()?.let { token ->
+        runCatching {
+            JWT.decode(token).claims[JWT_CLAIM_AZP]?.asString()
+        }.getOrNull()
     }
 
 fun ApplicationCall.getNAVIdent(): String {
     val token = getBearerHeader() ?: throw UnauthorizedException("No Authorization header supplied")
-    return JWT.decode(token).claims[JWT_CLAIM_NAVIDENT]?.asString()
-        ?: throw UnauthorizedException("Missing NAVident in private claims")
+    return runCatching {
+        JWT.decode(token).claims[JWT_CLAIM_NAVIDENT]?.asString()
+    }.getOrElse {
+        throw UnauthorizedException("Invalid Authorization token")
+    } ?: throw UnauthorizedException("Missing NAVident in private claims")
 }
 
 fun RoutingContext.personIdentHeader(): String? {
