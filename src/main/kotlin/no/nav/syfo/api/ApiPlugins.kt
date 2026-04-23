@@ -54,6 +54,9 @@ fun Application.installStatusPages() {
                 is ForbiddenAccessVeilederException -> {
                     log.warn(logExceptionMessage, cause)
                 }
+                is UnauthorizedException -> {
+                    log.warn(logExceptionMessage, cause)
+                }
                 else -> {
                     log.error(logExceptionMessage, cause)
                 }
