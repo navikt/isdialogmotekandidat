@@ -12,6 +12,7 @@ import io.ktor.server.response.*
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import no.nav.syfo.api.exception.ConflictException
 import no.nav.syfo.api.exception.ForbiddenAccessVeilederException
+import no.nav.syfo.api.exception.UnauthorizedException
 import no.nav.syfo.application.metric.METRICS_REGISTRY
 import no.nav.syfo.util.*
 import java.time.Duration
@@ -66,6 +67,9 @@ fun Application.installStatusPages() {
                 }
                 is IllegalArgumentException -> {
                     HttpStatusCode.BadRequest
+                }
+                is UnauthorizedException -> {
+                    HttpStatusCode.Unauthorized
                 }
                 is ForbiddenAccessVeilederException -> {
                     HttpStatusCode.Forbidden
