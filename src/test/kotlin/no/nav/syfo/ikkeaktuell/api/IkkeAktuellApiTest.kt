@@ -24,7 +24,8 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWT
+import no.nav.syfo.testhelper.tokenForVeilederWithFullTilgang
+import no.nav.syfo.testhelper.tokenForVeilederWithNoWriteTilgang
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.getDialogmotekandidatEndringer
 import no.nav.syfo.testhelper.testApiModule
@@ -62,11 +63,7 @@ class IkkeAktuellApiTest {
         every { kafkaProducer.send(any()) } returns mockk(relaxed = true)
     }
 
-    private val validToken = generateJWT(
-        audience = externalMockEnvironment.environment.azure.appClientId,
-        issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
-        navIdent = UserConstants.VEILEDER_IDENT,
-    )
+    private val validToken = tokenForVeilederWithFullTilgang
     private val newIkkeAktuellDTO = generateNewIkkeAktuellDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
 
     @Test
@@ -121,6 +118,18 @@ class IkkeAktuellApiTest {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             setBody(dtoDenied)
+        }
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+        verify(exactly = 0) { kafkaProducer.send(any()) }
+    }
+
+    @Test
+    fun `returns status Forbidden if denied write access`() = testApplication {
+        val client = setupApiAndClient()
+        val response = client.post(urlIkkeAktuellPersonIdent) {
+            bearerAuth(tokenForVeilederWithNoWriteTilgang)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(newIkkeAktuellDTO)
         }
         assertEquals(HttpStatusCode.Forbidden, response.status)
         verify(exactly = 0) { kafkaProducer.send(any()) }

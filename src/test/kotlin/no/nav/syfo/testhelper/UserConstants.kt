@@ -16,4 +16,5 @@ object UserConstants {
 
     val VIRKSOMHETSNUMMER_DEFAULT = Virksomhetsnummer("987654321")
     const val VEILEDER_IDENT = "Z999999"
+    const val VEILEDER_IDENT_NO_WRITE_ACCESS = "Z888888"
 }
