@@ -11,7 +11,6 @@ import no.nav.syfo.infrastructure.database.dialogmotekandidat.Dialogmotekandidat
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.PDialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmoteStatusEndring
-import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import java.time.OffsetDateTime
 import org.flywaydb.core.Flyway
 import java.sql.Connection
@@ -76,14 +75,6 @@ fun DatabaseInterface.createDialogmotekandidatStoppunkt(stoppunkt: Dialogmotekan
     val repository = DialogmotekandidatStoppunktRepository(this)
     this.connection.use { connection ->
         repository.createDialogmotekandidatStoppunkt(DatabaseTransaction(connection), stoppunkt)
-        connection.commit()
-    }
-}
-
-fun DatabaseInterface.createAvvent(avvent: DialogmotekandidatEndring.Avvent) {
-    val repository = DialogmotekandidatVurderingRepository(this)
-    this.connection.use { connection ->
-        repository.createAvvent(DatabaseTransaction(connection), avvent)
         connection.commit()
     }
 }

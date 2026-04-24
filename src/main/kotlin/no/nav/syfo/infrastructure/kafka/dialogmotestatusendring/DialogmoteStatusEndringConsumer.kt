@@ -6,7 +6,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ITransaction
 import no.nav.syfo.application.ITransactionManager
 import no.nav.syfo.application.DialogmotekandidatService
-import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmoteStatusEndring
@@ -29,7 +28,6 @@ class DialogmoteStatusEndringConsumer(
     private val dialogmotekandidatRepository: DialogmotekandidatRepository,
     private val dialogmoteStatusRepository: DialogmoteStatusRepository,
     private val dialogmotekandidatService: DialogmotekandidatService,
-    private val dialogmotekandidatVurderingService: DialogmotekandidatVurderingService,
     private val oppfolgingstilfelleService: OppfolgingstilfelleService,
 ) {
     fun pollAndProcessRecords(consumer: KafkaConsumer<String, KDialogmoteStatusEndring>) {
@@ -88,13 +86,7 @@ class DialogmoteStatusEndringConsumer(
         val isStatusendringAfterKandidat =
             latestDialogmotekandidatEndring?.kandidat == true && dialogmoteStatusEndring.createdAt.isAfter(latestDialogmotekandidatEndring.createdAt)
         if (isStatusendringAfterKandidat) {
-            if (dialogmoteStatusEndring.type == DialogmoteStatusEndring.Type.INNKALT) {
-                val avventList = dialogmotekandidatVurderingService.getAvvent(dialogmoteStatusEndring.personIdentNumber)
-                avventList.filter { !it.isLukket }
-                    .forEach { avvent ->
-                        dialogmotekandidatVurderingService.lukkAvvent(transaction, avvent)
-                    }
-            } else {
+            if (dialogmoteStatusEndring.type != DialogmoteStatusEndring.Type.INNKALT) {
                 val latestOppfolgingstilfelle = oppfolgingstilfelleService.getLatestOppfolgingstilfelle(
                     arbeidstakerPersonIdent = dialogmoteStatusEndring.personIdentNumber,
                 )

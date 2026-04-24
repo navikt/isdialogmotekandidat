@@ -4,7 +4,6 @@ import no.nav.syfo.application.IDialogmotekandidatVurderingRepository
 import no.nav.syfo.application.ITransaction
 import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
-import java.sql.Date
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.*
@@ -51,34 +50,6 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
         }
     }
 
-    override fun createAvvent(transaction: ITransaction, avvent: DialogmotekandidatEndring.Avvent) {
-        val idList = transaction.connection.prepareStatement(QUERY_CREATE_AVVENT).use {
-            it.setString(1, avvent.uuid.toString())
-            it.setObject(2, avvent.createdAt)
-            it.setDate(3, Date.valueOf(avvent.frist))
-            it.setString(4, avvent.createdBy)
-            it.setString(5, avvent.personident.value)
-            it.setString(6, avvent.beskrivelse)
-            it.setBoolean(7, avvent.isLukket)
-            it.executeQuery().toList { getInt("id") }
-        }
-
-        if (idList.size != 1) {
-            throw NoElementInsertedException("Creating AVVENT failed, no rows affected.")
-        }
-    }
-
-    override fun lukkAvvent(transaction: ITransaction, avvent: DialogmotekandidatEndring.Avvent) {
-        val updated = transaction.connection.prepareStatement(QUERY_LUKK_AVVENT).use {
-            it.setString(1, avvent.uuid.toString())
-            it.executeUpdate()
-        }
-
-        if (updated != 1) {
-            throw NoElementInsertedException("Updating AVVENT failed, no rows affected.")
-        }
-    }
-
     override fun getUnntakList(personident: Personident): List<DialogmotekandidatEndring.Unntak> =
         database.connection.use { connection ->
             connection.prepareStatement(QUERY_GET_UNNTAK_FOR_PERSON).use {
@@ -86,14 +57,6 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
                 it.executeQuery().toList { toPUnntakList() }
             }
         }.toUnntakList()
-
-    override fun getAvventList(personident: Personident): List<DialogmotekandidatEndring.Avvent> =
-        database.connection.use { connection ->
-            connection.prepareStatement(QUERY_GET_AVVENT_FOR_PERSON).use {
-                it.setString(1, personident.value)
-                it.executeQuery().toList { toPAvventList() }
-            }
-        }.toAvventList()
 
     private fun ResultSet.toPIkkeAktuell() =
         PIkkeAktuell(
@@ -153,26 +116,6 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
                 RETURNING id
             """
 
-        private const val QUERY_CREATE_AVVENT =
-            """
-                INSERT INTO AVVENT (
-                    id,
-                    uuid,
-                    created_at,
-                    frist,
-                    created_by,
-                    personident,
-                    beskrivelse,
-                    is_lukket
-                ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
-                RETURNING id
-            """
-
-        private const val QUERY_LUKK_AVVENT =
-            """
-                UPDATE AVVENT SET is_lukket=true WHERE uuid=?
-            """
-
         private const val QUERY_GET_UNNTAK_FOR_PERSON: String =
             """
                 SELECT * 
@@ -180,25 +123,5 @@ class DialogmotekandidatVurderingRepository(private val database: DatabaseInterf
                 WHERE personident = ?
                 ORDER BY created_at DESC;
             """
-
-        private const val QUERY_GET_AVVENT_FOR_PERSON: String =
-            """
-                SELECT * 
-                FROM AVVENT
-                WHERE personident = ?
-                ORDER BY created_at DESC;
-            """
     }
 }
-
-fun ResultSet.toPAvventList() =
-    PAvvent(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        createdAt = getObject("created_at", OffsetDateTime::class.java),
-        frist = getDate("frist").toLocalDate(),
-        createdBy = getString("created_by"),
-        personident = getString("personident"),
-        beskrivelse = getString("beskrivelse"),
-        isLukket = getBoolean("is_lukket"),
-    )
