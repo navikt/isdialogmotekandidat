@@ -1,9 +1,10 @@
 package no.nav.syfo.util
 
 import com.auth0.jwt.JWT
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpHeaders
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.routing.RoutingContext
+import no.nav.syfo.api.exception.UnauthorizedException
 
 const val JWT_CLAIM_AZP = "azp"
 const val JWT_CLAIM_NAVIDENT = "NAVident"
@@ -25,16 +26,20 @@ fun ApplicationCall.getBearerHeader(): String? {
 }
 
 fun ApplicationCall.getConsumerClientId(): String? =
-    getBearerHeader()?.let {
-        JWT.decode(it).claims[JWT_CLAIM_AZP]?.asString()
+    getBearerHeader()?.let { token ->
+        runCatching {
+            JWT.decode(token).claims[JWT_CLAIM_AZP]?.asString()
+        }.getOrNull()
     }
 
 fun getNavIdentFromToken(token: String): String? =
     runCatching { JWT.decode(token).claims[JWT_CLAIM_NAVIDENT]?.asString() }.getOrNull()
 
 fun ApplicationCall.getNAVIdent(): String {
-    val token = getBearerHeader() ?: throw Error("No Authorization header supplied")
-    return getNavIdentFromToken(token) ?: throw Error("Missing NAVident in private claims")
+    val token = getBearerHeader()
+        ?: throw UnauthorizedException("No Authorization header supplied")
+    return getNavIdentFromToken(token)
+        ?: throw UnauthorizedException("Missing NAVident in private claims")
 }
 
 fun RoutingContext.personIdentHeader(): String? {
