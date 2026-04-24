@@ -27,6 +27,7 @@ fun Route.registerUnntakApi(
                 action = "Create unntak for person",
                 personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                requiresWriteAccess = true,
             ) {
                 val unntak = createUnntakDTO.toUnntak(
                     createdByIdent = call.getNAVIdent()

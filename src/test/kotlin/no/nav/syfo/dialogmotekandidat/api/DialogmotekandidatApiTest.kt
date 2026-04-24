@@ -18,10 +18,9 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS
-import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWT
+import no.nav.syfo.testhelper.tokenForVeilederWithFullTilgang
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringFerdigstilt
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.testApiModule
@@ -56,11 +55,7 @@ class DialogmotekandidatApiTest {
         database.dropData()
     }
 
-    private val validToken = generateJWT(
-        audience = externalMockEnvironment.environment.azure.appClientId,
-        issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
-        navIdent = VEILEDER_IDENT,
-    )
+    private val validToken = tokenForVeilederWithFullTilgang
 
     @Nested
     @DisplayName("GET kandidat")
