@@ -13,15 +13,12 @@ import no.nav.syfo.api.GetDialogmotekandidaterRequestDTO
 import no.nav.syfo.api.endpoints.kandidatApiBasePath
 import no.nav.syfo.api.endpoints.kandidatApiPersonidentPath
 import no.nav.syfo.domain.Dialogmotekandidat
-import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_2_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.UserConstants.PERSONIDENTNUMBER_VEILEDER_NO_ACCESS
 import no.nav.syfo.testhelper.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.testhelper.createAvvent
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.dropData
 import no.nav.syfo.testhelper.generateJWT
@@ -46,7 +43,6 @@ class DialogmotekandidatApiTest {
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
     private val endringProducer = mockk<DialogmotekandidatEndringProducer>()
-    private val dialogmotekandidatVurderingRepository = DialogmotekandidatVurderingRepository(database)
 
     private fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
         application {
@@ -211,7 +207,7 @@ class DialogmotekandidatApiTest {
         val urlGetKandidater = "$kandidatApiBasePath/get-kandidater"
 
         @Test
-        fun `returns dialogmotekandidater without avvent-vurderinger`() = testApplication {
+        fun `returns dialogmotekandidater`() = testApplication {
             val client = setupApiAndClient()
 
             val stoppunktKandidat1 = generateDialogmotekandidatEndringStoppunkt(ARBEIDSTAKER_PERSONIDENTNUMBER)
@@ -238,132 +234,6 @@ class DialogmotekandidatApiTest {
             assertTrue(responseBody.dialogmotekandidater.containsKey(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
             assertTrue(responseBody.dialogmotekandidater.containsKey(ARBEIDSTAKER_2_PERSONIDENTNUMBER.value))
             assertTrue(responseBody.dialogmotekandidater.values.all { it.isKandidat })
-            assertTrue(responseBody.dialogmotekandidater.values.all { it.avvent == null })
-        }
-
-        @Test
-        fun `returns dialogmotekandidater with avvent-vurderinger`() = testApplication {
-            val client = setupApiAndClient()
-
-            val stoppunktKandidat1 = generateDialogmotekandidatEndringStoppunkt(ARBEIDSTAKER_PERSONIDENTNUMBER)
-            val stoppunktKandidat2 = generateDialogmotekandidatEndringStoppunkt(ARBEIDSTAKER_2_PERSONIDENTNUMBER)
-            database.createDialogmotekandidatEndring(stoppunktKandidat1)
-            database.createDialogmotekandidatEndring(stoppunktKandidat2)
-
-            val avvent1 = DialogmotekandidatEndring.avvent(
-                frist = LocalDate.now().plusDays(1),
-                createdBy = VEILEDER_IDENT,
-                personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                beskrivelse = "Beskrivelse av avvent",
-            )
-            val avvent2 = DialogmotekandidatEndring.avvent(
-                frist = LocalDate.now().plusDays(1),
-                createdBy = VEILEDER_IDENT,
-                personident = ARBEIDSTAKER_2_PERSONIDENTNUMBER,
-                beskrivelse = "Beskrivelse av avvent 2",
-            )
-
-            database.createAvvent(avvent1)
-            database.createAvvent(avvent2)
-
-            val requestDTO = GetDialogmotekandidaterRequestDTO(
-                personidenter = listOf(
-                    ARBEIDSTAKER_PERSONIDENTNUMBER.value,
-                    ARBEIDSTAKER_2_PERSONIDENTNUMBER.value
-                )
-            )
-
-            val response = client.post(urlGetKandidater) {
-                bearerAuth(validToken)
-                contentType(ContentType.Application.Json)
-                setBody(requestDTO)
-            }
-
-            assertEquals(HttpStatusCode.OK, response.status)
-            val responseBody = response.body<GetDialogmotekandidatForPersonsResponseDTO>()
-
-            assertTrue(responseBody.dialogmotekandidater.containsKey(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
-            assertTrue(responseBody.dialogmotekandidater.containsKey(ARBEIDSTAKER_2_PERSONIDENTNUMBER.value))
-            assertTrue(responseBody.dialogmotekandidater.values.all { it.isKandidat })
-            assertTrue(responseBody.dialogmotekandidater.values.none { it.avvent == null })
-        }
-
-        @Test
-        fun `returns correct avvent-vurdering for person when several avvent`() = testApplication {
-            val client = setupApiAndClient()
-
-            val stoppunktKandidat = generateDialogmotekandidatEndringStoppunkt(ARBEIDSTAKER_PERSONIDENTNUMBER)
-            database.createDialogmotekandidatEndring(stoppunktKandidat)
-
-            val avvent = DialogmotekandidatEndring.avvent(
-                frist = LocalDate.now().plusDays(1),
-                createdBy = VEILEDER_IDENT,
-                personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                beskrivelse = "Beskrivelse av avvent",
-            )
-            val oldAvvent = DialogmotekandidatEndring.avvent(
-                frist = LocalDate.now().plusDays(10),
-                createdBy = VEILEDER_IDENT,
-                personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                beskrivelse = "Gammel avvent",
-            ).copy(
-                createdAt = OffsetDateTime.now().minusDays(10),
-            )
-
-            database.createAvvent(avvent)
-            database.createAvvent(oldAvvent)
-
-            val requestDTO = GetDialogmotekandidaterRequestDTO(personidenter = listOf(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
-
-            val response = client.post(urlGetKandidater) {
-                bearerAuth(validToken)
-                contentType(ContentType.Application.Json)
-                setBody(requestDTO)
-            }
-
-            assertEquals(HttpStatusCode.OK, response.status)
-            val responseBody = response.body<GetDialogmotekandidatForPersonsResponseDTO>()
-
-            assertTrue(responseBody.dialogmotekandidater.containsKey(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
-            assertTrue(responseBody.dialogmotekandidater.values.all { it.isKandidat })
-            assertEquals(1, responseBody.dialogmotekandidater.values.size)
-            assertEquals("Beskrivelse av avvent", responseBody.dialogmotekandidater.values.single().avvent?.beskrivelse)
-            assertEquals(LocalDate.now().plusDays(1), responseBody.dialogmotekandidater.values.single().avvent?.frist)
-        }
-
-        @Test
-        fun `returns no avvent-vurdering for person when lukket (innkalling sendt)`() = testApplication {
-            val client = setupApiAndClient()
-
-            val stoppunktKandidat = generateDialogmotekandidatEndringStoppunkt(ARBEIDSTAKER_PERSONIDENTNUMBER)
-            database.createDialogmotekandidatEndring(stoppunktKandidat)
-
-            val avvent = DialogmotekandidatEndring.avvent(
-                frist = LocalDate.now().plusDays(1),
-                createdBy = VEILEDER_IDENT,
-                personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                beskrivelse = "Beskrivelse av avvent",
-            ).copy(
-                isLukket = true,
-            )
-
-            database.createAvvent(avvent)
-
-            val requestDTO = GetDialogmotekandidaterRequestDTO(personidenter = listOf(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
-
-            val response = client.post(urlGetKandidater) {
-                bearerAuth(validToken)
-                contentType(ContentType.Application.Json)
-                setBody(requestDTO)
-            }
-
-            assertEquals(HttpStatusCode.OK, response.status)
-            val responseBody = response.body<GetDialogmotekandidatForPersonsResponseDTO>()
-
-            assertTrue(responseBody.dialogmotekandidater.containsKey(ARBEIDSTAKER_PERSONIDENTNUMBER.value))
-            assertTrue(responseBody.dialogmotekandidater.values.all { it.isKandidat })
-            assertEquals(1, responseBody.dialogmotekandidater.values.size)
-            assertTrue(responseBody.dialogmotekandidater.values.all { it.avvent == null })
         }
 
         @Test

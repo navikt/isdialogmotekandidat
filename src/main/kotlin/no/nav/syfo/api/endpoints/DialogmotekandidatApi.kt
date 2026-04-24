@@ -4,14 +4,12 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.syfo.api.AvventDTO
 import no.nav.syfo.api.DialogmotekandidatResponseDTO
 import no.nav.syfo.api.GetDialogmotekandidatForPersonsResponseDTO
 import no.nav.syfo.api.GetDialogmotekandidaterRequestDTO
 import no.nav.syfo.api.HistorikkDTO
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
-import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
@@ -95,18 +93,6 @@ fun Route.registerDialogmotekandidatApi(
                                 createdAt = dialogmotekandidatEndring.createdAt.toLocalDateTime(),
                                 personident = dialogmotekandidatEndring.personident.value,
                                 isKandidat = dialogmotekandidatEndring.kandidat,
-                                avvent = if (dialogmotekandidatEndring is DialogmotekandidatEndring.Avvent) {
-                                    AvventDTO(
-                                        uuid = dialogmotekandidatEndring.uuid.toString(),
-                                        createdAt = dialogmotekandidatEndring.createdAt.toLocalDateTime(),
-                                        frist = dialogmotekandidatEndring.frist,
-                                        createdBy = dialogmotekandidatEndring.createdBy,
-                                        personident = dialogmotekandidatEndring.personident.value,
-                                        beskrivelse = dialogmotekandidatEndring.beskrivelse,
-                                    )
-                                } else {
-                                    null
-                                }
                             )
                         }
                     )

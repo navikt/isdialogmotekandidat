@@ -5,9 +5,7 @@ import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Personident
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.NoElementInsertedException
-import no.nav.syfo.infrastructure.database.toAvventList
 import no.nav.syfo.infrastructure.database.toList
-import no.nav.syfo.infrastructure.database.toPAvventList
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
@@ -44,16 +42,6 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
                 it.executeQuery()
                     .toList { toPDialogmotekandidatEndringList() }
                     .toDialogmotekandidatEndringList()
-            }
-        }
-
-    fun getAvventForPersons(personidenter: List<Personident>): List<DialogmotekandidatEndring.Avvent> =
-        database.connection.use { connection ->
-            connection.prepareStatement(GET_AVVENT_FOR_PERSONS).use {
-                it.setString(1, personidenter.joinToString(transform = { personident -> personident.value }, separator = ","))
-                it.executeQuery()
-                    .toList { toPAvventList() }
-                    .toAvventList()
             }
         }
 
@@ -130,13 +118,6 @@ class DialogmotekandidatRepository(private val database: DatabaseInterface) {
                 SELECT *
                 FROM DIALOGMOTEKANDIDAT_ENDRING
                 WHERE kandidat AND personident = ANY (string_to_array(?, ','))
-            """
-
-        private const val GET_AVVENT_FOR_PERSONS: String =
-            """
-                SELECT *
-                FROM AVVENT
-                WHERE personident = ANY (string_to_array(?, ','))
             """
 
         private const val FIND_OUTDATED_DIALOGMOTEKANDIDATER_QUERY =
