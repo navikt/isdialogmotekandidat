@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.clients
 data class ClientsEnvironment(
     val istilgangskontroll: ClientEnvironment,
     val oppfolgingstilfelle: ClientEnvironment,
+    val behandlendeEnhet: ClientEnvironment,
     val pdl: ClientEnvironment,
 )
 
