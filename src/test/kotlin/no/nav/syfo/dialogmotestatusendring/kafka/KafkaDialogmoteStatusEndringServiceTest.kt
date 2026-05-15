@@ -10,6 +10,7 @@ import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmotekandidatEndring
+import no.nav.syfo.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
 import no.nav.syfo.infrastructure.kafka.dialogmotestatusendring.DIALOGMOTE_STATUS_ENDRING_TOPIC
@@ -51,6 +52,11 @@ class KafkaDialogmoteStatusEndringServiceTest {
         dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
         dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
+        behandlendeEnhetClient = BehandlendeEnhetClient(
+            azureAdClient = externalMockEnvironment.azureAdClient,
+            clientEnvironment = externalMockEnvironment.environment.clients.behandlendeEnhet,
+            httpClient = externalMockEnvironment.mockHttpClient,
+        ),
     )
     private val dialogmoteStatusEndringConsumer = DialogmoteStatusEndringConsumer(
         transactionManager = externalMockEnvironment.transactionManager,
