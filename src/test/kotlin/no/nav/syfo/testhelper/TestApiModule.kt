@@ -1,16 +1,19 @@
 package no.nav.syfo.testhelper
 
 import io.ktor.server.application.*
-import io.mockk.mockk
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
+import no.nav.syfo.infrastructure.database.DialogmoteStatusRepository
+import no.nav.syfo.infrastructure.database.TransactionManager
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 
 fun Application.testApiModule(
@@ -28,15 +31,24 @@ fun Application.testApiModule(
     )
     val oppfolgingstilfelleService = OppfolgingstilfelleService(oppfolgingstilfelleClient = oppfolgingstilfelleClient)
     val dialogmotekandidatRepository = DialogmotekandidatRepository(externalMockEnvironment.database)
+    val dialogmotekandidatStoppunktRepository = DialogmotekandidatStoppunktRepository(externalMockEnvironment.database)
+    val dialogmoteStatusRepository = DialogmoteStatusRepository(externalMockEnvironment.database)
+    val transactionManager = TransactionManager(externalMockEnvironment.database)
     val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
-        database = externalMockEnvironment.database,
+        transactionManager = transactionManager,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
-        behandlendeEnhetClient = mockk(relaxed = true),
+        dialogmotekandidatStoppunktRepository = dialogmotekandidatStoppunktRepository,
+        dialogmoteStatusRepository = dialogmoteStatusRepository,
+        behandlendeEnhetClient = BehandlendeEnhetClient(
+            azureAdClient = azureAdClient,
+            clientEnvironment = externalMockEnvironment.environment.clients.behandlendeEnhet,
+            httpClient = externalMockEnvironment.mockHttpClient,
+        ),
     )
     val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
-        database = externalMockEnvironment.database,
+        transactionManager = transactionManager,
         dialogmotekandidatService = dialogmotekandidatService,
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatRepository = dialogmotekandidatRepository,

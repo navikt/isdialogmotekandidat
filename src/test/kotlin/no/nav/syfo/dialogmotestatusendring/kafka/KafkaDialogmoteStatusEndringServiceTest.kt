@@ -6,14 +6,11 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import kotlinx.coroutines.test.runTest
 import no.nav.syfo.application.DialogmotekandidatService
-import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.dialogmote.avro.KDialogmoteStatusEndring
-import no.nav.syfo.domain.Avvent
 import no.nav.syfo.domain.DialogmoteStatusEndring
 import no.nav.syfo.domain.DialogmotekandidatEndring
-import no.nav.syfo.infrastructure.database.getLatestDialogmoteFerdigstiltForPerson
+import no.nav.syfo.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringRecord
 import no.nav.syfo.infrastructure.kafka.dialogmotestatusendring.DIALOGMOTE_STATUS_ENDRING_TOPIC
@@ -22,8 +19,10 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.dropData
+import no.nav.syfo.testhelper.getLatestDialogmoteFerdigstiltForPerson
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateKDialogmoteStatusEndring
+import no.nav.syfo.testhelper.getDialogmotekandidatEndringer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -35,7 +34,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.concurrent.Future
 
@@ -50,23 +48,21 @@ class KafkaDialogmoteStatusEndringServiceTest {
     private val dialogmotekandidatService = DialogmotekandidatService(
         oppfolgingstilfelleService = oppfolgingstilfelleService,
         dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
-        database = database,
+        transactionManager = externalMockEnvironment.transactionManager,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
-        behandlendeEnhetClient = mockk(relaxed = true),
+        dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
+        dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
+        behandlendeEnhetClient = BehandlendeEnhetClient(
+            azureAdClient = externalMockEnvironment.azureAdClient,
+            clientEnvironment = externalMockEnvironment.environment.clients.behandlendeEnhet,
+            httpClient = externalMockEnvironment.mockHttpClient,
+        ),
     )
-    private val dialogmotekandidatVurderingService =
-        DialogmotekandidatVurderingService(
-            database = database,
-            dialogmotekandidatService = dialogmotekandidatService,
-            dialogmotekandidatVurderingRepository = externalMockEnvironment.dialogmotekandidatVurderingRepository,
-            dialogmotekandidatRepository = externalMockEnvironment.dialogmotekandidatRepository,
-            oppfolgingstilfelleService = oppfolgingstilfelleService,
-        )
     private val dialogmoteStatusEndringConsumer = DialogmoteStatusEndringConsumer(
-        database = database,
+        transactionManager = externalMockEnvironment.transactionManager,
         dialogmotekandidatRepository = dialogmotekandidatRepository,
+        dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
         dialogmotekandidatService = dialogmotekandidatService,
-        dialogmotekandidatVurderingService = dialogmotekandidatVurderingService,
         oppfolgingstilfelleService = oppfolgingstilfelleService,
     )
 
@@ -161,10 +157,9 @@ class KafkaDialogmoteStatusEndringServiceTest {
         val slot = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(slot)) }
         val ferdigstilt =
-            database.connection.use { connection -> connection.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER) }
+            database.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER)
         assertEquals(statusEndringTidspunkt.toLocalDate(), ferdigstilt!!.toLocalDate())
-        val latest =
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
+        val latest = database.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertFalse(latest.kandidat)
         assertEquals(DialogmotekandidatEndring.Arsak.DIALOGMOTE_FERDIGSTILT, latest.arsak)
         val kafkaValue = slot.captured.value()
@@ -172,33 +167,6 @@ class KafkaDialogmoteStatusEndringServiceTest {
         assertFalse(kafkaValue.kandidat)
         assertEquals(DialogmotekandidatEndring.Arsak.DIALOGMOTE_FERDIGSTILT.name, kafkaValue.arsak)
         assertNull(kafkaValue.unntakArsak)
-    }
-
-    @Test
-    fun `closes avvent when latest endring for person is kandidat and created before innkalling`() = runTest {
-        database.createDialogmotekandidatEndring(dialogmotekandidatEndringCreatedBeforeStatusEndring)
-        dialogmotekandidatVurderingService.createAvvent(
-            Avvent(
-                frist = LocalDate.now().plusDays(14),
-                createdBy = "Z999999",
-                personident = ARBEIDSTAKER_PERSONIDENTNUMBER,
-                beskrivelse = "Beskrivelse"
-            )
-        )
-        assertTrue(dialogmotekandidatVurderingService.getAvvent(ARBEIDSTAKER_PERSONIDENTNUMBER).isNotEmpty())
-        every { consumer.poll(any<Duration>()) } returns ConsumerRecords(
-            mapOf(
-                topicPartition to listOf(
-                    kDialogmoteStatusEndringInnkaltRecord,
-                )
-            )
-        )
-        dialogmoteStatusEndringConsumer.pollAndProcessRecords(consumer)
-        verify(exactly = 1) { consumer.commitSync() }
-        val latest = dialogmotekandidatRepository.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
-        assertEquals(statusEndringTidspunkt.minusDays(1).toLocalDate(), latest.createdAt.toLocalDate())
-        assertTrue(latest.kandidat)
-        assertTrue(dialogmotekandidatVurderingService.getAvvent(ARBEIDSTAKER_PERSONIDENTNUMBER).isEmpty())
     }
 
     @Test
@@ -217,10 +185,9 @@ class KafkaDialogmoteStatusEndringServiceTest {
         verify(exactly = 1) { consumer.commitSync() }
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val ferdigstilt =
-            database.connection.use { connection -> connection.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER) }
+            database.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER)
         assertEquals(statusEndringTidspunkt.toLocalDate(), ferdigstilt!!.toLocalDate())
-        val latest =
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
+        val latest = database.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertEquals(dialogmotekandidatEndringCreatedAfterStatusEndring.uuid, latest.uuid)
     }
 
@@ -239,7 +206,7 @@ class KafkaDialogmoteStatusEndringServiceTest {
         verify(exactly = 1) { consumer.commitSync() }
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val ferdigstilt =
-            database.connection.use { connection -> connection.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER) }
+            database.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER)
         assertEquals(statusEndringTidspunkt.toLocalDate(), ferdigstilt!!.toLocalDate())
     }
 
@@ -258,8 +225,7 @@ class KafkaDialogmoteStatusEndringServiceTest {
         verify(exactly = 1) { consumer.commitSync() }
         val slot = slot<ProducerRecord<String, DialogmotekandidatEndringRecord>>()
         verify(exactly = 1) { kafkaProducer.send(capture(slot)) }
-        val latest =
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
+        val latest = database.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertFalse(latest.kandidat)
         assertEquals(DialogmotekandidatEndring.Arsak.DIALOGMOTE_LUKKET, latest.arsak)
         val kafkaValue = slot.captured.value()
@@ -282,8 +248,7 @@ class KafkaDialogmoteStatusEndringServiceTest {
         dialogmoteStatusEndringConsumer.pollAndProcessRecords(consumer)
         verify(exactly = 1) { consumer.commitSync() }
         verify(exactly = 0) { kafkaProducer.send(any()) }
-        val latest =
-            dialogmotekandidatRepository.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
+        val latest = database.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
         assertEquals(dialogmotekandidatEndringCreatedAfterStatusEndring.uuid, latest.uuid)
     }
 
@@ -300,7 +265,7 @@ class KafkaDialogmoteStatusEndringServiceTest {
         dialogmoteStatusEndringConsumer.pollAndProcessRecords(consumer)
         verify(exactly = 1) { consumer.commitSync() }
         verify(exactly = 0) { kafkaProducer.send(any()) }
-        val endringer = dialogmotekandidatRepository.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER)
+        val endringer = database.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER)
         assertTrue(endringer.isEmpty())
     }
 
@@ -314,7 +279,7 @@ class KafkaDialogmoteStatusEndringServiceTest {
         verify(exactly = 1) { consumer.commitSync() }
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val ferdigstilt =
-            database.connection.use { connection -> connection.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER) }
+            database.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER)
         assertNull(ferdigstilt)
     }
 
@@ -328,7 +293,7 @@ class KafkaDialogmoteStatusEndringServiceTest {
         verify(exactly = 1) { consumer.commitSync() }
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val ferdigstilt =
-            database.connection.use { connection -> connection.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER) }
+            database.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER)
         assertNull(ferdigstilt)
     }
 
@@ -341,7 +306,7 @@ class KafkaDialogmoteStatusEndringServiceTest {
         verify(exactly = 1) { consumer.commitSync() }
         verify(exactly = 0) { kafkaProducer.send(any()) }
         val ferdigstilt =
-            database.connection.use { connection -> connection.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER) }
+            database.getLatestDialogmoteFerdigstiltForPerson(ARBEIDSTAKER_PERSONIDENTNUMBER)
         assertNull(ferdigstilt)
     }
 }
