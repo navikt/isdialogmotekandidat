@@ -6,7 +6,6 @@ import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
-import no.nav.syfo.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.database.DialogmotekandidatVurderingRepository
@@ -41,11 +40,6 @@ fun Application.testApiModule(
         dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmotekandidatStoppunktRepository = dialogmotekandidatStoppunktRepository,
         dialogmoteStatusRepository = dialogmoteStatusRepository,
-        behandlendeEnhetClient = BehandlendeEnhetClient(
-            azureAdClient = azureAdClient,
-            clientEnvironment = externalMockEnvironment.environment.clients.behandlendeEnhet,
-            httpClient = externalMockEnvironment.mockHttpClient,
-        ),
     )
     val dialogmotekandidatVurderingService = DialogmotekandidatVurderingService(
         transactionManager = transactionManager,
