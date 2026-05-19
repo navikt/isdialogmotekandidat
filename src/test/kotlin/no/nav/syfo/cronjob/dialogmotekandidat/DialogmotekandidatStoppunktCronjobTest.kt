@@ -14,7 +14,6 @@ import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.DialogmotekandidatStoppunkt
 import no.nav.syfo.domain.DialogmotekandidatStoppunktStatus
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
-import no.nav.syfo.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.cronjob.dialogmotekandidat.DialogmotekandidatStoppunktCronjob
 import no.nav.syfo.infrastructure.kafka.dialogmotekandidat.DialogmotekandidatEndringProducer
@@ -62,11 +61,6 @@ class DialogmotekandidatStoppunktCronjobTest {
         dialogmotekandidatRepository = dialogmotekandidatRepository,
         dialogmotekandidatStoppunktRepository = externalMockEnvironment.dialogmotekandidatStoppunktRepository,
         dialogmoteStatusRepository = externalMockEnvironment.dialogmoteStatusRepository,
-        behandlendeEnhetClient = BehandlendeEnhetClient(
-            azureAdClient = azureAdClient,
-            clientEnvironment = externalMockEnvironment.environment.clients.behandlendeEnhet,
-            httpClient = externalMockEnvironment.mockHttpClient,
-        ),
     )
     private val cronjob =
         DialogmotekandidatStoppunktCronjob(dialogmotekandidatService, externalMockEnvironment.environment.stoppunktCronjobDelay)

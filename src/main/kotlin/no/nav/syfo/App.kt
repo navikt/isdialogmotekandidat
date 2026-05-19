@@ -11,7 +11,6 @@ import no.nav.syfo.application.DialogmotekandidatVurderingService
 import no.nav.syfo.application.IdenthendelseService
 import no.nav.syfo.application.OppfolgingstilfelleService
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
-import no.nav.syfo.infrastructure.clients.behandlendeenhet.BehandlendeEnhetClient
 import no.nav.syfo.infrastructure.clients.oppfolgingstilfelle.OppfolgingstilfelleClient
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
@@ -85,10 +84,6 @@ fun main() {
             databaseModule(
                 databaseEnvironment = environment.database,
             )
-            val behandlendeEnhetClient = BehandlendeEnhetClient(
-                azureAdClient = azureAdClient,
-                clientEnvironment = environment.clients.behandlendeEnhet,
-            )
             val oppfolgingstilfelleClient = OppfolgingstilfelleClient(
                 azureAdClient = azureAdClient,
                 clientEnvironment = environment.clients.oppfolgingstilfelle,
@@ -102,7 +97,6 @@ fun main() {
             val transactionManager = TransactionManager(applicationDatabase)
             dialogmotekandidatService = DialogmotekandidatService(
                 oppfolgingstilfelleService = oppfolgingstilfelleService,
-                behandlendeEnhetClient = behandlendeEnhetClient,
                 dialogmotekandidatEndringProducer = dialogmotekandidatEndringProducer,
                 transactionManager = transactionManager,
                 dialogmotekandidatRepository = dialogmotekandidatRepository,
