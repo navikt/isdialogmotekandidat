@@ -21,7 +21,7 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWT
+import no.nav.syfo.testhelper.tokenForVeilederWithFullTilgang
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
 import no.nav.syfo.testhelper.testApiModule
@@ -56,11 +56,7 @@ class DialogmotekandidatHistorikkApiTest {
         database.dropData()
     }
 
-    private val validToken = generateJWT(
-        audience = externalMockEnvironment.environment.azure.appClientId,
-        issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
-        navIdent = UserConstants.VEILEDER_IDENT,
-    )
+    private val validToken = tokenForVeilederWithFullTilgang
 
     private fun createKandidat() {
         val endring =

@@ -6,7 +6,6 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
-import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.clients.httpClientDefault
@@ -14,7 +13,6 @@ import no.nav.syfo.domain.Personident
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
-import no.nav.syfo.util.callIdArgument
 import org.slf4j.LoggerFactory
 import kotlin.collections.map
 
@@ -30,7 +28,21 @@ class VeilederTilgangskontrollClient(
         callId: String,
         personident: Personident,
         token: String,
-    ): Boolean {
+    ): Boolean = getTilgang(callId, personident, token)?.erGodkjent ?: false
+
+    suspend fun hasWriteAccess(
+        callId: String,
+        personident: Personident,
+        token: String,
+    ): Boolean = getTilgang(callId, personident, token)?.let {
+        it.erGodkjent && it.fullTilgang
+    } ?: false
+
+    private suspend fun getTilgang(
+        callId: String,
+        personident: Personident,
+        token: String,
+    ): Tilgang? {
         val onBehalfOfToken = azureAdClient.getOnBehalfOfToken(
             scopeClientId = clientEnvironment.clientId,
             token = token,
@@ -44,19 +56,15 @@ class VeilederTilgangskontrollClient(
                 accept(ContentType.Application.Json)
             }
             COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.increment()
-            tilgang.body<Tilgang>().erGodkjent
+            tilgang.body<Tilgang>()
         } catch (e: ResponseException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.increment()
             } else {
-                log.error(
-                    "Error while requesting access to person from istilgangskontroll with {}, {}",
-                    StructuredArguments.keyValue("statusCode", e.response.status.value.toString()),
-                    callIdArgument(callId = callId)
-                )
+                log.error("Error while requesting access to person from istilgangskontroll with statusCode=${e.response.status.value}, callId=$callId")
                 COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL.increment()
             }
-            false
+            null
         }
     }
 

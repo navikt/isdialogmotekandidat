@@ -25,6 +25,7 @@ fun Route.registerIkkeAktuellApi(
                 action = "Create ikke-aktuell for person",
                 personIdentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                requiresWriteAccess = true,
             ) {
                 val ikkeAktuell = createIkkeAktuellDTO.toIkkeAktuell(
                     createdByIdent = call.getNAVIdent()

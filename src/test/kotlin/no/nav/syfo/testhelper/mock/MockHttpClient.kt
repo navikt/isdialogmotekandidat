@@ -10,10 +10,10 @@ import no.nav.syfo.util.configuredJacksonMapper
 
 val mapper = configuredJacksonMapper()
 
-fun <T> MockRequestHandleScope.respond(body: T): HttpResponseData =
+fun <T> MockRequestHandleScope.respond(body: T, status: HttpStatusCode = HttpStatusCode.OK): HttpResponseData =
     respond(
         mapper.writeValueAsString(body),
-        HttpStatusCode.OK,
+        status,
         headersOf(HttpHeaders.ContentType, "application/json")
     )
 
@@ -27,7 +27,7 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
         addHandler { request ->
             val requestUrl = request.url.encodedPath
             when {
-                requestUrl == "/${environment.azure.openidConfigTokenEndpoint}" -> azureAdMockResponse()
+                requestUrl == "/${environment.azure.openidConfigTokenEndpoint}" -> azureAdMockResponse(request)
                 requestUrl.startsWith("/${environment.clients.istilgangskontroll.baseUrl}") -> isTilgangskontrollResponse(
                     request
                 )

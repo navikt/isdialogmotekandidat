@@ -24,7 +24,8 @@ import no.nav.syfo.testhelper.ExternalMockEnvironment
 import no.nav.syfo.testhelper.UserConstants
 import no.nav.syfo.testhelper.createDialogmotekandidatEndring
 import no.nav.syfo.testhelper.dropData
-import no.nav.syfo.testhelper.generateJWT
+import no.nav.syfo.testhelper.tokenForVeilederWithFullTilgang
+import no.nav.syfo.testhelper.tokenForVeilederWithNoWriteTilgang
 import no.nav.syfo.testhelper.generator.generateDialogmotekandidatEndringStoppunkt
 import no.nav.syfo.testhelper.generator.generateNewUnntakDTO
 import no.nav.syfo.testhelper.getDialogmotekandidatEndringer
@@ -66,11 +67,7 @@ class UnntakApiTest {
         every { kafkaProducer.send(any()) } returns mockk(relaxed = true)
     }
 
-    private val validToken = generateJWT(
-        audience = externalMockEnvironment.environment.azure.appClientId,
-        issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
-        navIdent = UserConstants.VEILEDER_IDENT,
-    )
+    private val validToken = tokenForVeilederWithFullTilgang
     private val newUnntakDTO = generateNewUnntakDTO(personident = UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER)
 
     @Test
@@ -250,6 +247,18 @@ class UnntakApiTest {
             bearerAuth(validToken)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             setBody(newUnntakDTOWithDeniedAccess)
+        }
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+        verify(exactly = 0) { kafkaProducer.send(any()) }
+    }
+
+    @Test
+    fun `returns status Forbidden if denied write access when creating unntak`() = testApplication {
+        val client = setupApiAndClient()
+        val response = client.post(urlUnntakPersonIdent) {
+            bearerAuth(tokenForVeilederWithNoWriteTilgang)
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(newUnntakDTO)
         }
         assertEquals(HttpStatusCode.Forbidden, response.status)
         verify(exactly = 0) { kafkaProducer.send(any()) }
