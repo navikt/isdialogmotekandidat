@@ -42,7 +42,7 @@ class IdenthendelseConsumer(
 
     companion object {
         private const val POLL_DURATION_SECONDS = 10L
-        private const val DELAY_ON_ERROR_SECONDS = 60L
+        private const val DELAY_ON_ERROR_SECONDS = 10L
         private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.identhendelse")
 
         fun config(
