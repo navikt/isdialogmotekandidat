@@ -60,8 +60,12 @@ class PdlClient(
                 val pdlIdenterResponse = response.body<PdlIdenterResponse>()
                 return if (!pdlIdenterResponse.errors.isNullOrEmpty()) {
                     COUNT_CALL_PDL_IDENTER_FAIL.increment()
-                    pdlIdenterResponse.errors.forEach {
-                        logger.error("Error while requesting IdentList from PersonDataLosningen: ${it.errorMessage()}")
+                    pdlIdenterResponse.errors.forEach { error ->
+                        if (error.isOfTypeNotFound()) {
+                            logger.warn("Error while requesting ident from PersonDataLosningen: ${error.errorMessage()}")
+                        } else {
+                            logger.error("Error while requesting ident from PersonDataLosningen: ${error.errorMessage()}")
+                        }
                     }
                     null
                 } else {
