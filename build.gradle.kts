@@ -4,12 +4,12 @@ group = "no.nav.syfo"
 version = "0.0.1"
 
 val confluentVersion = "8.3.0"
-val flywayVersion = "13.1.0"
+val flywayVersion = "13.2.0"
 val hikariVersion = "7.1.0"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.22.1"
 val jacksonDatabindVersion = "3.2.1"
-val jettyVersion = "12.1.11"
+val jettyVersion = "12.1.12"
 val kafkaVersion = "4.3.1"
 val ktorVersion = "3.5.2"
 val logbackVersion = "1.6.1"
@@ -25,7 +25,7 @@ plugins {
     kotlin("jvm") version "2.4.10"
     id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("com.github.ben-manes.versions") version "0.58.0"
+    id("com.github.ben-manes.versions") version "0.60.0"
     id("com.adarshr.test-logger") version "4.0.0"
 }
 
