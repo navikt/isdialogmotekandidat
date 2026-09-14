@@ -126,6 +126,8 @@ fun main() {
                 val oppfolgingstilfellePersonConsumer = OppfolgingstilfellePersonConsumer(
                     transactionManager = transactionManager,
                     dialogmotekandidatStoppunktRepository = dialogmotekandidatStoppunktRepository,
+                    dialogmotekandidatRepository = dialogmotekandidatRepository,
+                    dialogmotekandidatService = dialogmotekandidatService,
                 )
                 val dialogmoteStatusEndringConsumer = DialogmoteStatusEndringConsumer(
                     transactionManager = transactionManager,

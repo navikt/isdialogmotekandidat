@@ -1,8 +1,14 @@
 package no.nav.syfo.infrastructure.kafka.oppfolgingstilfelle
 
+import no.nav.syfo.application.DialogmotekandidatService
 import no.nav.syfo.application.ITransaction
 import no.nav.syfo.application.ITransactionManager
+import no.nav.syfo.domain.DialogmotekandidatEndring
 import no.nav.syfo.domain.Oppfolgingstilfelle
+import no.nav.syfo.domain.Personident
+import no.nav.syfo.domain.isLatestIkkeKandidat
+import no.nav.syfo.domain.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle
+import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatRepository
 import no.nav.syfo.infrastructure.database.dialogmotekandidat.DialogmotekandidatStoppunktRepository
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import no.nav.syfo.infrastructure.kafka.commonKafkaAivenConsumerConfig
@@ -19,6 +25,8 @@ import kotlinx.coroutines.runBlocking
 class OppfolgingstilfellePersonConsumer(
     val transactionManager: ITransactionManager,
     val dialogmotekandidatStoppunktRepository: DialogmotekandidatStoppunktRepository,
+    val dialogmotekandidatRepository: DialogmotekandidatRepository,
+    val dialogmotekandidatService: DialogmotekandidatService,
 ) {
     fun pollAndProcessRecords(
         consumer: KafkaConsumer<String, KafkaOppfolgingstilfellePerson>,
@@ -90,6 +98,44 @@ class OppfolgingstilfellePersonConsumer(
         val currentOppfolgingstilfelle = kafkaOppfolgingstilfellePerson.toCurrentOppfolgingstilfelle()
         if (currentOppfolgingstilfelle != null && currentOppfolgingstilfelle != latestOppfolgingstilfelle) {
             createStoppunktIfKandidattilfelle(currentOppfolgingstilfelle, transaction)
+        }
+
+        lukkKandidatIfNoLongerValid(
+            transaction = transaction,
+            kafkaOppfolgingstilfellePerson = kafkaOppfolgingstilfellePerson,
+            governingOppfolgingstilfelle = currentOppfolgingstilfelle ?: latestOppfolgingstilfelle,
+        )
+    }
+
+    private fun lukkKandidatIfNoLongerValid(
+        transaction: ITransaction,
+        kafkaOppfolgingstilfellePerson: KafkaOppfolgingstilfellePerson,
+        governingOppfolgingstilfelle: Oppfolgingstilfelle?,
+    ) {
+        val personident = Personident(kafkaOppfolgingstilfellePerson.personIdentNumber)
+        val dialogmotekandidatEndringList = dialogmotekandidatRepository.getDialogmotekandidatEndringer(
+            transaction = transaction,
+            personident = personident,
+        )
+        if (dialogmotekandidatEndringList.isLatestIkkeKandidat()) {
+            return
+        }
+
+        val tilfelleStart = governingOppfolgingstilfelle?.tilfelleStart
+        val isNoLongerKandidat = governingOppfolgingstilfelle == null ||
+            !governingOppfolgingstilfelle.isDialogmotekandidat() ||
+            dialogmotekandidatEndringList.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
+                tilfelleStart = governingOppfolgingstilfelle.tilfelleStart,
+            )
+
+        if (isNoLongerKandidat) {
+            dialogmotekandidatService.createDialogmotekandidatEndring(
+                transaction = transaction,
+                dialogmotekandidatEndring = DialogmotekandidatEndring.lukket(personident),
+                tilfelleStart = tilfelleStart,
+            )
+            COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_LUKKET_NOT_KANDIDAT.increment()
+            log.info("Closed dialogmotekandidat, no longer kandidat after change in oppfolgingstilfelle")
         }
     }
 
