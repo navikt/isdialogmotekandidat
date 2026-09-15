@@ -129,13 +129,14 @@ class OppfolgingstilfellePersonConsumer(
             )
 
         if (isNoLongerKandidat) {
+            val endringLukket = DialogmotekandidatEndring.lukket(personident)
             dialogmotekandidatService.createDialogmotekandidatEndring(
                 transaction = transaction,
-                dialogmotekandidatEndring = DialogmotekandidatEndring.lukket(personident),
+                dialogmotekandidatEndring = endringLukket,
                 tilfelleStart = tilfelleStart,
             )
             COUNT_KAFKA_CONSUMER_OPPFOLGINGSTILFELLE_PERSON_LUKKET_NOT_KANDIDAT.increment()
-            log.info("Closed dialogmotekandidat, no longer kandidat after change in oppfolgingstilfelle")
+            log.info("Closed dialogmotekandidat, no longer kandidat after change in oppfolgingstilfelle. Endring: ${endringLukket.uuid}")
         }
     }
 
