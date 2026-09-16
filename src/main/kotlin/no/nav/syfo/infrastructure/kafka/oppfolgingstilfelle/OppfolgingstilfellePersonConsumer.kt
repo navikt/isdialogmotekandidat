@@ -117,13 +117,12 @@ class OppfolgingstilfellePersonConsumer(
             transaction = transaction,
             personident = personident,
         )
-        if (dialogmotekandidatEndringList.isLatestIkkeKandidat()) {
+        if (governingOppfolgingstilfelle == null || dialogmotekandidatEndringList.isLatestIkkeKandidat()) {
             return
         }
 
-        val tilfelleStart = governingOppfolgingstilfelle?.tilfelleStart
-        val isNoLongerKandidat = governingOppfolgingstilfelle == null ||
-            !governingOppfolgingstilfelle.isDialogmotekandidat() ||
+        val tilfelleStart = governingOppfolgingstilfelle.tilfelleStart
+        val isNoLongerKandidat =
             dialogmotekandidatEndringList.isLatestStoppunktKandidatMissingOrNotInOppfolgingstilfelle(
                 tilfelleStart = governingOppfolgingstilfelle.tilfelleStart,
             )
