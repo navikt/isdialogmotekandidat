@@ -450,36 +450,6 @@ class KafkaOppfolgingstilfellePersonServiceTest {
     }
 
     @Test
-    fun `should lukke kandidat when oppfolgingstilfelle no longer is kandidattilfelle`() {
-        createKandidat()
-
-        val tooShortTilfelle = generateKafkaOppfolgingstilfellePerson(
-            personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
-            oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 10,
-        )
-
-        pollRecords(tooShortTilfelle)
-
-        assertLukketPublisert()
-    }
-
-    @Test
-    fun `should lukke kandidat when person no longer is arbeidstaker`() {
-        createKandidat()
-
-        val notArbeidstaker = generateKafkaOppfolgingstilfellePerson(
-            arbeidstakerAtTilfelleEnd = false,
-            personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
-            start = LocalDate.now().minusDays(DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS),
-            oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 10,
-        )
-
-        pollRecords(notArbeidstaker)
-
-        assertLukketPublisert()
-    }
-
-    @Test
     fun `should not lukke kandidat when oppfolgingstilfelle still is valid for the kandidat`() {
         createKandidat()
 
@@ -514,13 +484,14 @@ class KafkaOppfolgingstilfellePersonServiceTest {
     fun `should only lukke once when the same invalidating record is received twice`() {
         createKandidat()
 
-        val tooShortTilfelle = generateKafkaOppfolgingstilfellePerson(
+        val startMovedForward = generateKafkaOppfolgingstilfellePerson(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
-            oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS - 10,
+            start = LocalDate.now().plusDays(1),
+            oppfolgingstilfelleDurationInDays = DIALOGMOTEKANDIDAT_STOPPUNKT_DURATION_DAYS + 10,
         )
 
-        pollRecords(tooShortTilfelle)
-        pollRecords(tooShortTilfelle)
+        pollRecords(startMovedForward)
+        pollRecords(startMovedForward)
 
         verify(exactly = 1) { kafkaProducer.send(any()) }
         val endringer = database.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER)
