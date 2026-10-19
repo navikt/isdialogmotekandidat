@@ -292,6 +292,29 @@ class KafkaDialogmoteStatusEndringServiceTest {
     }
 
     @Test
+    fun `skips endret status-endring without creating DialogmotekandidatEndring`() {
+        database.createDialogmotekandidatEndring(dialogmotekandidatEndringCreatedBeforeStatusEndring)
+        val kDialogmoteStatusEndringEndret = generateKDialogmoteStatusEndring(
+            personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
+            statusEndringType = DialogmoteStatusEndring.Type.ENDRET,
+            moteTidspunkt = moteTidspunkt,
+            endringsTidspunkt = statusEndringTidspunkt,
+        )
+        every { consumer.poll(any<Duration>()) } returns ConsumerRecords(
+            mapOf(
+                topicPartition to listOf(
+                    ConsumerRecord(DIALOGMOTE_STATUS_ENDRING_TOPIC, partition, 5L, "key5", kDialogmoteStatusEndringEndret)
+                )
+            )
+        )
+        dialogmoteStatusEndringConsumer.pollAndProcessRecords(consumer)
+        verify(exactly = 1) { consumer.commitSync() }
+        verify(exactly = 0) { kafkaProducer.send(any()) }
+        val latest = database.getDialogmotekandidatEndringer(ARBEIDSTAKER_PERSONIDENTNUMBER).first()
+        assertEquals(dialogmotekandidatEndringCreatedBeforeStatusEndring.uuid, latest.uuid)
+    }
+
+    @Test
     fun `creates no new DialogmotekandidatEndring when no latest endring for person (innkalt)`() {
         every { consumer.poll(any<Duration>()) } returns ConsumerRecords(
             mapOf(topicPartition to listOf(kDialogmoteStatusEndringInnkaltRecord))
