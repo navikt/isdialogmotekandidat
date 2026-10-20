@@ -292,7 +292,7 @@ class KafkaDialogmoteStatusEndringServiceTest {
     }
 
     @Test
-    fun `skips endret status-endring without creating DialogmotekandidatEndring`() {
+    fun `skips creating DialogmotekandidatEndring when DialogmoteStatusEndring is ENDRET`() {
         database.createDialogmotekandidatEndring(dialogmotekandidatEndringCreatedBeforeStatusEndring)
         val kDialogmoteStatusEndringEndret = generateKDialogmoteStatusEndring(
             personIdentNumber = ARBEIDSTAKER_PERSONIDENTNUMBER,
