@@ -24,6 +24,7 @@ data class DialogmoteStatusEndring private constructor(
         FERDIGSTILT,
         NYTT_TID_STED,
         LUKKET,
+        ENDRET,
     }
 
     companion object {
