@@ -97,6 +97,7 @@ class IkkeAktuellApiTest {
         val kafkaValue = producerRecordSlot.captured.value()
         assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENTNUMBER.value, kafkaValue.personIdentNumber)
         assertEquals(DialogmotekandidatEndring.Arsak.IKKE_AKTUELL.name, kafkaValue.arsak)
+        assertEquals(newIkkeAktuellDTO.arsak, kafkaValue.ikkeAktuellArsak)
         assertFalse(kafkaValue.kandidat)
         assertNull(kafkaValue.unntakArsak)
         assertNull(kafkaValue.unntakVeilederident)
