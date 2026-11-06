@@ -66,12 +66,16 @@ data class DialogmotekandidatEndringRecord(
     val kandidat: Boolean,
     val arsak: String,
     val unntakArsak: String?,
-    val tilfelleStart: LocalDate?,
     val unntakVeilederident: String?,
+    val ikkeAktuellArsak: String?,
+    val ikkeAktuellVeilederident: String? = null,
+    val tilfelleStart: LocalDate?,
 ) {
     companion object {
         fun from(dialogmoteKandidatEndring: DialogmotekandidatEndring, tilfelleStart: LocalDate?): DialogmotekandidatEndringRecord {
             val unntak = dialogmoteKandidatEndring as? DialogmotekandidatEndring.Unntak
+            val ikkeAktuell = dialogmoteKandidatEndring as? DialogmotekandidatEndring.IkkeAktuell
+
             return DialogmotekandidatEndringRecord(
                 uuid = dialogmoteKandidatEndring.uuid.toString(),
                 createdAt = dialogmoteKandidatEndring.createdAt,
@@ -79,8 +83,10 @@ data class DialogmotekandidatEndringRecord(
                 kandidat = dialogmoteKandidatEndring.kandidat,
                 arsak = dialogmoteKandidatEndring.arsak.name,
                 unntakArsak = unntak?.unntakArsak?.name,
-                tilfelleStart = tilfelleStart,
                 unntakVeilederident = unntak?.createdBy,
+                ikkeAktuellArsak = ikkeAktuell?.ikkeAktuellArsak?.name,
+                ikkeAktuellVeilederident = ikkeAktuell?.createdBy,
+                tilfelleStart = tilfelleStart,
             )
         }
     }
