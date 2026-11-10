@@ -3,13 +3,12 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val confluentVersion = "8.3.2"
+val confluentVersion = "8.4.0"
 val flywayVersion = "13.11.1"
 val hikariVersion = "7.1.0"
 val isdialogmoteSchemaVersion = "1.0.5"
 val jacksonDataTypeVersion = "2.22.4"
 val jacksonDatabindVersion = "3.2.4"
-val jettyVersion = "12.1.14"
 val kafkaVersion = "4.4.0"
 val ktorVersion = "3.6.1"
 val logbackVersion = "1.6.6"
@@ -77,18 +76,24 @@ dependencies {
     testImplementation(platform("io.zonky.test.postgres:embedded-postgres-binaries-bom:$postgresRuntimeVersion"))
 
     implementation("org.apache.kafka:kafka_2.13:$kafkaVersion")
-    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
-    implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
-    implementation("io.confluent:kafka-schema-registry:$confluentVersion")
     constraints {
-        implementation("io.github.classgraph:classgraph") {
-            because("io.confluent:kafka-schema-registry:$confluentVersion -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
+        implementation("at.yawk.lz4:lz4-java") {
             version {
-                require("4.8.184")
+                require("1.11.4")
             }
         }
     }
-    implementation(platform("org.eclipse.jetty:jetty-bom:$jettyVersion"))
+
+    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
+    constraints {
+        implementation("com.google.guava:guava") {
+            version {
+                require("33.8.0-jre")
+            }
+        }
+    }
+
+    implementation("no.nav.syfo.dialogmote.avro:isdialogmote-schema:$isdialogmoteSchemaVersion")
 
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusJoseJwtVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
