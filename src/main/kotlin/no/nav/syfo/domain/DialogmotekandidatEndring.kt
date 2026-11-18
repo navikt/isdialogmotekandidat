@@ -88,6 +88,7 @@ sealed class DialogmotekandidatEndring {
             DIALOGMOTE_AVHOLDT,
             FRISKMELDT,
             ARBEIDSFORHOLD_OPPHORT,
+            ANSATT_I_EGET_AS,
         }
     }
 
